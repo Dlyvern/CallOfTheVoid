@@ -5,7 +5,6 @@
 
 #include <unordered_map>
 #include <iostream>
-#include <vector>
 #include "Model.hpp"
 #include <set>
 
@@ -18,7 +17,7 @@ public:
 
     inline Model* getModelByName(const std::string& name);
 
-    void initMinimim();
+    void initMinimum();
 
     void loadTextures();
 
@@ -27,10 +26,10 @@ public:
     Model loadModel(const std::string& path);
 
     ~AssetsManager();
+    std::unordered_map<std::string, Model> m_models;
 
 private:
     std::unordered_map<std::string, textures::Texture> m_textures;
-    std::unordered_map<std::string, Model> m_models;
 
     std::set<std::string> m_modelsPaths;
 };

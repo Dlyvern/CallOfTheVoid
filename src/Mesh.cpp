@@ -1,14 +1,14 @@
 #include "Mesh.hpp"
 #include "../libraries/glad/glad.h"
 
-Mesh::Mesh(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices, const std::vector<common::VertexBoneData>& vertexBoneData) : m_vertices(vertices)
+Mesh::Mesh(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices) : m_vertices(vertices)
 {
     glGenVertexArrays(1, &m_vao);
     glGenBuffers(1, &m_vbo);
     glGenBuffers(1, &m_ebo);
 
     glBindVertexArray(m_vao);
-    
+
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(common::Vertex) * m_vertices.size(), m_vertices.data(), GL_STATIC_DRAW);
 
@@ -19,11 +19,11 @@ Mesh::Mesh(const std::vector<common::Vertex> &vertices, const std::vector<unsign
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(common::Vertex), (void*)offsetof(common::Vertex, position));
     glEnableVertexAttribArray(0);
 
-    // Normals  
+    // Normals
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(common::Vertex), (void*)offsetof(common::Vertex, normal));
     glEnableVertexAttribArray(1);
 
-    // Texture coordinates    
+    // Texture coordinates
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(common::Vertex), (void*)offsetof(common::Vertex, textureCoordinates));
     glEnableVertexAttribArray(2);
 

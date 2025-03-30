@@ -27,6 +27,8 @@ void DefaultScene::create()
 
     for(const auto& wall : json["walls"])
     {
+        //TODO MAKE UNIQUE NAME
+        //SCENE GAME OBJECTS SHOULD NOT HAVE SAME NAMES
         auto gameObject = std::make_shared<geometries::Cube>(wall["name"]);
         gameObject->create();
         gameObject->setTexture(AssetsManager::instance().getTextureByName(wall["textureName"]));
@@ -54,18 +56,22 @@ void DefaultScene::create()
 void DefaultScene::update(float deltaTime)
 {
     for(const auto& gameObject : m_gameObjects)
-        gameObject->update(m_player->getCamera()->getViewMatrix(), m_player->getCamera()->getPosition(), deltaTime);
+        gameObject->update(deltaTime);
 
-    // physics::raycasting::Ray ray;
+    // physics::raycasting::Ray ray{};
     // ray.origin = m_player->getCamera()->getPosition();
     // ray.direction = -m_player->getCamera()->getUp();
-
+    // ray.objects = &m_gameObjects;
+    //
     // physics::raycasting::RaycastingResult result;
+    //
+    // if(physics::raycasting::shoot(ray, result))
+    // {
+    //     for (const auto& gameObject : result.objects)
+    //         if (gameObject->getName() == "man")
+    //             std::cout << "Yes" << std::endl;
+    // }
 
-    // if(physics::raycasting::shoot(ray, result, *m_cube.get()))
-    //     std::cout << "YES" << std::endl;
-    // else
-    //     std::cout << "NO" << std::endl;
 
     // for(const auto& firstObject : m_gameObjects)
     // {

@@ -1,5 +1,3 @@
-
-
 #version 330 core
 
 layout(location = 0) in vec3 pos;
@@ -22,35 +20,49 @@ out vec2 TexCoords;
 
 void main()
 {
-    vec4 totalPosition = vec4(0.0f);
-    for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
+    mat4 boneTransform = mat4(0.0);
+
+    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
     {
-        if(boneIds[i] == -1) 
-            continue;
-        if(boneIds[i] >= MAX_BONES) 
+        if (boneIds[i] >= 0)
         {
-            totalPosition = vec4(pos,1.0f);
-            break;
+            boneTransform += finalBonesMatrices[boneIds[i]] * weights[i];
         }
-        vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(pos,1.0f);
-        totalPosition += localPosition * weights[i];
-        vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * norm;
-   }
-	
-    mat4 viewModel = view * model;
-    gl_Position =  projection * viewModel * totalPosition;
-	TexCoords = tex;
+    }
 
+    if (boneTransform == mat4(0.0))
+        boneTransform = mat4(1.0);
 
-    
-
-    
-    // mat4 boneTransform = mat4(0.0);
-    // for (int i = 0; i < 4; i++) {
-    //     boneTransform += weights[i] * finalBonesMatrices[boneIds[i]];
-    // }
-
-    // gl_Position = projection * view * model * boneTransform * vec4(pos, 1.0);
-    // TexCoords = tex;
+    gl_Position = projection * view * model * boneTransform * vec4(pos, 1.0);
+    TexCoords = tex;
 }
 
+//     mat4 boneTransform = mat4(1.0);
+//
+//     for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+//        boneTransform += weights[i] * finalBonesMatrices[boneIds[i]];
+//
+//     gl_Position = projection * view * model * (boneTransform * vec4(pos, 1.0));
+//     TexCoords = tex;
+
+
+
+//    vec4 totalPosition = vec4(0.0f);
+//
+//    for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
+//    {
+//        if(boneIds[i] == -1)
+//            continue;
+//        if(boneIds[i] >= MAX_BONES)
+//        {
+//            totalPosition = vec4(pos,1.0f);
+//            break;
+//        }
+//        vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(pos,1.0f);
+//        totalPosition += localPosition * weights[i];
+//        vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * norm;
+//   }
+//
+//    mat4 viewModel = view * model;
+//    gl_Position =  projection * viewModel * totalPosition;
+//	TexCoords = tex;

@@ -7,7 +7,8 @@
 #include "GameObject.hpp"
 #include "Model.hpp"
 
-#include "AnimatedGameObject.hpp"
+#include "Animator.hpp"
+
 
 class Void : public GameObject
 {
@@ -17,7 +18,7 @@ public:
     void create();
     void setTexture(textures::Texture* texture);
     void setModel(Model* model);
-    void update(const glm::mat4& viewMatrix, const glm::vec3& cameraPosition, float deltaTime) override;
+    void update(float deltaTime) override;
     void setRotation(float angle, const glm::vec3& axis);
     void rotate(bool rotateClockwise);
 
@@ -25,7 +26,11 @@ public:
 private:
     bool m_rotate{false};
 
-    AnimatedGameObject* m_animatedGameObject;
+    // AnimatedGameObject* m_animatedGameObject;
+
+    common::Animation* m_animation{nullptr};
+
+    Animator m_animator;
 
     textures::Texture* m_texture{nullptr};
     Model* m_model{nullptr};

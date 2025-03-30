@@ -11,6 +11,8 @@
 #include "Keyboard.hpp"
 #include "Mouse.hpp"
 
+#include "CameraManager.hpp"
+
 //TODO: MAKE CURRENT SCENE MORE USER FRIENDLY
 //Current level/scene system or something like that
 
@@ -20,7 +22,7 @@ void Engine::run()
 
     GLfloat lastFrame = 0.0f;
     GLfloat deltaTime = 0.0f;
-    
+
     while(m_mainWindow->isWindowOpened())
     {
         GLfloat currentFrame = glfwGetTime();
@@ -65,7 +67,7 @@ void Engine::init()
 
     m_mainWindow = std::make_shared<Window::MainWindow>();
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
         throw std::runtime_error("Engine::init(): Failed to initialize GLAD");
 
     glfwSetKeyCallback(m_mainWindow->getOpenGLWindow(), input::KeysManager::keyCallback);
@@ -83,13 +85,13 @@ void Engine::init()
 
     m_currentScene = m_allScenes.begin();
 
-    AssetsManager::instance().initMinimim();
+    AssetsManager::instance().initMinimum();
 
     // AssetsManager::instance().loadTextures();
-    AssetsManager::instance().loadModels();
+    // AssetsManager::instance().loadModels();
+    CameraManager::getInstance().setActiveCamera(CameraManager::getInstance().createCamera());
 
     (*m_currentScene)->create();
-
 }
 
 void Engine::glCheckError(const char *file, int line)

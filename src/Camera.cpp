@@ -10,6 +10,10 @@ Camera::Camera()
 
 void Camera::update(float deltaTime)
 {
+    if (m_mode == CameraMode::Static) {
+        updateCameraVectors();
+        return;
+    }
     static float lastX = 1920.0f / 2.0f;
     static float lastY = 1080.0f / 2.0f;
 
@@ -32,6 +36,10 @@ void Camera::update(float deltaTime)
     m_yaw += offsetX;
     
     //For now, our camera can move only right and left. Uncomment to fix it
+
+    if (m_yaw > 360.0f) m_yaw -= 360.0f;
+    if (m_yaw < 0.0f) m_yaw += 360.0f;
+
     m_pitch -= offsetY;
 
     if (m_pitch > 89.0f) m_pitch = 89.0f;
@@ -81,4 +89,9 @@ float Camera::getPitch() const
 void Camera::setPosition(const glm::vec3 &position)
 {
     m_position = position;
+}
+
+void Camera::setCameraMode(const CameraMode &mode)
+{
+    m_mode = mode;
 }

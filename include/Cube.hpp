@@ -18,7 +18,7 @@ namespace geometries
         void create();
         void setTexture(textures::Texture* texture);
         void setModel(Model* model);
-        void update(const glm::mat4& viewMatrix, const glm::vec3& cameraPosition, float deltaTime) override;
+        void update(float deltaTime) override;
         void setRotation(float angle, const glm::vec3& axis);
         void rotate(bool rotateClockwise);
     private:

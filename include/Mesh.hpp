@@ -7,7 +7,7 @@
 class Mesh
 {
 public:
-    Mesh(const std::vector<common::Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<common::VertexBoneData>& vertexBoneData);
+    Mesh(const std::vector<common::Vertex>& vertices, const std::vector<unsigned int>& indices);
 
     void draw();
 

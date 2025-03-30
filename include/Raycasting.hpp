@@ -14,6 +14,7 @@ namespace physics
         public:
             glm::vec3 point;
             float distance;
+            std::vector<std::shared_ptr<GameObject>> objects;
         };
 
         struct Ray
@@ -21,25 +22,35 @@ namespace physics
         public:
             glm::vec3 origin;
             glm::vec3 direction;
+            const std::vector<std::shared_ptr<GameObject>>* objects;
         };
 
-        inline bool shoot(const Ray& ray, RaycastingResult& result, const geometries::Cube &cube)
+        inline bool shoot(const Ray& ray, RaycastingResult& result)
         {
             float closestT = std::numeric_limits<float>::max();
 
-            float tNear, tFar;
-
-            if (physics::collision::doRayIntersectAABB(ray.origin, ray.direction, cube.getBoundingBox().min, cube.getBoundingBox().max, tNear, tFar)) 
+            for (const auto& gameObject : *ray.objects)
             {
-                if (tNear < closestT) 
-                {
-                    closestT = tNear;
+                //TODO FIX THIS LATER
+                if (gameObject->getName() == "player")
+                    continue;
 
-                    return true;
+                float tNear, tFar;
+
+                if (physics::collision::doRayIntersectAABB(ray.origin, ray.direction, gameObject->getBoundingBox().min, gameObject->getBoundingBox().max, tNear, tFar))
+                {
+                    if (tNear < closestT)
+                    {
+                        //Some weird shit
+                        // closestT = tNear;
+
+                        result.objects.push_back(gameObject);
+                        std::cout << "Hit game object with " << gameObject->getName() << " name" << std::endl;
+                    }
                 }
             }
 
-            return false;
+            return !result.objects.empty();
         }
     }; //namespace raycasting
 }; //namespace physics

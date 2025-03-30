@@ -1,4 +1,5 @@
 #include "Mouse.hpp"
+#include <iostream>
 
 input::MouseManager &input::MouseManager::instance()
 {
@@ -12,12 +13,12 @@ void input::MouseManager::mouseCallback(GLFWwindow *window, double x, double y)
     input::Mouse.m_y = y;
 }
 
-float input::MouseManager::getX() const
+double input::MouseManager::getX() const
 {
     return m_x;
 }
 
-float input::MouseManager::getY() const
+double input::MouseManager::getY() const
 {
     return m_y;
 }

@@ -11,6 +11,8 @@
 #include "Cube.hpp"
 #include <map>
 #include <future>
+
+#include "CameraManager.hpp"
 #include "Void.hpp"
 
 #include "ft2build.h"
@@ -32,7 +34,6 @@ namespace
 
     Void voidObject("Void");
 
-    Model* model;
     Shader shader;
     unsigned int VAO, VBO;
 }
@@ -46,15 +47,13 @@ void LoadingScene::create()
     texture = AssetsManager::instance().getTextureByName("void.png");
     texture->bake();
 
-    model = AssetsManager::instance().getModelByName("void.fbx");
-
     voidObject.create();
 
     voidObject.setTexture(texture);
-    voidObject.setModel(model);
+    voidObject.setModel(AssetsManager::instance().getModelByName("void.fbx"));
     voidObject.setScale(glm::vec3{0.01f, 0.01f, 0.01f});
-    voidObject.setRotation(0, glm::vec3{1.0, 0.0, 0.0});
-    voidObject.setPosition({0.3f, -0.08f, 0.0f});
+    voidObject.setRotation(180, glm::vec3{0.0, 1.0, 0.0});
+    voidObject.setPosition({5.0f, -5.0f, -20.0f});
 
     auto shadersDirectory = filesystem::getShadersFolderPath();
     shader.load(shadersDirectory.string() + "/text.vert", shadersDirectory.string() + "/text.frag");
@@ -146,7 +145,7 @@ void LoadingScene::create()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    m_future = std::async(std::launch::async, [this]{loadAllAssets();});
+    // m_future = std::async(std::launch::async, [this]{loadAllAssets();});
 }
 
 void LoadingScene::loadAllAssets()
@@ -164,6 +163,8 @@ void LoadingScene::loadAllAssets()
 
 void LoadingScene::update(float deltaTime)
 {
+    CameraManager::getInstance().getActiveCamera()->update(deltaTime);
+
     shader.bind();   
 
     std::string text{"CALL OF THE VOID"};
@@ -212,13 +213,12 @@ void LoadingScene::update(float deltaTime)
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glm::mat4 view{1.0f};
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -0.6f)); 
-    voidObject.update(view, glm::vec3{0.0f}, deltaTime);
-    voidObject.rotate(true);
 
-    if(m_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-        m_endScene = true;
+    voidObject.update(deltaTime);
+    // voidObject.rotate(true);
+
+    // if(m_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+    //     m_endScene = true;
 }
 
 bool LoadingScene::isOver()

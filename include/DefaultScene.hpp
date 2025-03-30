@@ -5,6 +5,7 @@
 
 #include "Cube.hpp"
 #include "Player.hpp"
+#include "Void.hpp"
 
 class DefaultScene final : public Scene
 {

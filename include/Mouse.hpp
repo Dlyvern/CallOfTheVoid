@@ -12,11 +12,11 @@ public:
     static MouseManager& instance();
     static void mouseCallback(GLFWwindow* window, double x, double y);
 
-    float getX() const;
-    float getY() const;
+    double getX() const;
+    double getY() const;
 private:
-    float m_x;
-    float m_y;
+    double m_x;
+    double m_y;
 };
 
 static MouseManager& Mouse = MouseManager::instance();

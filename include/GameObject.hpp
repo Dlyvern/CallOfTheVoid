@@ -22,7 +22,7 @@ public:
     const common::LayerMask& getLayerMask() const;
     const std::string& getName() const;
 
-    virtual void update(const glm::mat4& viewMatrix, const glm::vec3& cameraPosition, float deltaTime) = 0;
+    virtual void update(float deltaTime) = 0;
 
     virtual ~GameObject();
 private:

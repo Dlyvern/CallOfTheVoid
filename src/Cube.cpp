@@ -3,13 +3,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "../libraries/glad/glad.h"
-#include <GLFW/glfw3.h>
-#include <iostream> 
 
 #include "AssetsManager.hpp"
-#include "Camera.hpp"
 #include "Filesystem.hpp"
+
+#include "CameraManager.hpp"
 
 geometries::Cube::Cube(const std::string &name) : GameObject(name)
 {
@@ -33,7 +31,7 @@ void geometries::Cube::setModel(Model *model)
     m_model = model;
 }
 
-void geometries::Cube::update(const glm::mat4& viewMatrix, const glm::vec3& cameraPosition, float deltaTime)
+void geometries::Cube::update(float deltaTime)
 {
     m_shader.bind();
 
@@ -59,9 +57,9 @@ void geometries::Cube::update(const glm::mat4& viewMatrix, const glm::vec3& came
     projection = glm::perspective(glm::radians(45.0f), (float)1920 / 1080, 0.1f, 100.0f);
 
     m_shader.setMat4("model", model);
-    m_shader.setMat4("view", viewMatrix);
+    m_shader.setMat4("view", CameraManager::getInstance().getActiveCamera()->getViewMatrix());
     m_shader.setMat4("projection", projection);
-    m_shader.setVec3("viewPos", cameraPosition);
+    m_shader.setVec3("viewPos", CameraManager::getInstance().getActiveCamera()->getPosition());
     m_shader.setVec3("light.position", glm::vec3{1.0f, 1.0f, 1.0f});
     m_shader.setVec3("light.color", glm::vec3{1.0f, 1.0f, 1.0f});
     m_shader.setFloat("light.strength", 0.3f);

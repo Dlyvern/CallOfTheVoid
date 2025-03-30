@@ -1,6 +1,12 @@
 #include "Void.hpp"
 
+#include <iostream>
+#include <glm/gtx/string_cast.hpp>
+
 #include "Filesystem.hpp"
+
+#include "CameraManager.hpp"
+
 
 Void::Void(const std::string &name) : GameObject(name)
 {
@@ -21,14 +27,22 @@ void Void::setTexture(textures::Texture *texture)
 void Void::setModel(Model *model)
 {
     m_model = model;
-    m_animatedGameObject = new AnimatedGameObject(model);
 
-    m_animatedGameObject->playAnimation(&m_model->getAnimations()[0], 1);
+    m_animation = &model->getAnimations()[0];
+    m_animation->modelBones = &model->getBonesInfo();
+
+    m_animator.playAnimation(m_animation, true);
+
+    // m_animatedGameObject = new AnimatedGameObject(model);
+    //
+    // m_animatedGameObject->playAnimation(&m_model->getAnimations()[0], 1.0f);
 }
 
-void Void::update(const glm::mat4 &viewMatrix, const glm::vec3 &cameraPosition, float deltaTime)
+void Void::update(float deltaTime)
 {
-    m_animatedGameObject->updateAnimation(deltaTime);
+    // m_animatedGameObject->updateAnimation(deltaTime);
+
+    m_animator.updateAnimation(deltaTime);
 
     m_shader.bind();
     
@@ -46,10 +60,16 @@ void Void::update(const glm::mat4 &viewMatrix, const glm::vec3 &cameraPosition, 
     glm::mat4 model(1.0f);
     glm::mat4 projection(1.0f);
 
-    for (unsigned int i = 0; i < m_model->boneTransforms.size(); ++i) 
+    // for (unsigned int i = 0; i < m_model->boneTransforms.size(); ++i)
+    // {
+    //     std::string uniformName = "finalBonesMatrices[" + std::to_string(i) + "]";
+    //     m_shader.setMat4(uniformName, m_model->boneTransforms[i]);
+    // }
+
+    for (unsigned int i = 0; i < m_animator.getFinalBoneMatrices().size(); ++i)
     {
         std::string uniformName = "finalBonesMatrices[" + std::to_string(i) + "]";
-        m_shader.setMat4(uniformName.c_str(), m_model->boneTransforms[i]);
+        m_shader.setMat4(uniformName, m_animator.getFinalBoneMatrices()[i]);
     }
 
     model = glm::translate(model, getPosition());
@@ -60,13 +80,8 @@ void Void::update(const glm::mat4 &viewMatrix, const glm::vec3 &cameraPosition, 
     projection = glm::perspective(glm::radians(45.0f), (float)1920 / 1080, 0.1f, 100.0f);
 
     m_shader.setMat4("model", model);
-    m_shader.setMat4("view", viewMatrix);
+    m_shader.setMat4("view", CameraManager::getInstance().getActiveCamera()->getViewMatrix());
     m_shader.setMat4("projection", projection);
-    // m_shader.setVec3("viewPos", cameraPosition);
-    // m_shader.setVec3("light.position", glm::vec3{1.0f, 1.0f, 1.0f});
-    // m_shader.setVec3("light.color", glm::vec3{1.0f, 1.0f, 1.0f});
-    // m_shader.setFloat("light.strength", 0.3f);
-    // m_shader.setFloat("light.radius", 6.0f);
 
     m_texture->bind(0);
 
