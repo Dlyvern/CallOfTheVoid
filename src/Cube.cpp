@@ -15,7 +15,6 @@ geometries::Cube::Cube(const std::string &name) : GameObject(name)
 
 void geometries::Cube::create()
 {
-    // m_model = AssetsManager::instance().loadModel("../resources/man.obj");
     auto shadersPath = filesystem::getShadersFolderPath().string();
 
     m_shader.load(shadersPath + "/cube.vert", shadersPath + "/cube.frag");
@@ -26,7 +25,7 @@ void geometries::Cube::setTexture(textures::Texture *texture)
     m_texture = texture;
 }
 
-void geometries::Cube::setModel(Model *model)
+void geometries::Cube::setModel(const StaticModel &model)
 {
     m_model = model;
 }
@@ -69,7 +68,7 @@ void geometries::Cube::update(float deltaTime)
 
     m_shader.setUniform1i("tex0", 0);
 
-    m_model->draw();
+    m_model.draw();
 }
 
 void geometries::Cube::rotate(bool rotateClockwise)

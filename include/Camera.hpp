@@ -40,9 +40,7 @@ private:
     float m_mouseSensitivity{0.1f};
     bool m_firstClick{true};
 
-
     void updateCameraVectors();
-
 };
 
 

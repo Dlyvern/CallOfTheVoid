@@ -5,8 +5,15 @@
 
 #include <unordered_map>
 #include <iostream>
-#include "Model.hpp"
+#include "SkinnedModel.hpp"
 #include <set>
+
+#include "SkeletalMesh.hpp"
+#include "StaticModel.hpp"
+
+#include "Skeleton.hpp"
+
+#include "StaticMesh.hpp"
 
 class AssetsManager
 {
@@ -15,7 +22,7 @@ public:
 
     inline textures::Texture* getTextureByName(const std::string& name);
 
-    inline Model* getModelByName(const std::string& name);
+    inline SkinnedModel* getModelByName(const std::string& name);
 
     void initMinimum();
 
@@ -23,10 +30,12 @@ public:
 
     void loadModels();
 
-    Model loadModel(const std::string& path);
+    SkinnedModel loadSkinnedModel(const std::string& path);
+
+    StaticModel loadStaticModel(const std::string &path);
 
     ~AssetsManager();
-    std::unordered_map<std::string, Model> m_models;
+    std::unordered_map<std::string, SkinnedModel> m_models;
 
 private:
     std::unordered_map<std::string, textures::Texture> m_textures;
@@ -34,7 +43,7 @@ private:
     std::set<std::string> m_modelsPaths;
 };
 
-inline Model* AssetsManager::getModelByName(const std::string& name)
+inline SkinnedModel* AssetsManager::getModelByName(const std::string& name)
 {
     if(auto it = m_models.find(name); it != m_models.cend())
         return &it->second;

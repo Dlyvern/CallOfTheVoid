@@ -13,8 +13,6 @@ Player::Player(const std::string &name) : GameObject(name)
 
 void Player::update(float deltaTime)
 {
-    m_camera->update(deltaTime);
-
     float velocity = m_movementSpeed * deltaTime;
     auto position = this->getPosition();
 

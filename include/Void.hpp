@@ -5,7 +5,7 @@
 #include "Shader.hpp"
 #include "Common.hpp"
 #include "GameObject.hpp"
-#include "Model.hpp"
+#include "SkinnedModel.hpp"
 
 #include "Animator.hpp"
 
@@ -17,7 +17,7 @@ public:
 
     void create();
     void setTexture(textures::Texture* texture);
-    void setModel(Model* model);
+    void setModel(SkinnedModel* model);
     void update(float deltaTime) override;
     void setRotation(float angle, const glm::vec3& axis);
     void rotate(bool rotateClockwise);
@@ -33,7 +33,7 @@ private:
     Animator m_animator;
 
     textures::Texture* m_texture{nullptr};
-    Model* m_model{nullptr};
+    SkinnedModel* m_model{nullptr};
     Shader m_shader;
     glm::vec3 m_rotation{0.0f};
     float m_rotationSpeed{50.0f};

@@ -1,7 +1,7 @@
-#include "Mesh.hpp"
+#include "SkeletalMesh.hpp"
 #include "../libraries/glad/glad.h"
 
-Mesh::Mesh(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices) : m_vertices(vertices)
+SkeletalMesh::SkeletalMesh(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices) : m_vertices(vertices)
 {
     glGenVertexArrays(1, &m_vao);
     glGenBuffers(1, &m_vbo);
@@ -44,16 +44,16 @@ Mesh::Mesh(const std::vector<common::Vertex> &vertices, const std::vector<unsign
     glEnableVertexAttribArray(6);
 
 
-	glBindVertexArray(0);
+    glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     m_indicesCount = indices.size();
 }
 
-void Mesh::draw()
+void SkeletalMesh::draw()
 {
     glBindVertexArray(m_vao);
-    glDrawElements(GL_TRIANGLES, m_indicesCount, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, m_indicesCount, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 }

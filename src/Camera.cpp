@@ -2,6 +2,7 @@
 #include "Keyboard.hpp"
 #include "Mouse.hpp"
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/quaternion_geometric.hpp>
 
 Camera::Camera()
 {
@@ -10,10 +11,12 @@ Camera::Camera()
 
 void Camera::update(float deltaTime)
 {
-    if (m_mode == CameraMode::Static) {
+    if (m_mode == CameraMode::Static)
+    {
         updateCameraVectors();
         return;
     }
+
     static float lastX = 1920.0f / 2.0f;
     static float lastY = 1080.0f / 2.0f;
 
@@ -25,8 +28,8 @@ void Camera::update(float deltaTime)
     }
 
     float offsetX = input::Mouse.getX() - lastX;
-    float offsetY = input::Mouse.getY() - lastY; // Corrected to match typical mouse coordinate system
-    
+    float offsetY = input::Mouse.getY() - lastY;
+
     lastX = input::Mouse.getX();
     lastY = input::Mouse.getY();
 
@@ -34,13 +37,12 @@ void Camera::update(float deltaTime)
     offsetY *= m_mouseSensitivity;
 
     m_yaw += offsetX;
-    
+    m_pitch -= offsetY;
     //For now, our camera can move only right and left. Uncomment to fix it
 
     if (m_yaw > 360.0f) m_yaw -= 360.0f;
     if (m_yaw < 0.0f) m_yaw += 360.0f;
 
-    m_pitch -= offsetY;
 
     if (m_pitch > 89.0f) m_pitch = 89.0f;
     if (m_pitch < -89.0f) m_pitch = -89.0f;
@@ -55,6 +57,7 @@ void Camera::updateCameraVectors()
     forward.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     forward.y = sin(glm::radians(m_pitch));
     forward.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+
     m_forward = glm::normalize(forward);
 
     m_right = glm::normalize(glm::cross(m_forward, glm::vec3(0.0f, 1.0f, 0.0f)));

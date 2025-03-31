@@ -24,24 +24,18 @@ void Void::setTexture(textures::Texture *texture)
     m_texture = texture;
 }
 
-void Void::setModel(Model *model)
+void Void::setModel(SkinnedModel *model)
 {
     m_model = model;
 
     m_animation = &model->getAnimations()[0];
-    m_animation->modelBones = &model->getBonesInfo();
+    m_animation->modelBones = &model->getSkeleton().getBones();
 
     m_animator.playAnimation(m_animation, true);
-
-    // m_animatedGameObject = new AnimatedGameObject(model);
-    //
-    // m_animatedGameObject->playAnimation(&m_model->getAnimations()[0], 1.0f);
 }
 
 void Void::update(float deltaTime)
 {
-    // m_animatedGameObject->updateAnimation(deltaTime);
-
     m_animator.updateAnimation(deltaTime);
 
     m_shader.bind();
@@ -60,12 +54,6 @@ void Void::update(float deltaTime)
     glm::mat4 model(1.0f);
     glm::mat4 projection(1.0f);
 
-    // for (unsigned int i = 0; i < m_model->boneTransforms.size(); ++i)
-    // {
-    //     std::string uniformName = "finalBonesMatrices[" + std::to_string(i) + "]";
-    //     m_shader.setMat4(uniformName, m_model->boneTransforms[i]);
-    // }
-
     for (unsigned int i = 0; i < m_animator.getFinalBoneMatrices().size(); ++i)
     {
         std::string uniformName = "finalBonesMatrices[" + std::to_string(i) + "]";
@@ -74,10 +62,13 @@ void Void::update(float deltaTime)
 
     model = glm::translate(model, getPosition());
     model = glm::scale(model, getScale());
-    model = glm::rotate(model, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f)); // Вращение вокруг оси X
-    model = glm::rotate(model, glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)); // Вращение вокруг оси Y
-    model = glm::rotate(model, glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f)); // Вращение вокруг оси Z
-    projection = glm::perspective(glm::radians(45.0f), (float)1920 / 1080, 0.1f, 100.0f);
+    glm::mat4 rotationMatrix =
+        glm::rotate(glm::mat4(1.0f), glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    model *= rotationMatrix;
+    projection = glm::perspective(glm::radians(45.0f), static_cast<float>(1920) / 1080, 0.1f, 100.0f);
 
     m_shader.setMat4("model", model);
     m_shader.setMat4("view", CameraManager::getInstance().getActiveCamera()->getViewMatrix());

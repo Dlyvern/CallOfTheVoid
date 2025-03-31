@@ -2,15 +2,13 @@
 #define MESH_HPP
 
 #include "Common.hpp"
-#include <vector>
 
-class Mesh
+class StaticMesh
 {
 public:
-    Mesh(const std::vector<common::Vertex>& vertices, const std::vector<unsigned int>& indices);
+    StaticMesh(const std::vector<common::Vertex>& vertices, const std::vector<unsigned int>& indices);
 
     void draw();
-
 private:
     unsigned int m_vao, m_vbo, m_ebo;
     std::vector<common::Vertex> m_vertices;

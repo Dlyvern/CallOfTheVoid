@@ -11,29 +11,54 @@
 #include <unordered_map>
 #include <map>
 
-//TODO: FIX THAT SHIT
+#include "Skeleton.hpp"
+#include "Utilities.hpp"
+
+
 namespace
 {
-	glm::mat4 convertMatrixToGLMFormat(const aiMatrix4x4& from)
-	{
-        glm::mat4 to;
-        //the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
-        to[0][0] = from.a1; to[1][0] = from.a2; to[2][0] = from.a3; to[3][0] = from.a4;
-        to[0][1] = from.b1; to[1][1] = from.b2; to[2][1] = from.b3; to[3][1] = from.b4;
-        to[0][2] = from.c1; to[1][2] = from.c2; to[2][2] = from.c3; to[3][2] = from.c4;
-        to[0][3] = from.d1; to[1][3] = from.d2; to[2][3] = from.d3; to[3][3] = from.d4;
-        return to;
+    void extractVerticesAndIndices(aiMesh* mesh, std::vector<common::Vertex>& vertices, std::vector<unsigned int>& indices)
+    {
+        for(unsigned int j = 0; j < mesh->mNumVertices; j++)
+        {
+            common::Vertex vertex;
+
+            for (int i = 0; i < 4; i++)
+            {
+                vertex.boneID[i] = -1;
+                vertex.weight[i] = 0.0f;
+            }
+
+            vertex.position = {mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z};
+            vertex.normal = {mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z};
+
+            if(mesh->HasTangentsAndBitangents())
+            {
+                vertex.tangent = {mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z};
+                vertex.bitangent = {mesh->mBitangents[j].x, mesh->mBitangents[j].y, mesh->mBitangents[j].z};
+            }
+            else
+            {
+                vertex.tangent = {0.0f, 0.0f, 0.0f};
+                vertex.bitangent = {0.0f, 0.0f, 0.0f};
+            }
+
+            if(mesh->HasTextureCoords(0))
+                vertex.textureCoordinates = {mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y};
+            else
+                vertex.textureCoordinates = {0.0f, 0.0f};
+
+            vertices.push_back(vertex);
+        }
+
+        for(unsigned int k = 0; k < mesh->mNumFaces; k++)
+        {
+            aiFace face = mesh->mFaces[k];
+
+            for(unsigned int s = 0; s < face.mNumIndices; s++)
+                indices.push_back(face.mIndices[s]);
+        }
     }
-
-    glm::vec3 getGLMVec(const aiVector3D& vec)
-	{ 
-		return {vec.x, vec.y, vec.z};
-	}
-
-	glm::quat getGLMQuat(const aiQuaternion& pOrientation)
-	{
-		return {pOrientation.w, pOrientation.x, pOrientation.y, pOrientation.z};
-	}
 }
 
 AssetsManager& AssetsManager::instance()
@@ -41,18 +66,6 @@ AssetsManager& AssetsManager::instance()
     static AssetsManager assetsManager;
     return assetsManager;
 }
-
-//  void LoadAnimations(const aiScene* scene, const std::string& animPath) {
-//         Assimp::Importer importer;
-//         const aiScene* animScene = importer.ReadFile(animPath, aiProcess_Triangulate | aiProcess_FlipUVs);
-//         if (!animScene || animScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !animScene->mRootNode) {
-//             std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
-//             return;
-//         }
-
-//         animations = animScene->mAnimations;
-//         // Process animations here
-//     }
 
 void AssetsManager::initMinimum()
 {
@@ -68,7 +81,7 @@ void AssetsManager::initMinimum()
     const textures::Texture textureVoid(std::filesystem::path(texturesFolderPath.string() + "/void.png").string());
     m_textures[textureVoid.getName()] = textureVoid;
 
-    const auto model = loadModel(modelsFolderPath.string() + "/void.fbx");
+    const auto model = loadSkinnedModel(modelsFolderPath.string() + "/void.fbx");
     m_models[model.getName()] = model;
 }
 
@@ -115,7 +128,7 @@ void AssetsManager::loadModels()
                 continue;
             }
 
-            auto model = loadModel(entry.path());            
+            auto model = loadSkinnedModel(entry.path());
             m_models[name] = model;
             // std::cout << "Added " << name << std::endl;
 
@@ -123,56 +136,8 @@ void AssetsManager::loadModels()
     }
 }
 
-//TODO FIX IT LATER
-
-void extractBoneHierarchy(aiNode* node, int parentID, std::unordered_map<std::string, unsigned int>& bonesMap,  std::vector<common::BoneInfo>& bones)
+void generateBoneHierarchy(common::BoneInfo* parent, const aiNode* src, Skeleton& skeleton)
 {
-    std::string nodeName = node->mName.C_Str();
-
-    auto it = bonesMap.find(nodeName);
-    int currentID = (it != bonesMap.end()) ? it->second : -1;
-
-    if (currentID != -1) {
-        bones[currentID].parentId = parentID;
-    }
-
-    for (unsigned int i = 0; i < node->mNumChildren; i++) {
-        auto childNode = node->mChildren[i];
-        std::string childName = childNode->mName.C_Str();
-
-        auto childIt = bonesMap.find(childName);
-
-        if (childIt != bonesMap.end()) {
-            int childID = childIt->second;
-
-            // ✅ Only add the child once (avoid duplicates)
-            if (currentID != -1) {
-                auto& parentBone = bones[currentID];
-                if (std::find(parentBone.children.begin(), parentBone.children.end(), childID) == parentBone.children.end()) {
-                    bones[currentID].children.push_back(childID);
-                }
-                // Recursively process the child
-                extractBoneHierarchy(node->mChildren[i], currentID, bonesMap, bones);
-            }
-        } else {
-            // Even if this node isn't a bone, continue processing
-            extractBoneHierarchy(node->mChildren[i], currentID, bonesMap, bones);
-        }
-    }
-}
-
-void generateBoneHierarchy(common::BoneInfo* parent, const aiNode* src, std::unordered_map<std::string, unsigned int>& bonesMap, std::vector<common::BoneInfo>& bones)
-{
-    auto aiMatrix4x4ToGlm = [](const aiMatrix4x4* from) -> glm::mat4
-    {
-        glm::mat4 to;
-        to[0][0] = from->a1; to[1][0] = from->a2; to[2][0] = from->a3; to[3][0] = from->a4;
-        to[0][1] = from->b1; to[1][1] = from->b2; to[2][1] = from->b3; to[3][1] = from->b4;
-        to[0][2] = from->c1; to[1][2] = from->c2; to[2][2] = from->c3; to[3][2] = from->c4;
-        to[0][3] = from->d1; to[1][3] = from->d2; to[2][3] = from->d3; to[3][3] = from->d4;
-        return to;
-    };
-
     assert(src);
 
     std::string nodeName = src->mName.C_Str();
@@ -183,20 +148,20 @@ void generateBoneHierarchy(common::BoneInfo* parent, const aiNode* src, std::uno
 
     int boneID = -1;
 
-    if (bonesMap.contains(nodeName))
+    if (skeleton.getBoneMap().contains(nodeName))
     {
-        boneID = bonesMap[nodeName];
+        boneID = skeleton.getBoneMap()[nodeName];
     }
     else
     {
-        // If the bone isn't in the bonesMap, create a new one to preserve hierarchy
-        boneID = bones.size();
-        bonesMap[nodeName] = boneID;
-        auto& ref = bones.emplace_back(common::BoneInfo{nodeName, boneID, glm::mat4(1.0f), glm::mat4(1.0f)});
-        ref.offsetMatrix = aiMatrix4x4ToGlm(&src->mTransformation);
+        // If the bone isn't in the skeleton.getBoneMap(), create a new one to preserve hierarchy
+        boneID = skeleton.getBones().size();
+        skeleton.getBoneMap()[nodeName] = boneID;
+        auto& ref = skeleton.getBones().emplace_back(common::BoneInfo{nodeName, boneID, glm::mat4(1.0f), glm::mat4(1.0f)});
+        ref.offsetMatrix = utilities::convertMatrixToGLMFormat(src->mTransformation);
     }
 
-    common::BoneInfo& currentBone = bones[boneID];
+    common::BoneInfo& currentBone = skeleton.getBones()[boneID];
     // currentBone.offsetMatrix = aiMatrix4x4ToGlm(&src->mTransformation);
 
     if (parent && parent->id != boneID)
@@ -208,137 +173,13 @@ void generateBoneHierarchy(common::BoneInfo* parent, const aiNode* src, std::uno
 
     for (unsigned int i = 0; i < src->mNumChildren; i++)
     {
-        generateBoneHierarchy(&currentBone, src->mChildren[i], bonesMap, bones);
+        generateBoneHierarchy(&currentBone, src->mChildren[i], skeleton);
     }
 }
 
-Mesh processMesh(aiMesh* mesh, const aiScene* scene, std::unordered_map<std::string, unsigned int>& bonesMap, std::vector<common::BoneInfo>& bones, std::vector<common::Animation>&animations, glm::mat4& globalInverseTransform)
+std::vector<common::Animation> extractAnimations(const aiScene* scene)
 {
-    std::vector<common::Vertex> vertices;
-    std::vector<unsigned int> indices;
-
-    for(unsigned int j = 0; j < mesh->mNumVertices; j++)
-    {
-        common::Vertex vertex;
-
-        for (int i = 0; i < 4; i++)
-		{
-			vertex.boneID[i] = -1;
-			vertex.weight[i] = 0.0f;
-		}
-
-        vertex.position = {mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z};
-        vertex.normal = {mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z};
-
-        if(mesh->HasTangentsAndBitangents())
-        {
-            vertex.tangent = {mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z};
-            vertex.bitangent = {mesh->mBitangents[j].x, mesh->mBitangents[j].y, mesh->mBitangents[j].z};
-        }
-        else
-        {
-            vertex.tangent = {0.0f, 0.0f, 0.0f};
-            vertex.bitangent = {0.0f, 0.0f, 0.0f};
-        }
-
-        if(mesh->HasTextureCoords(0))
-            vertex.textureCoordinates = {mesh->mTextureCoords[0][j].x, mesh->mTextureCoords[0][j].y};
-        else
-            vertex.textureCoordinates = {0.0f, 0.0f};
-
-        vertices.push_back(vertex);
-    }
-
-    for(unsigned int k = 0; k < mesh->mNumFaces; k++)
-    {
-        aiFace face = mesh->mFaces[k];
-
-        for(unsigned int s = 0; s < face.mNumIndices; s++)
-            indices.push_back(face.mIndices[s]);
-    }
-
-    globalInverseTransform = convertMatrixToGLMFormat(scene->mRootNode->mTransformation);
-
-    for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++)
-    {
-        aiBone* bone = mesh->mBones[boneIndex];
-        std::string boneName = bone->mName.C_Str();
-
-        if(!bonesMap.contains(boneName))
-        {
-            common::BoneInfo boneInfo;
-
-            boneInfo.name = boneName;
-            boneInfo.offsetMatrix = convertMatrixToGLMFormat(bone->mOffsetMatrix);
-            boneInfo.id = bones.size();
-            boneInfo.finalTransformation = glm::mat4(1.0f);
-            boneInfo.parentId = -1;
-            bonesMap[boneInfo.name] = boneInfo.id;
-
-            bones.push_back(boneInfo);
-        }
-
-        unsigned int boneId = bonesMap[boneName];
-
-        for (unsigned int bonesWeightIndex = 0; bonesWeightIndex < bone->mNumWeights; bonesWeightIndex++)
-        {
-            auto boneWeight = bone->mWeights[bonesWeightIndex];
-
-            unsigned int vertexId = boneWeight.mVertexId;
-            float weight = boneWeight.mWeight;
-
-            common::Vertex& vertexBoneData = vertices[vertexId];
-
-            for(int f = 0; f < 4; ++f)
-            {
-                if(vertexBoneData.boneID[f] < 0)
-                {
-                    vertexBoneData.weight[f] = weight;
-                    vertexBoneData.boneID[f] = boneId;
-                    break;
-                }
-            }
-        }
-    }
-
-    generateBoneHierarchy(nullptr, scene->mRootNode, bonesMap, bones);
-
-    for (auto& boneData : bones)
-    {
-        if (aiNode* boneNode = scene->mRootNode->FindNode(boneData.name.c_str()))
-        {
-            for (unsigned int childIndex = 0; childIndex < boneNode->mNumChildren; childIndex++)
-            {
-                std::string childName = boneNode->mChildren[childIndex]->mName.C_Str();
-
-                //TODO: REALLY FUCKING WEIRD SHIT I HATE IT PLEASE KILL ME
-                size_t shit = childName.find_first_of('_');
-
-                if (shit != std::string::npos)
-                    childName = childName.substr(0, shit);
-
-                if (bonesMap.contains(childName) && childName != boneNode->mName.C_Str())
-                {
-                    int childID = bonesMap[childName];
-
-                    if (std::ranges::find_if(bones[boneData.id].children, [&childID](int child) {  return child == childID; }) == bones[boneData.id].children.end())
-                    {
-                        bones[boneData.id].children.push_back(childID);
-                        bones[boneData.id].childrenInfo.push_back(&bones[childID]);
-                    }
-
-                }
-            }
-        }
-    }
-
-    // //TODO THIS CODE IS VERYYYYYYYYYYYYYYY SLOW
-    for (auto& parentBone : bones)
-        for (int childID : parentBone.children)
-            if (bones[childID].parentId == -1)
-                bones[childID].parentId = parentBone.id;
-
-
+    std::vector<common::Animation> animations;
 
     for(unsigned int i = 0; i < scene->mNumAnimations; ++i)
     {
@@ -358,16 +199,16 @@ Mesh processMesh(aiMesh* mesh, const aiScene* scene, std::unordered_map<std::str
             boneAnimation.boneName = channel->mNodeName.C_Str();
 
             //Maybe we do not need that but some bones from animations do not load up into model bones
-            bool cool = false;
-            for (const auto& b : bones)
-                if (b.name == boneAnimation.boneName)
-                    cool = true;
-
-            if (!cool) {
-                common::BoneInfo tempBoneInfo;
-                tempBoneInfo.name = boneAnimation.boneName;
-                bones.push_back(tempBoneInfo);
-            }
+            // bool cool = false;
+            // for (const auto& b : bones)
+            //     if (b.name == boneAnimation.boneName)
+            //         cool = true;
+            //
+            // if (!cool) {
+            //     common::BoneInfo tempBoneInfo;
+            //     tempBoneInfo.name = boneAnimation.boneName;
+            //     bones.push_back(tempBoneInfo);
+            // }
 
             std::map<float, common::SQT> tempKeyFrames;
 
@@ -403,6 +244,7 @@ Mesh processMesh(aiMesh* mesh, const aiScene* scene, std::unordered_map<std::str
             }
 
             boneAnimation.keyFrames.reserve(tempKeyFrames.size());
+
             for (auto& [time, sqt] : tempKeyFrames)
                 boneAnimation.keyFrames.push_back(sqt);
 
@@ -413,24 +255,144 @@ Mesh processMesh(aiMesh* mesh, const aiScene* scene, std::unordered_map<std::str
         animations.push_back(animation);
     }
 
-    //TODO Make texture and materials loading
-
-    return Mesh{vertices, indices};
+    return animations;
 }
 
-void processNode(aiNode* node, const aiScene* scene, std::vector<Mesh>& meshes, std::unordered_map<std::string, unsigned int>& bonesMap, std::vector<common::BoneInfo> &bones, std::vector<common::Animation>&animations, glm::mat4& globalInverseTransform)
+void extractSkeleton(aiMesh* mesh, const aiScene* scene, std::vector<common::Vertex>& vertices, Skeleton& skeleton)
+{
+    for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++)
+    {
+        aiBone* bone = mesh->mBones[boneIndex];
+
+        skeleton.addBone(bone);
+
+        std::string boneName = bone->mName.C_Str();
+        const unsigned int boneId = skeleton.getBoneId(boneName);
+
+        for (unsigned int bonesWeightIndex = 0; bonesWeightIndex < bone->mNumWeights; bonesWeightIndex++)
+        {
+            const auto boneWeight = bone->mWeights[bonesWeightIndex];
+
+            common::Vertex& vertexBoneData = vertices[boneWeight.mVertexId];
+
+            for(int f = 0; f < 4; ++f)
+            {
+                if(vertexBoneData.boneID[f] < 0)
+                {
+                    vertexBoneData.weight[f] = boneWeight.mWeight;
+                    vertexBoneData.boneID[f] = boneId;
+                    break;
+                }
+            }
+        }
+    }
+
+    generateBoneHierarchy(nullptr, scene->mRootNode, skeleton);
+
+    for (auto& boneData : skeleton.getBones())
+    {
+        if (aiNode* boneNode = scene->mRootNode->FindNode(boneData.name.c_str()))
+        {
+            for (unsigned int childIndex = 0; childIndex < boneNode->mNumChildren; childIndex++)
+            {
+                std::string childName = boneNode->mChildren[childIndex]->mName.C_Str();
+
+                //TODO: REALLY FUCKING WEIRD SHIT I HATE IT PLEASE KILL ME
+                size_t shit = childName.find_first_of('_');
+
+                if (shit != std::string::npos)
+                    childName = childName.substr(0, shit);
+
+                if (skeleton.getBoneMap().contains(childName) && childName != boneNode->mName.C_Str())
+                {
+                    int childID = skeleton.getBoneMap()[childName];
+
+                    if (std::ranges::find_if(skeleton.getBones()[boneData.id].children, [&childID](int child) {  return child == childID; }) == skeleton.getBones()[boneData.id].children.end())
+                    {
+                        skeleton.getBones()[boneData.id].children.push_back(childID);
+                        skeleton.getBones()[boneData.id].childrenInfo.push_back(&skeleton.getBones()[childID]);
+                    }
+
+                }
+            }
+        }
+    }
+
+    // //TODO THIS CODE IS VERYYYYYYYYYYYYYYY SLOW
+    // for (auto& parentBone : skeleton.getBones())
+    //     for (int childID : parentBone.children)
+    //         if (skeleton.getBones()[childID].parentId == -1)
+    //             skeleton.getBones()[childID].parentId = parentBone.id;
+}
+
+StaticMesh processStaticMesh(aiMesh* mesh, const aiScene* scene)
+{
+    std::vector<common::Vertex> vertices;
+    std::vector<unsigned int> indices;
+
+    extractVerticesAndIndices(mesh, vertices, indices);
+    // glm::mat4 globalInverseTransform = utilities::convertMatrixToGLMFormat(scene->mRootNode->mTransformation);
+
+    return {vertices, indices};
+}
+
+
+void processStaticModel(aiNode* node, const aiScene* scene, std::vector<StaticMesh>& meshes)
 {
     for (unsigned int i = 0; i < node->mNumMeshes; ++i)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.emplace_back(processMesh(mesh, scene, bonesMap, bones, animations, globalInverseTransform));
+        meshes.emplace_back(processStaticMesh(mesh, scene));
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; ++i)
-        processNode(node->mChildren[i], scene, meshes, bonesMap, bones, animations, globalInverseTransform);
+        processStaticModel(node->mChildren[i], scene, meshes);
 }
 
-Model AssetsManager::loadModel(const std::string &path)
+SkeletalMesh processSkeletalMesh(aiMesh* mesh, const aiScene* scene, Skeleton& skeleton)
+{
+    std::vector<common::Vertex> vertices;
+    std::vector<unsigned int> indices;
+
+    extractVerticesAndIndices(mesh, vertices, indices);
+    extractSkeleton(mesh, scene, vertices, skeleton);
+
+    return {vertices, indices};
+}
+
+void processSkinnedModel(aiNode* node, const aiScene* scene, std::vector<SkeletalMesh>& skeletalMeshes, Skeleton& skeleton)
+{
+    for (unsigned int i = 0; i < node->mNumMeshes; ++i)
+    {
+        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+        skeletalMeshes.emplace_back(processSkeletalMesh(mesh, scene, skeleton));
+    }
+
+    for (unsigned int i = 0; i < node->mNumChildren; ++i)
+        processSkinnedModel(node->mChildren[i], scene, skeletalMeshes, skeleton);
+}
+
+StaticModel AssetsManager::loadStaticModel(const std::string &path)
+{
+    Assimp::Importer importer;
+
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+
+    if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+    {
+        std::cerr << "AssetsManager::loadSkinnedModel(): ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
+        throw std::runtime_error("Could not load model " + path);
+    }
+
+    std::vector<StaticMesh> staticMeshes;
+    const std::string name = std::filesystem::path(path).filename().string();
+
+    processStaticModel(scene->mRootNode, scene, staticMeshes);
+
+    return {name, staticMeshes};
+}
+
+SkinnedModel AssetsManager::loadSkinnedModel(const std::string &path)
 {
     Assimp::Importer importer;
 
@@ -438,41 +400,23 @@ Model AssetsManager::loadModel(const std::string &path)
     
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        std::cerr << "AssetsManager::loadModels(): ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
+        std::cerr << "AssetsManager::loadModel(): ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
         throw std::runtime_error("Could not load model " + path);
     }
-    
-    std::vector<Mesh> meshes;
-    std::unordered_map<std::string, unsigned int> bonesMap;
-    std::vector<common::BoneInfo> bones;
-    std::vector<common::Animation> animations;
-    glm::mat4 globalInverseTransform;
 
-    processNode(scene->mRootNode, scene, meshes, bonesMap, bones, animations, globalInverseTransform);
+    Skeleton skeleton;
+    std::vector<SkeletalMesh> meshes;
+    processSkinnedModel(scene->mRootNode, scene, meshes, skeleton);
 
-    const std::filesystem::path file(path);
+    const std::string name = std::filesystem::path(path).filename().string();
 
-    const std::string name = file.filename().string();
+    SkinnedModel model{name, meshes};
 
-    Model model{name, meshes};
-    model.setBoneMap(bonesMap);
-    model.setBonesInfo(bones);
-    model.setAnimations(animations);
-    model.globalInverseTransform = globalInverseTransform;
-    model.rootNode = scene->mRootNode;
-
-    for (const auto& bone : bones) {
-        std::cout << "Bone: " << bone.name << " (ID: " << bone.id << "), Parent: "
-                  << (bone.parentId == -1 ? "None" : bones[bone.parentId].name)
-                  << ", Children: ";
-        for (int child : bone.children) {
-            std::cout << bones[child].name << " ";
-        }
-        std::cout << std::endl;
-    }
-
+    model.setAnimations(extractAnimations(scene));
+    model.setSkeleton(skeleton);
 
     return model;
 }
+
 
 AssetsManager::~AssetsManager() = default;

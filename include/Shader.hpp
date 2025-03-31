@@ -10,7 +10,7 @@ public:
     void load(const std::string& vertexPath, const std::string& fragmentPath, const char* geometryPath = nullptr);
     void bind();
 
-    int getId() const;
+    [[nodiscard]] int getId() const;
 
     void setMat4(const std::string& name, const glm::mat4& value);
 
