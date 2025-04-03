@@ -1,7 +1,7 @@
 #include "StaticMesh.hpp"
 #include "../libraries/glad/glad.h"
 
-StaticMesh::StaticMesh(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices) : m_vertices(vertices)
+StaticMesh::StaticMesh(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices)
 {
     glGenVertexArrays(1, &m_vao);
     glGenBuffers(1, &m_vbo);

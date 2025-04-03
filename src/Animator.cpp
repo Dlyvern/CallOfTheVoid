@@ -107,6 +107,11 @@ void Animator::calculateBoneTransform(common::BoneInfo *boneInfo, const glm::mat
     }
 }
 
+bool Animator::isAnimationPlaying() const
+{
+    return m_currentAnimation != nullptr;
+}
+
 std::vector<glm::mat4> Animator::getFinalBoneMatrices()
 {
     return m_finalBoneMatrices;

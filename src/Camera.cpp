@@ -1,4 +1,8 @@
 #include "Camera.hpp"
+
+#include <iostream>
+#include <ostream>
+
 #include "Keyboard.hpp"
 #include "Mouse.hpp"
 #include <glm/ext/matrix_transform.hpp>
@@ -20,32 +24,32 @@ void Camera::update(float deltaTime)
     static float lastX = 1920.0f / 2.0f;
     static float lastY = 1080.0f / 2.0f;
 
+    float xPosition = input::Mouse.getX();
+    float yPosition = input::Mouse.getY();
+
     if(m_firstClick)
     {
-        lastX = input::Mouse.getX();
-        lastY = input::Mouse.getY();
+        lastX = xPosition;
+        lastY = yPosition;
         m_firstClick = false;
     }
 
-    float offsetX = input::Mouse.getX() - lastX;
-    float offsetY = input::Mouse.getY() - lastY;
+    float offsetX = xPosition - lastX;
+    float offsetY = yPosition - lastY;
 
-    lastX = input::Mouse.getX();
-    lastY = input::Mouse.getY();
+    lastX = xPosition;
+    lastY = yPosition;
 
     offsetX *= m_mouseSensitivity;
     offsetY *= m_mouseSensitivity;
 
     m_yaw += offsetX;
     m_pitch -= offsetY;
-    //For now, our camera can move only right and left. Uncomment to fix it
 
-    if (m_yaw > 360.0f) m_yaw -= 360.0f;
-    if (m_yaw < 0.0f) m_yaw += 360.0f;
+    // if (m_yaw > 180.0f)  m_yaw -= 360.0f;
+    // if (m_yaw < -180.0f) m_yaw += 360.0f;
 
-
-    if (m_pitch > 89.0f) m_pitch = 89.0f;
-    if (m_pitch < -89.0f) m_pitch = -89.0f;
+    m_pitch = glm::clamp(m_pitch - offsetY, -89.0f, 89.0f);
 
     updateCameraVectors();
 }

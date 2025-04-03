@@ -15,13 +15,14 @@ enum class LightType : uint8_t
 class Light
 {
 public:
-    
-private:
-    glm::vec3 m_position{1.0f};
-    glm::vec3 m_color{1, 0.7799999713897705, 0.5289999842643738};
-    float m_strength{1.0f};
-    float m_radius{6.0f};
-    LightType m_type{LightType::POINT};
+    glm::vec3 position{1.0f};
+    glm::vec3 color{1, 0.7799999713897705, 0.5289999842643738};
+    float strength{0.3f};
+    float radius{2.0f};
+    LightType type{LightType::POINT};
+    glm::vec3 direction;
+    float cutoff;
+    float outerCutoff;
 };
 } //namespace lighting
 

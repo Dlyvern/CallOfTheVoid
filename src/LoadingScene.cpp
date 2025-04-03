@@ -7,80 +7,102 @@
 
 #include "CameraManager.hpp"
 #include "Cube.hpp"
+#include "Light.hpp"
+#include "LightManager.hpp"
 #include "Void.hpp"
+
+#include "Physics.hpp"
 
 namespace
 {
-    textures::Texture* texture;
-    Void voidObject("Void");
-    geometries::Cube cube("cube");
+    std::vector<std::shared_ptr<GameObject>> gameObjects;
 }
 
 LoadingScene::LoadingScene() : Scene()
 {
+
 }
 
 void LoadingScene::create()
 {
-    texture = AssetsManager::instance().getTextureByName("void.png");
-    texture->bake();
+    AssetsManager::instance().preLoadModels({"void.fbx", "cube.obj"});
+    AssetsManager::instance().preLoadTextures({"void.png", "web.png"});
 
-    cube.create();
-    cube.setTexture(texture);
-    cube.setModel(AssetsManager::instance().loadStaticModel("/home/dlyvern/Projects/CallOfTheVoid/resources/models/cube.obj"));
-    cube.setPosition({1.1, -1.1, -20.1});
-    cube.setScale({5.0f, 5.0f, 5.0f});
-    // cube.setRotation(0, {});
+    AssetsManager::instance().getTextureByName("void.png")->bake();
+    AssetsManager::instance().getTextureByName("web.png")->bake();
 
-    voidObject.create();
+    // auto voidObject = std::make_shared<Void>("Void");
+    // voidObject->create();
 
-    voidObject.setTexture(texture);
-    voidObject.setModel(AssetsManager::instance().getModelByName("void.fbx"));
-    voidObject.setScale(glm::vec3{0.01f, 0.01f, 0.01f});
-    voidObject.setRotation(180, glm::vec3{0.0, 1.0, 0.0});
-    voidObject.setPosition({5.0f, -5.0f, -20.0f});
+    // voidObject->setTexture(AssetsManager::instance().getTextureByName("void.png"));
+    // voidObject->setModel(AssetsManager::instance().getSkinnedModelByName("void.fbx"));
+    // voidObject->setScale(glm::vec3{0.01f, 0.01f, 0.01f});
+    // voidObject->setRotation(180, glm::vec3{0.0, 1.0, 0.0});
+    // voidObject->setPosition({5.0f, -5.0f, -20.0f});
+    // voidObject->playAnimation();
+    // gameObjects.push_back(voidObject);
 
-    auto shadersDirectory = filesystem::getShadersFolderPath();
-    std::string font_name = filesystem::getFontsFolderPath().string() + "/ghostmane_font.ttf";
+
+    // auto plane = std::make_shared<geometries::Cube>("Plane");
+    // plane->create();
+    // plane->setTexture(AssetsManager::instance().getTextureByName("web.png"));
+    // plane->setModel(AssetsManager::instance().getStaticModelByName("cube.obj"));
+    // plane->setPosition({0.0, 0.0, -30.0});
+    // plane->setScale({10.0f, 10.0f, 10.0f});
+    // gameObjects.push_back(plane);
+
+
+    const auto shadersDirectory = filesystem::getShadersFolderPath();
+    const std::string font_name = filesystem::getFontsFolderPath().string() + "/ghostmane_font.ttf";
 
     m_text.initShader(shadersDirectory.string() + "/text.vert", shadersDirectory.string() + "/text.frag");
     m_text.setText("LOADING");
     m_text.setFont(font_name);
 
-    // m_future = std::async(std::launch::async, [this]{loadAllAssets();});
+    m_future = std::async(std::launch::async, [this] {
+        loadAllAssets();
+    });
+
+    lighting::Light pointLight;
+    pointLight.position = glm::vec3(0.0f, 10.0f, 0.0f);
+    pointLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
+    pointLight.strength = 0.01;
+    LightManager::instance().addLight(pointLight);
 }
 
 void LoadingScene::loadAllAssets()
 {
-    auto texturesFuture = std::async(std::launch::async, []{AssetsManager::instance().loadTextures();});
-    auto modelsFuture = std::async(std::launch::async, []{AssetsManager::instance().loadModels();});
-    AssetsManager::instance().loadTextures();
-    AssetsManager::instance().loadModels();
+    AssetsManager::instance().preLoadModels({"blender_cube.obj", "man.fbx"});
+    AssetsManager::instance().preLoadTextures({"wooden_floor.png", "man_Packed0_Diffuse.png", "wallParking_d.png", "concrete_d.png", "man_Packed0_Diffuse.png"});
 
-    while(true)
-        if(texturesFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready && modelsFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-            break;
+    // auto texturesFuture = std::async(std::launch::async, []{AssetsManager::instance().loadTextures();});
+    // auto modelsFuture = std::async(std::launch::async, []{AssetsManager::instance().loadModels();});
+    // AssetsManager::instance().loadTextures();
+    // AssetsManager::instance().loadModels();
+    //
+    // while(true)
+    //     if(texturesFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready && modelsFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+    //         break;
 }
 
 
 void LoadingScene::update(float deltaTime)
 {
-    CameraManager::getInstance().getActiveCamera()->update(deltaTime);
-
     m_text.draw();
 
-    voidObject.update(deltaTime);
-    cube.update(deltaTime);
+    for (const auto& gameObject : gameObjects)
+        gameObject->update(deltaTime);
+
     // voidObject.rotate(true);
 
-    // if(m_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-    //     m_endScene = true;
+    if(m_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+        m_endScene = true;
 }
 
 bool LoadingScene::isOver()
 {
-    // return m_endScene;
-    return false;
+    return m_endScene;
+    // return false;
 }
 
 LoadingScene::~LoadingScene() = default;

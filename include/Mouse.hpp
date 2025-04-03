@@ -12,8 +12,10 @@ public:
     static MouseManager& instance();
     static void mouseCallback(GLFWwindow* window, double x, double y);
 
-    double getX() const;
-    double getY() const;
+    [[nodiscard]] double getX() const;
+    [[nodiscard]] double getY() const;
+
+    GLFWwindow *window{nullptr};
 private:
     double m_x;
     double m_y;

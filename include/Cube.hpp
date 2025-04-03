@@ -8,6 +8,7 @@
 #include "Common.hpp"
 #include "GameObject.hpp"
 #include "StaticModel.hpp"
+#include "Physics.hpp"
 
 namespace geometries
 {
@@ -17,12 +18,15 @@ namespace geometries
         explicit Cube(const std::string& name);
         void create();
         void setTexture(textures::Texture* texture);
-        void setModel(const StaticModel &model);
+        void setModel(const StaticModel& model);
         void update(float deltaTime) override;
         void setRotation(float angle, const glm::vec3& axis);
         void rotate(bool rotateClockwise);
+        void setRigidBody(physx::PxRigidActor* rigidBody);
     private:
         bool m_rotate{false};
+
+        physx::PxRigidActor* m_rigidBody{nullptr};
 
         textures::Texture* m_texture{nullptr};
         StaticModel m_model;

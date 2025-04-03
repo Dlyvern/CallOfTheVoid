@@ -11,7 +11,6 @@ public:
     void draw();
 private:
     unsigned int m_vao, m_vbo, m_ebo;
-    std::vector<common::Vertex> m_vertices;
     uint32_t m_indicesCount{0};
 };
 

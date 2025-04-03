@@ -29,6 +29,16 @@ namespace
                 vertex.weight[i] = 0.0f;
             }
 
+            common::AABB boundingBox{};
+
+            boundingBox.min.x = std::min(boundingBox.min.x, mesh->mVertices[j].x);
+            boundingBox.min.y = std::min(boundingBox.min.y, mesh->mVertices[j].y);
+            boundingBox.min.z = std::min(boundingBox.min.z, mesh->mVertices[j].z);
+
+            boundingBox.max.x = std::max(boundingBox.max.x, mesh->mVertices[j].x);
+            boundingBox.max.y = std::max(boundingBox.max.y, mesh->mVertices[j].y);
+            boundingBox.max.z = std::max(boundingBox.max.z, mesh->mVertices[j].z);
+
             vertex.position = {mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z};
             vertex.normal = {mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z};
 
@@ -59,13 +69,14 @@ namespace
                 indices.push_back(face.mIndices[s]);
         }
     }
-}
+} //namespace
 
 AssetsManager& AssetsManager::instance()
 {
     static AssetsManager assetsManager;
     return assetsManager;
 }
+
 
 void AssetsManager::initMinimum()
 {
@@ -82,7 +93,7 @@ void AssetsManager::initMinimum()
     m_textures[textureVoid.getName()] = textureVoid;
 
     const auto model = loadSkinnedModel(modelsFolderPath.string() + "/void.fbx");
-    m_models[model.getName()] = model;
+    m_skinnedModels[model.getName()] = model;
 }
 
 void AssetsManager::loadTextures()
@@ -105,34 +116,186 @@ void AssetsManager::loadTextures()
     }
 }
 
+textures::Texture AssetsManager::loadTexture(const std::string &path)
+{
+    return textures::Texture{path};
+}
+
 void AssetsManager::loadModels()
 {
     // std::cout << "Loading models" << std::endl;
+    //
+    // auto modelsFolderPath = filesystem::getModelsFolderPath();
+    //
+    // if(!std::filesystem::exists(modelsFolderPath))
+    //     throw std::runtime_error("AssetsManager::loadModels(): Models folder does not exist");
+    //
+    // for(const auto& entry : std::filesystem::directory_iterator(modelsFolderPath))
+    // {
+    //     if(entry.path().extension() == ".obj" || entry.path().extension() == ".fbx")
+    //     {
+    //         std::filesystem::path file(entry.path());
+    //
+    //         Assimp::Importer importer;
+    //
+    //         const aiScene* scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_FlipUVs);
+    //
+    //         if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+    //         {
+    //             std::cerr << "AssetsManager::loadStaticModel(): ERROR::ASSIMP::" << importer.GetErrorString() << " " << file.string << std::endl;
+    //             continue;
+    //         }
+    //
+    //         std::string name = file.filename().string();
+    //
+    //         if(m_skinnedModels.contains(name))
+    //         {
+    //             // std::cout << "Already exists " << name << std::endl;
+    //             continue;
+    //         }
+    //
+    //         auto model = loadSkinnedModel(entry.path());
+    //         m_skinnedModels[name] = model;
+    //         // std::cout << "Added " << name << std::endl;
+    //
+    //     }
+    // }
+    //
+}
 
+enum class ModelType : uint8_t
+{
+    SKINNED = 0,
+    STATIC = 1
+};
+
+
+//TODO foundSkinned will not be updated
+ModelType detectModelType(aiNode* node, const aiScene* scene, bool& foundSkinned)
+{
+    for (unsigned int i = 0; i < node->mNumMeshes; ++i)
+    {
+        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+
+        if (mesh->mNumBones > 0)
+            foundSkinned = true;
+    }
+
+    for (unsigned int i = 0; i < node->mNumChildren; ++i)
+    {
+        detectModelType(node->mChildren[i], scene, foundSkinned);
+    }
+
+    return !foundSkinned ? ModelType::STATIC : ModelType::SKINNED;
+};
+
+void AssetsManager::preLoadPathsForAllTextures()
+{
+    const std::filesystem::path texturesFolderPath = filesystem::getTexturesFolderPath();
+
+    if (!std::filesystem::exists(texturesFolderPath))
+    {
+        std::cerr << "AssetsManager::preLoadPathsForAllTextures(): Texture folder does not exist: " << texturesFolderPath.string() << std::endl;
+        return;
+    }
+
+    for(const auto& entry : std::filesystem::directory_iterator(texturesFolderPath))
+    {
+        if (entry.path().extension() == ".png")
+        {
+            auto textureName = entry.path().filename().string();
+
+            if (m_texturesPaths.contains(textureName))
+                continue;
+
+            m_texturesPaths.insert(entry.path().string());
+        }
+    }
+}
+
+void AssetsManager::preLoadPathsForAllModels()
+{
     auto modelsFolderPath = filesystem::getModelsFolderPath();
 
     if(!std::filesystem::exists(modelsFolderPath))
-        throw std::runtime_error("AssetsManager::loadModels(): Models folder does not exist");
+        throw std::runtime_error("AssetsManager::preLoadPathsForAllModels(): models folder does not exist");
 
     for(const auto& entry : std::filesystem::directory_iterator(modelsFolderPath))
     {
         if(entry.path().extension() == ".obj" || entry.path().extension() == ".fbx")
         {
             std::filesystem::path file(entry.path());
-    
-            std::string name = file.filename().string();
 
-            if(m_models.find(name) != m_models.end())
+            Assimp::Importer importer;
+
+            const aiScene* scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_FlipUVs);
+
+            if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
             {
-                // std::cout << "Already exists " << name << std::endl;
+                std::cerr << "AssetsManager::loadStaticModel(): ERROR::ASSIMP::" << importer.GetErrorString();
                 continue;
             }
 
-            auto model = loadSkinnedModel(entry.path());
-            m_models[name] = model;
-            // std::cout << "Added " << name << std::endl;
+            bool foundSkinned = false;
+            auto modelType = detectModelType(scene->mRootNode, scene, foundSkinned);
 
+            modelType == ModelType::STATIC ? m_staticModelsPaths.insert(entry.path().string()) : m_skinnedModelsPaths.insert(entry.path().string());
         }
+    }
+}
+
+void AssetsManager::preLoadModels(const std::vector<std::string> &objectNames)
+{
+    for (const auto& name : objectNames)
+    {
+        if (m_skinnedModels.contains(name) || m_staticModels.contains(name))
+            continue;
+
+        //MAYBE FUCKED UP
+        auto modelsFolderPath = std::string(filesystem::getModelsFolderPath()) + "/" + name;
+
+        for (const auto& s : m_skinnedModelsPaths)
+            if (s == modelsFolderPath)
+            {
+                m_skinnedModels[name] = loadSkinnedModel(s);
+                break;
+            }
+
+        for (const auto& s : m_staticModelsPaths)
+            if (s == modelsFolderPath)
+            {
+                m_staticModels[name] = loadStaticModel(s);
+                break;
+            }
+
+
+        // if (m_skinnedModelsPaths.find(name) != m_skinnedModelsPaths.end())
+        //     m_skinnedModels[name] = loadSkinnedModel(*m_skinnedModelsPaths.find(modelsFolderPath));
+        // else if (m_staticModelsPaths.contains(name))
+        //     m_staticModels[name] = loadStaticModel(*m_staticModelsPaths.find(modelsFolderPath));
+        // else
+        //     std::cerr << "AssetsManager::preLoadModels(): could not find the given model " << name << "\n"; //TODO CHECK IF THE PATH EXISTS
+    }
+
+    // std::filesystem::path("").filename();
+}
+
+void AssetsManager::preLoadTextures(const std::vector<std::string> &paths)
+{
+    for (const auto& name : paths)
+    {
+        //TODO CONTAINS IS NOT PROPERLY WORKING
+        if (m_textures.contains(name))
+            continue;
+
+        auto texturesFolderPath = std::string(filesystem::getTexturesFolderPath()) + "/" + name;
+
+        for (const auto& s : m_texturesPaths)
+            if (s == texturesFolderPath)
+                m_textures[name] = loadTexture(s);
+
+        // if (m_texturesPaths.contains(name))
+        //     m_textures[name] = loadTexture(*m_texturesPaths.find(texturesFolderPath));
     }
 }
 
@@ -325,7 +488,7 @@ void extractSkeleton(aiMesh* mesh, const aiScene* scene, std::vector<common::Ver
     //             skeleton.getBones()[childID].parentId = parentBone.id;
 }
 
-StaticMesh processStaticMesh(aiMesh* mesh, const aiScene* scene)
+StaticMesh processStaticMesh(aiMesh* mesh)
 {
     std::vector<common::Vertex> vertices;
     std::vector<unsigned int> indices;
@@ -336,13 +499,12 @@ StaticMesh processStaticMesh(aiMesh* mesh, const aiScene* scene)
     return {vertices, indices};
 }
 
-
 void processStaticModel(aiNode* node, const aiScene* scene, std::vector<StaticMesh>& meshes)
 {
     for (unsigned int i = 0; i < node->mNumMeshes; ++i)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.emplace_back(processStaticMesh(mesh, scene));
+        meshes.emplace_back(processStaticMesh(mesh));
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; ++i)
@@ -380,7 +542,7 @@ StaticModel AssetsManager::loadStaticModel(const std::string &path)
 
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        std::cerr << "AssetsManager::loadSkinnedModel(): ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
+        std::cerr << "AssetsManager::loadStaticModel(): ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
         throw std::runtime_error("Could not load model " + path);
     }
 

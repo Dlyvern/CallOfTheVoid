@@ -7,6 +7,9 @@
 #include "Player.hpp"
 #include "Void.hpp"
 
+
+
+
 class DefaultScene final : public Scene
 {
 public:
@@ -22,7 +25,7 @@ public:
 
 private:
     std::vector<std::shared_ptr<GameObject>> m_gameObjects;
-    std::shared_ptr<geometries::Cube> m_man;
+    std::shared_ptr<Void> m_man;
     std::shared_ptr<Player> m_player;
 };
 

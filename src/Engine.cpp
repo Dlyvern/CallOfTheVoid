@@ -12,6 +12,7 @@
 #include "Mouse.hpp"
 
 #include "CameraManager.hpp"
+#include "Physics.hpp"
 
 //TODO: MAKE CURRENT SCENE MORE USER FRIENDLY
 //Current level/scene system or something like that
@@ -41,7 +42,11 @@ void Engine::run()
         }
 
         if((*m_currentScene))
+        {
+            CameraManager::getInstance().getActiveCamera()->update(deltaTime);
+            physics::PhysicsController::instance().simulate(deltaTime);
             (*m_currentScene)->update(deltaTime);
+        }
 
         glfwSwapBuffers(m_mainWindow->getOpenGLWindow());
         glfwPollEvents();
@@ -73,19 +78,24 @@ void Engine::init()
     glfwSetKeyCallback(m_mainWindow->getOpenGLWindow(), input::KeysManager::keyCallback);
     glfwSetCursorPosCallback(m_mainWindow->getOpenGLWindow(), input::MouseManager::mouseCallback);
     
-    glfwSetInputMode(m_mainWindow->getOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    glfwSetInputMode(m_mainWindow->getOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    AssetsManager::instance().preLoadPathsForAllModels();
+    AssetsManager::instance().preLoadPathsForAllTextures();
+
+    physics::PhysicsController::instance().init();
+
     m_allScenes.emplace_back(std::make_shared<LoadingScene>());
     m_allScenes.emplace_back(std::make_shared<DefaultScene>());
 
     m_currentScene = m_allScenes.begin();
 
-    AssetsManager::instance().initMinimum();
+    // AssetsManager::instance().initMinimum();
 
     // AssetsManager::instance().loadTextures();
     // AssetsManager::instance().loadModels();

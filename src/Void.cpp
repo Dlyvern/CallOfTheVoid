@@ -24,15 +24,19 @@ void Void::setTexture(textures::Texture *texture)
     m_texture = texture;
 }
 
-void Void::setModel(SkinnedModel *model)
+void Void::setModel(const SkinnedModel& model)
 {
     m_model = model;
+}
 
-    m_animation = &model->getAnimations()[0];
-    m_animation->modelBones = &model->getSkeleton().getBones();
+void Void::playAnimation()
+{
+    m_animation = &m_model.getAnimations()[0];
+    m_animation->modelBones = &m_model.getSkeleton().getBones();
 
     m_animator.playAnimation(m_animation, true);
 }
+
 
 void Void::update(float deltaTime)
 {
@@ -54,10 +58,12 @@ void Void::update(float deltaTime)
     glm::mat4 model(1.0f);
     glm::mat4 projection(1.0f);
 
-    for (unsigned int i = 0; i < m_animator.getFinalBoneMatrices().size(); ++i)
-    {
-        std::string uniformName = "finalBonesMatrices[" + std::to_string(i) + "]";
-        m_shader.setMat4(uniformName, m_animator.getFinalBoneMatrices()[i]);
+    if (m_animator.isAnimationPlaying()) {
+        for (unsigned int i = 0; i < m_animator.getFinalBoneMatrices().size(); ++i)
+        {
+            std::string uniformName = "finalBonesMatrices[" + std::to_string(i) + "]";
+            m_shader.setMat4(uniformName, m_animator.getFinalBoneMatrices()[i]);
+        }
     }
 
     model = glm::translate(model, getPosition());
@@ -78,7 +84,7 @@ void Void::update(float deltaTime)
 
     m_shader.setUniform1i("texture_diffuse1", 0);
 
-    m_model->draw();
+    m_model.draw();
 }
 
 void Void::setRotation(float angle, const glm::vec3 &axis)
@@ -96,5 +102,6 @@ void Void::rotate(bool rotateClockwise)
     m_rotate = true;
     m_rotateClockwise = rotateClockwise;
 }
+
 
 Void::~Void() = default;

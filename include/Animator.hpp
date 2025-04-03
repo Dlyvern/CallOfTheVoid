@@ -17,6 +17,8 @@ public:
 
 	void calculateBoneTransform(common::BoneInfo* boneInfo, const glm::mat4 &parentTransform, common::Animation* animation, float currentTime);
 
+	bool isAnimationPlaying() const;
+
 	std::vector<glm::mat4> getFinalBoneMatrices();
 
 private:
