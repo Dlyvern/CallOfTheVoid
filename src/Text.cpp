@@ -1,9 +1,10 @@
 #include "Text.hpp"
 #include <iostream>
 
-#include "../libraries/glad/glad.h"
+#include "glad.h"
 #include <GLFW/glfw3.h>
 #include <glm/ext/matrix_clip_space.hpp>
+#include "WindowsManager.hpp"
 
 Text::Text(const std::string& vertexPath, const std::string& fragmentPath)
 {
@@ -79,7 +80,7 @@ void Text::initShader(const std::string &vertexPath, const std::string &fragment
 {
     m_shader.load(vertexPath, fragmentPath);
 
-    const glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(1920), 0.0f, static_cast<float>(1080));
+    const glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(window::WindowsManager::instance().getCurrentWindow()->getWidth()), 0.0f, static_cast<float>(window::WindowsManager::instance().getCurrentWindow()->getHeight()));
     m_shader.bind();
     m_shader.setMat4("projection", projection);
 }

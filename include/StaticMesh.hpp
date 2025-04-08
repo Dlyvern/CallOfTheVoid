@@ -3,12 +3,12 @@
 
 #include "Common.hpp"
 
-class StaticMesh
+class StaticMesh : public common::Mesh
 {
 public:
     StaticMesh(const std::vector<common::Vertex>& vertices, const std::vector<unsigned int>& indices);
 
-    void draw();
+    void draw() override;
 private:
     unsigned int m_vao, m_vbo, m_ebo;
     uint32_t m_indicesCount{0};

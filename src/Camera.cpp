@@ -1,12 +1,11 @@
 #include "Camera.hpp"
 
 #include <iostream>
-#include <ostream>
-
 #include "Keyboard.hpp"
 #include "Mouse.hpp"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/quaternion_geometric.hpp>
+#include "WindowsManager.hpp"
 
 Camera::Camera()
 {
@@ -21,11 +20,11 @@ void Camera::update(float deltaTime)
         return;
     }
 
-    static float lastX = 1920.0f / 2.0f;
-    static float lastY = 1080.0f / 2.0f;
+    static float lastX = window::WindowsManager::instance().getCurrentWindow()->getWidth() / 2.0f;
+    static float lastY = window::WindowsManager::instance().getCurrentWindow()->getHeight() / 2.0f;
 
-    float xPosition = input::Mouse.getX();
-    float yPosition = input::Mouse.getY();
+    const float xPosition = input::Mouse.getX();
+    const float yPosition = input::Mouse.getY();
 
     if(m_firstClick)
     {

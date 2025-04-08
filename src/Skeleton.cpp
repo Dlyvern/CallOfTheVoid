@@ -20,12 +20,25 @@ void Skeleton::addBone(aiBone *bone)
 
         m_bonesInfo.push_back(boneInfo);
     }
-
 }
 
-unsigned int Skeleton::getBoneId(const std::string &boneName)
+unsigned int Skeleton::addBone(const common::BoneInfo &bone)
 {
-    return m_boneMap[boneName];
+    if (m_boneMap.contains(bone.name))
+        return m_bonesInfo[m_boneMap[bone.name]].id;
+
+    const unsigned int boneID = m_bonesInfo.size();
+    m_boneMap[bone.name] = boneID;
+    m_bonesInfo.push_back(bone);
+
+    return boneID;
+}
+
+int Skeleton::getBoneId(const std::string &boneName)
+{
+    if (m_boneMap.contains(boneName))
+        return m_boneMap[boneName];
+    return -1;
 }
 
 void Skeleton::printBonesHierarchy()
@@ -45,4 +58,12 @@ void Skeleton::printBonesHierarchy()
 std::vector<common::BoneInfo> & Skeleton::getBones()
 {
     return m_bonesInfo;
+}
+
+common::BoneInfo* Skeleton::getBone(int boneID)
+{
+    if (m_bonesInfo.size() < boneID)
+        return nullptr;
+
+    return &m_bonesInfo[boneID];
 }

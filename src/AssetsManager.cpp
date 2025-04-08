@@ -14,7 +14,6 @@
 #include "Skeleton.hpp"
 #include "Utilities.hpp"
 
-
 namespace
 {
     void extractVerticesAndIndices(aiMesh* mesh, std::vector<common::Vertex>& vertices, std::vector<unsigned int>& indices)
@@ -75,25 +74,6 @@ AssetsManager& AssetsManager::instance()
 {
     static AssetsManager assetsManager;
     return assetsManager;
-}
-
-
-void AssetsManager::initMinimum()
-{
-    auto texturesFolderPath = filesystem::getTexturesFolderPath();
-    auto modelsFolderPath = filesystem::getModelsFolderPath();
-
-    if(!std::filesystem::exists(texturesFolderPath))
-        throw std::runtime_error("AssetsManager::initMinimum(): Texture folder does not exist");
-
-    if(!std::filesystem::exists(modelsFolderPath))
-        throw std::runtime_error("AssetsManager::initMinimum(): Models folder does not exist");
-
-    const textures::Texture textureVoid(std::filesystem::path(texturesFolderPath.string() + "/void.png").string());
-    m_textures[textureVoid.getName()] = textureVoid;
-
-    const auto model = loadSkinnedModel(modelsFolderPath.string() + "/void.fbx");
-    m_skinnedModels[model.getName()] = model;
 }
 
 void AssetsManager::loadTextures()
@@ -299,45 +279,41 @@ void AssetsManager::preLoadTextures(const std::vector<std::string> &paths)
     }
 }
 
-void generateBoneHierarchy(common::BoneInfo* parent, const aiNode* src, Skeleton& skeleton)
+void generateBoneHierarchy(const int parentId, const aiNode* src, Skeleton& skeleton)
 {
     assert(src);
 
     std::string nodeName = src->mName.C_Str();
     // Clean up child name to avoid duplicates due to naming conventions
     size_t underscorePos = nodeName.find_first_of('_');
+    
     if (underscorePos != std::string::npos)
         nodeName = nodeName.substr(0, underscorePos);
 
-    int boneID = -1;
+    int boneID = skeleton.getBoneId(nodeName);
 
-    if (skeleton.getBoneMap().contains(nodeName))
-    {
-        boneID = skeleton.getBoneMap()[nodeName];
-    }
-    else
+    if (boneID == -1)
     {
         // If the bone isn't in the skeleton.getBoneMap(), create a new one to preserve hierarchy
         boneID = skeleton.getBones().size();
-        skeleton.getBoneMap()[nodeName] = boneID;
-        auto& ref = skeleton.getBones().emplace_back(common::BoneInfo{nodeName, boneID, glm::mat4(1.0f), glm::mat4(1.0f)});
-        ref.offsetMatrix = utilities::convertMatrixToGLMFormat(src->mTransformation);
+
+        common::BoneInfo newBone(nodeName, boneID, utilities::convertMatrixToGLMFormat(src->mTransformation), glm::mat4(1.0f));
+
+        boneID = skeleton.addBone(newBone);
     }
 
-    common::BoneInfo& currentBone = skeleton.getBones()[boneID];
+    common::BoneInfo* currentBone = skeleton.getBone(boneID);
     // currentBone.offsetMatrix = aiMatrix4x4ToGlm(&src->mTransformation);
 
-    if (parent && parent->id != boneID)
+    if (auto parent = skeleton.getBone(parentId); parent && parent->id != boneID)
     {
-        currentBone.parentId = parent->id;
+        currentBone->parentId = parent->id;
         parent->children.push_back(boneID);
-        parent->childrenInfo.push_back(&currentBone);
+        parent->childrenInfo.push_back(currentBone);
     }
 
     for (unsigned int i = 0; i < src->mNumChildren; i++)
-    {
-        generateBoneHierarchy(&currentBone, src->mChildren[i], skeleton);
-    }
+        generateBoneHierarchy(currentBone ? currentBone->id : -1, src->mChildren[i], skeleton);
 }
 
 std::vector<common::Animation> extractAnimations(const aiScene* scene)
@@ -421,6 +397,21 @@ std::vector<common::Animation> extractAnimations(const aiScene* scene)
     return animations;
 }
 
+void assignLocalBindTransforms(aiNode* node, Skeleton& skeleton)
+{
+    int boneId = skeleton.getBoneId(node->mName.C_Str());
+    if (boneId != -1)
+    {
+        auto& bone = skeleton.getBones()[boneId];
+        bone.localBindTransform = utilities::convertMatrixToGLMFormat(node->mTransformation);
+    }
+
+    for (unsigned int i = 0; i < node->mNumChildren; ++i)
+    {
+        assignLocalBindTransforms(node->mChildren[i], skeleton);
+    }
+}
+
 void extractSkeleton(aiMesh* mesh, const aiScene* scene, std::vector<common::Vertex>& vertices, Skeleton& skeleton)
 {
     for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++)
@@ -450,7 +441,8 @@ void extractSkeleton(aiMesh* mesh, const aiScene* scene, std::vector<common::Ver
         }
     }
 
-    generateBoneHierarchy(nullptr, scene->mRootNode, skeleton);
+    generateBoneHierarchy(-1, scene->mRootNode, skeleton);
+    assignLocalBindTransforms(scene->mRootNode, skeleton);
 
     for (auto& boneData : skeleton.getBones())
     {

@@ -20,7 +20,7 @@ public:
 private:
     void move(const glm::vec3& direction, float deltaTime);
     Camera* m_camera{nullptr};
-    float m_movementSpeed{2.0f};
+    float m_movementSpeed{3.0f};
 
     physx::PxController* m_controller{nullptr};
 

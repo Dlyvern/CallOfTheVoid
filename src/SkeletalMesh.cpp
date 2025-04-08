@@ -1,5 +1,5 @@
 #include "SkeletalMesh.hpp"
-#include "../libraries/glad/glad.h"
+#include "glad.h"
 
 SkeletalMesh::SkeletalMesh(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices) : m_vertices(vertices)
 {

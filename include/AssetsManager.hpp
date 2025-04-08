@@ -22,11 +22,11 @@ public:
 
     inline textures::Texture* getTextureByName(const std::string& name);
 
-    inline SkinnedModel getSkinnedModelByName(const std::string& name);
+    inline SkinnedModel* getSkinnedModelByName(const std::string& name);
 
-    inline StaticModel getStaticModelByName(const std::string& name);
+    inline StaticModel* getStaticModelByName(const std::string& name);
 
-    void initMinimum();
+    inline common::Model* getModelByName(const std::string& name);
 
     void loadTextures();
 
@@ -59,24 +59,36 @@ private:
     std::set<std::string> m_texturesPaths;
 };
 
-inline StaticModel AssetsManager::getStaticModelByName(const std::string& name)
+inline common::Model* AssetsManager::getModelByName(const std::string& name)
 {
     if (m_staticModels.contains(name))
-        return m_staticModels[name];
+        return &m_staticModels[name];
+    if (m_skinnedModels.contains(name))
+        return &m_skinnedModels[name];
+
+    std::cout << "AssetsManager::getModelByName(): '" << name << "' does not exist" << std::endl;
+
+    return nullptr;
+}
+
+inline StaticModel* AssetsManager::getStaticModelByName(const std::string& name)
+{
+    if (m_staticModels.contains(name))
+        return &m_staticModels[name];
 
     std::cout << "AssetsManager::getStaticModelByName(): '" << name << "' does not exist" << std::endl;
 
-    // return nullptr;
+    return nullptr;
 }
 
-inline SkinnedModel AssetsManager::getSkinnedModelByName(const std::string& name)
+inline SkinnedModel* AssetsManager::getSkinnedModelByName(const std::string& name)
 {
     if(auto it = m_skinnedModels.find(name); it != m_skinnedModels.cend())
-        return it->second;
+        return &it->second;
 
     std::cout << "AssetsManager::getSkinnedModelByName(): '" << name << "' does not exist" << std::endl;
     
-    // return nullptr;
+    return nullptr;
 }
 
 inline textures::Texture* AssetsManager::getTextureByName(const std::string& name)

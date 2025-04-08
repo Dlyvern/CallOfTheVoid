@@ -8,7 +8,7 @@ set(LIBRARIES_DIR libraries)
 set(PHYSX_ROOT "~/Libraries/PhysX/physx")
 
 file(GLOB_RECURSE PROJECT_HEADERS  ${INCLUDE_DIR}/*.h ${INCLUDE_DIR}/*.hpp)
-file(GLOB_RECURSE PROJECT_SOURCES ${SRC_DIR}/*.cpp ${SRC_DIR}/*.c)
+file(GLOB_RECURSE PROJECT_SOURCES ${SRC_DIR}/*.cpp)
 
 set(PHYSX_BUILD_TYPE "checked" CACHE STRING "The build type of PhysX")
 set_property(CACHE PHYSX_BUILD_TYPE PROPERTY STRINGS debug checked profile release)
@@ -20,6 +20,8 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 link_directories("${PHYSX_ROOT}/bin/linux.x86_64/${PHYSX_BUILD_TYPE}")
+
+link_directories(/usr/local/lib)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     message("Building snippet in debug with PhysX ${PHYSX_BUILD_TYPE} configuration")
@@ -53,6 +55,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC OpenGL::OpenGL ${GLUT_LIBRARY} ${FR
 #        PhysXGpu_64
 #        PVDRuntime_64
 #        PhysXVehicle2_static_64
+
+        glad
 #        PhysXCooking_static_64
 
         pthread

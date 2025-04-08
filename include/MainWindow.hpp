@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
-namespace Window
+namespace window
 {
     enum class WindowMode : uint8_t
     {
@@ -20,8 +20,8 @@ namespace Window
         WindowMode windowMode;
     };
 
-    const WindowData FULLSCREEN_WINDOW_DATA{1920, 1080, WindowMode::FULLSCREEN};
-    const WindowData WINDOWED_WINDOW_DATA{800, 600, WindowMode::WINDOWED};
+    constexpr WindowData FULLSCREEN_WINDOW_DATA{1920, 1080, WindowMode::FULLSCREEN};
+    constexpr WindowData WINDOWED_WINDOW_DATA{800, 600, WindowMode::WINDOWED};
 
     class MainWindow
     {
@@ -30,17 +30,19 @@ namespace Window
 
         bool isWindowOpened();
 
-        GLFWwindow* getOpenGLWindow() const;
+        [[nodiscard]] int getHeight() const;
+        [[nodiscard]] int getWidth() const;
+
+        [[nodiscard]] WindowData getWindowData() const;
+
+        [[nodiscard]] GLFWwindow* getOpenGLWindow() const;
 
     private:
         GLFWwindow* m_window{nullptr};
-        WindowData m_currentWindowData{Window::FULLSCREEN_WINDOW_DATA};
+        WindowData m_currentWindowData{window::FULLSCREEN_WINDOW_DATA};
         bool m_hasFocus;
         
         const std::string m_windowName{"CallOfTheVoid"};
-
-        static void frameBufferSizeCallback(GLFWwindow* Window, int width, int height);
-        static void windowFocusCallback(GLFWwindow* window, int isFocused);
     };
 }
 

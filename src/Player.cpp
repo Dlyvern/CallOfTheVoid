@@ -97,8 +97,6 @@ void Player::setPosition(const glm::vec3 &position)
     m_camera->setPosition(getPosition() + glm::vec3(0, HEIGHT, 0.0f));
 }
 
-
-
 // float velocity = m_movementSpeed * deltaTime;
 // auto position = this->getPosition();
 //

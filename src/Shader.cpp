@@ -1,7 +1,7 @@
 #include "Shader.hpp"
 #include "Filesystem.hpp"
 
-#include "../libraries/glad/glad.h"
+#include "glad.h"
 
 #include <iostream>
 

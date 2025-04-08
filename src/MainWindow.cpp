@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-Window::MainWindow::MainWindow()
+window::MainWindow::MainWindow()
 {
     m_window = glfwCreateWindow(m_currentWindowData.width, m_currentWindowData.height, m_windowName.c_str(), glfwGetPrimaryMonitor(), nullptr);
     
@@ -14,27 +14,30 @@ Window::MainWindow::MainWindow()
 
     glfwMakeContextCurrent(m_window);
 
-    glfwSetFramebufferSizeCallback(m_window, frameBufferSizeCallback);
-    glfwSetWindowFocusCallback(m_window, windowFocusCallback);
-
     glViewport(0, 0, m_currentWindowData.width, m_currentWindowData.height);
 }
 
-bool Window::MainWindow::isWindowOpened()
+bool window::MainWindow::isWindowOpened()
 {
     return !(glfwWindowShouldClose(m_window));
 }
 
-GLFWwindow *Window::MainWindow::getOpenGLWindow() const
+int window::MainWindow::getHeight() const
+{
+    return m_currentWindowData.height;
+}
+
+int window::MainWindow::getWidth() const
+{
+    return m_currentWindowData.width;
+}
+
+window::WindowData window::MainWindow::getWindowData() const
+{
+    return m_currentWindowData;
+}
+
+GLFWwindow *window::MainWindow::getOpenGLWindow() const
 {
     return m_window;
-}
-
-void Window::MainWindow::frameBufferSizeCallback(GLFWwindow *Window, int width, int height)
-{
-}
-
-void Window::MainWindow::windowFocusCallback(GLFWwindow *window, int isFocused)
-{
-    // m_hasFocus = isFocused;
 }

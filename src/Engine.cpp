@@ -1,4 +1,4 @@
-#include "../libraries/glad/glad.h"
+#include "glad.h"
 
 #include "Engine.hpp"
 
@@ -13,20 +13,18 @@
 
 #include "CameraManager.hpp"
 #include "Physics.hpp"
-
-//TODO: MAKE CURRENT SCENE MORE USER FRIENDLY
-//Current level/scene system or something like that
+#include "WindowsManager.hpp"
 
 void Engine::run()
 {
     init();
 
-    GLfloat lastFrame = 0.0f;
-    GLfloat deltaTime = 0.0f;
+    float lastFrame = 0.0f;
+    float deltaTime = 0.0f;
 
     while(m_mainWindow->isWindowOpened())
     {
-        GLfloat currentFrame = glfwGetTime();
+        float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -70,15 +68,23 @@ void Engine::init()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
 
-    m_mainWindow = std::make_shared<Window::MainWindow>();
+    window::WindowsManager::instance().setCurrentWindow(window::WindowsManager::instance().createWindow());
+    CameraManager::getInstance().setActiveCamera(CameraManager::getInstance().createCamera());
+    physics::PhysicsController::instance().init();
 
+    m_mainWindow = window::WindowsManager::instance().getCurrentWindow();
     if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
         throw std::runtime_error("Engine::init(): Failed to initialize GLAD");
 
     glfwSetKeyCallback(m_mainWindow->getOpenGLWindow(), input::KeysManager::keyCallback);
     glfwSetCursorPosCallback(m_mainWindow->getOpenGLWindow(), input::MouseManager::mouseCallback);
-    
-    glfwSetInputMode(m_mainWindow->getOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(m_mainWindow->getOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
+    // #define GLFW_CURSOR_NORMAL          0x00034001
+    // #define GLFW_CURSOR_HIDDEN          0x00034002
+    // #define GLFW_CURSOR_DISABLED        0x00034003
+    // #define GLFW_CURSOR_CAPTURED        0x00034004
+
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -88,23 +94,15 @@ void Engine::init()
     AssetsManager::instance().preLoadPathsForAllModels();
     AssetsManager::instance().preLoadPathsForAllTextures();
 
-    physics::PhysicsController::instance().init();
-
     m_allScenes.emplace_back(std::make_shared<LoadingScene>());
     m_allScenes.emplace_back(std::make_shared<DefaultScene>());
 
     m_currentScene = m_allScenes.begin();
 
-    // AssetsManager::instance().initMinimum();
-
-    // AssetsManager::instance().loadTextures();
-    // AssetsManager::instance().loadModels();
-    CameraManager::getInstance().setActiveCamera(CameraManager::getInstance().createCamera());
-
     (*m_currentScene)->create();
 }
 
-void Engine::glCheckError(const char *file, int line)
+void Engine::glCheckError(const char *file, const int line)
 {
     GLenum errorCode;
     
@@ -121,6 +119,7 @@ void Engine::glCheckError(const char *file, int line)
             case GL_STACK_UNDERFLOW:               error = "STACK_UNDERFLOW"; break;
             case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
             case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+            default:                               error = "UNDEFINED_ERROR"; break;
         }
 
         std::cout << error << " | " << file << " (" << line << ")" << std::endl;

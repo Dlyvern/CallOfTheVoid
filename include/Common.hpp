@@ -1,10 +1,15 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 
+#include <PxRigidDynamic.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <string>
 #include <vector>
+
+namespace physx {
+    class PxD6Joint;
+}
 
 namespace common
 {
@@ -26,15 +31,39 @@ namespace common
         glm::vec4 weight = glm::vec4(0);
     };
 
+    struct RagdollBone {
+        physx::PxRigidDynamic* actor = nullptr;
+        physx::PxD6Joint* joint = nullptr;
+        int boneId = -1;
+        glm::mat4 bindTransform;
+    };
+
     struct BoneInfo
     {
         std::string name;
         int id;
         glm::mat4 offsetMatrix;
         glm::mat4 finalTransformation;
+        glm::mat4 localBindTransform{1.0f};
         std::vector<int> children;
         std::vector<BoneInfo*> childrenInfo;
         int parentId{-1};
+    };
+
+    class Mesh
+    {
+    public:
+        virtual void draw() = 0;
+
+        virtual ~Mesh() = default;
+    };
+
+    class Model
+    {
+    public:
+        virtual ~Model() = default;
+
+        virtual void draw() = 0;
     };
 
     struct BoneDebug {

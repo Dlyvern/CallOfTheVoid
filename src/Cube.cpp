@@ -6,9 +6,8 @@
 
 #include "AssetsManager.hpp"
 #include "Filesystem.hpp"
-
 #include "CameraManager.hpp"
-#include "Light.hpp"
+#include "WindowsManager.hpp"
 #include "LightManager.hpp"
 
 geometries::Cube::Cube(const std::string &name) : GameObject(name)
@@ -28,7 +27,7 @@ void geometries::Cube::setTexture(textures::Texture *texture)
     m_texture = texture;
 }
 
-void geometries::Cube::setModel(const StaticModel& model)
+void geometries::Cube::setModel(StaticModel* model)
 {
     m_model = model;
 }
@@ -53,20 +52,20 @@ void geometries::Cube::update(float deltaTime)
 
     if (m_rigidBody)
     {
-        physx::PxTransform transform = m_rigidBody->getGlobalPose();
+        const physx::PxTransform transform = m_rigidBody->getGlobalPose();
         model = glm::translate(model, glm::vec3(transform.p.x, transform.p.y, transform.p.z));
     }
     else
         model = glm::translate(model, getPosition());
 
+    const auto* currentWindow = window::WindowsManager::instance().getCurrentWindow();
+    const float aspect = static_cast<float>(currentWindow->getWidth()) / currentWindow->getHeight();
+
     model = glm::scale(model, getScale());
-    model = glm::rotate(model, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f)); // Вращение вокруг оси X
-    model = glm::rotate(model, glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)); // Вращение вокруг оси Y
-    model = glm::rotate(model, glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f)); // Вращение вокруг оси Z
-    projection = glm::perspective(glm::radians(45.0f), (float)1920 / 1080, 0.1f, 100.0f);
-
-
-    lighting::Light light;
+    model = glm::rotate(model, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(m_rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 
     m_shader.setMat4("model", model);
     m_shader.setMat4("view", CameraManager::getInstance().getActiveCamera()->getViewMatrix());
@@ -74,30 +73,26 @@ void geometries::Cube::update(float deltaTime)
     m_shader.setVec3("viewPos", CameraManager::getInstance().getActiveCamera()->getPosition());
 
     LightManager::instance().sendLightsIntoShader(m_shader);
-    // m_shader.setVec3("light.position", light.m_position);
-    // m_shader.setVec3("light.color", light.m_color);
-    // m_shader.setFloat("light.strength", light.m_strength);
-    // m_shader.setFloat("light.radius", light.m_radius);
 
     m_texture->bind(0);
 
     m_shader.setUniform1i("tex0", 0);
 
-    m_model.draw();
+    m_model->draw();
 }
 
-void geometries::Cube::rotate(bool rotateClockwise)
+void geometries::Cube::rotate(const bool rotateClockwise)
 {
     m_rotate = true;
     m_rotateClockwise = rotateClockwise;
 }
 
-void geometries::Cube::setRigidBody(physx::PxRigidActor *rigidBody)
+void geometries::Cube::setRigidBody(physx::PxRigidActor* rigidBody)
 {
     m_rigidBody = rigidBody;
 }
 
-void geometries::Cube::setRotation(float angle, const glm::vec3& axis)
+void geometries::Cube::setRotation(const float angle, const glm::vec3& axis)
 {
     if (axis == glm::vec3(1.0f, 0.0f, 0.0f))
         m_rotation.x += angle;

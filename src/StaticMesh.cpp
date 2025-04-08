@@ -1,5 +1,5 @@
 #include "StaticMesh.hpp"
-#include "../libraries/glad/glad.h"
+#include "glad.h"
 
 StaticMesh::StaticMesh(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices)
 {

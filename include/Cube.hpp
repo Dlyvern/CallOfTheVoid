@@ -18,7 +18,7 @@ namespace geometries
         explicit Cube(const std::string& name);
         void create();
         void setTexture(textures::Texture* texture);
-        void setModel(const StaticModel& model);
+        void setModel(StaticModel* model);
         void update(float deltaTime) override;
         void setRotation(float angle, const glm::vec3& axis);
         void rotate(bool rotateClockwise);
@@ -29,7 +29,7 @@ namespace geometries
         physx::PxRigidActor* m_rigidBody{nullptr};
 
         textures::Texture* m_texture{nullptr};
-        StaticModel m_model;
+        StaticModel* m_model{nullptr};
         Shader m_shader;
         glm::vec3 m_rotation{0.0f};
         float m_rotationSpeed{50.0f};

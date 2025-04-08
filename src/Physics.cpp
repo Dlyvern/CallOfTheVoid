@@ -57,6 +57,11 @@ physx::PxMaterial* physics::PhysicsController::getDefaultMaterial()
     return m_defaultMaterial;
 }
 
+physx::PxScene* physics::PhysicsController::getScene()
+{
+    return m_scene;
+}
+
 physx::PxRigidDynamic* physics::PhysicsController::addDynamicActor(std::shared_ptr<GameObject> actor)
 {
    physx:: PxMaterial* material = getDefaultMaterial();

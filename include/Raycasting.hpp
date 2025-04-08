@@ -5,6 +5,8 @@
 #include "Cube.hpp"
 #include "Collision.hpp"
 
+#include <Physics.hpp>
+
 namespace physics
 {
     namespace raycasting
@@ -14,44 +16,20 @@ namespace physics
         public:
             glm::vec3 point;
             float distance;
+            physx::PxRaycastBuffer hit;
             std::vector<std::shared_ptr<GameObject>> objects;
         };
 
         struct Ray
         {
         public:
-            glm::vec3 origin;
-            glm::vec3 direction;
+            glm::vec3 origin{0.0f};
+            glm::vec3 direction{0.0f, 0.0f, 1.0f};
+            float maxDistance{0.1f};
             const std::vector<std::shared_ptr<GameObject>>* objects;
         };
 
-        inline bool shoot(const Ray& ray, RaycastingResult& result)
-        {
-            float closestT = std::numeric_limits<float>::max();
-
-            for (const auto& gameObject : *ray.objects)
-            {
-                //TODO FIX THIS LATER
-                if (gameObject->getName() == "player")
-                    continue;
-
-                float tNear, tFar;
-
-                if (physics::collision::doRayIntersectAABB(ray.origin, ray.direction, gameObject->getBoundingBox().min, gameObject->getBoundingBox().max, tNear, tFar))
-                {
-                    if (tNear < closestT)
-                    {
-                        //Some weird shit
-                        // closestT = tNear;
-
-                        result.objects.push_back(gameObject);
-                        std::cout << "Hit game object with " << gameObject->getName() << " name" << std::endl;
-                    }
-                }
-            }
-
-            return !result.objects.empty();
-        }
+        bool shoot(const Ray& ray, RaycastingResult& result);
     }; //namespace raycasting
 }; //namespace physics
 

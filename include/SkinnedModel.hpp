@@ -8,9 +8,7 @@
 
 #include "Skeleton.hpp"
 
-#include "StaticMesh.hpp"
-
-class SkinnedModel
+class SkinnedModel : public common::Model
 {
 public:
     SkinnedModel();
@@ -27,7 +25,7 @@ public:
 
     Skeleton& getSkeleton();
 
-    void draw();
+    void draw() override;
 private:
     std::vector<SkeletalMesh> m_meshes;
     std::string m_name{"undefined"};
