@@ -28,10 +28,6 @@ public:
 
     inline common::Model* getModelByName(const std::string& name);
 
-    void loadTextures();
-
-    void loadModels();
-
     void preLoadPathsForAllModels();
 
     void preLoadPathsForAllTextures();
@@ -40,6 +36,7 @@ public:
 
     void preLoadTextures(const std::vector<std::string>& paths);
 
+    std::vector<common::Animation> extractAnimationsFromModel(const std::string& pathToModel);
 
     //TODO Make private
     SkinnedModel loadSkinnedModel(const std::string& path);

@@ -17,6 +17,7 @@ public:
     std::unordered_map<std::string, unsigned int>& getBoneMap() {return m_boneMap;}
     std::vector<common::BoneInfo>& getBones();
 
+    common::BoneInfo* getBone(const std::string& boneName);
     common::BoneInfo* getBone(int boneID);
 
     void calculateBindPoseTransforms(std::vector<glm::mat4>& outMatrices)

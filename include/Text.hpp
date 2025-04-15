@@ -29,6 +29,10 @@ public:
     void setScale(float scale);
     void setColor(const glm::vec3& color);
 
+
+    float getX() const;
+    float getY() const;
+
     void draw();
 
 private:

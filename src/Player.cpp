@@ -1,7 +1,14 @@
 #include "Player.hpp"
+
+#include <iostream>
+
 #include "Keyboard.hpp"
 #include "CameraManager.hpp"
 #include "Cube.hpp"
+#include "DebugTextHolder.hpp"
+#include "Raycasting.hpp"
+
+unsigned int raycastTextIndex{0};
 
 struct UserCollision final : physx::PxUserControllerHitReport
 {
@@ -19,6 +26,8 @@ struct UserCollision final : physx::PxUserControllerHitReport
 Player::Player(const std::string &name) : GameObject(name) 
 {
     m_camera = CameraManager::getInstance().getActiveCamera();
+
+    setLayerMask(common::LayerMask::PLAYER);
 }
 
 void Player::init(const glm::vec3 &position)
@@ -38,7 +47,9 @@ void Player::init(const glm::vec3 &position)
 
     m_controller = physics::PhysicsController::instance().getControllerManager()->createController(*desc);
 
-    m_camera->setPosition(position + glm::vec3(0.0f, HEIGHT, 0.0f));
+    Player::setPosition(position);
+
+    raycastTextIndex = debug::DebugTextHolder::instance().addText("Raycast result: false");
 }
 
 void Player::move(const glm::vec3 &direction, float deltaTime)
@@ -46,6 +57,28 @@ void Player::move(const glm::vec3 &direction, float deltaTime)
     physx::PxVec3 displacement(direction.x, direction.y, direction.z);
     physx::PxControllerFilters filters;
     m_controller->move(displacement * m_movementSpeed * deltaTime, 0.001f, deltaTime, filters);
+}
+
+void Player::interact()
+{
+    physics::raycasting::Ray ray;
+
+    physics::raycasting::RaycastingResult result;
+
+    ray.maxDistance = 2.0f;
+    ray.direction = m_camera->getForward();
+    ray.origin = m_camera->getPosition();
+
+    if (physics::raycasting::shoot(ray, result))
+    {
+        const auto* actor = result.hit.block.actor;
+
+        auto* gameObject = static_cast<GameObject*>(actor->userData);
+
+        std::string actorName = gameObject ? gameObject->getName() : "Unnamed";
+
+        debug::DebugTextHolder::instance().changeText(raycastTextIndex, std::string("Raycast result: true") + " Name: " + actorName);
+    }
 }
 
 void Player::update(float deltaTime)
@@ -70,6 +103,9 @@ void Player::update(float deltaTime)
 
     if (input::Keyboard.isKeyPressed(input::KeyCode::D))
         moveDir += glm::normalize(glm::cross(forward, m_camera->getUp()));
+
+    if (input::Keyboard.isKeyPressed(input::KeyCode::E))
+        interact();
 
     if (glm::length(moveDir) > 0.0f)
         moveDir = glm::normalize(moveDir) * m_movementSpeed * deltaTime;
@@ -112,4 +148,4 @@ void Player::setPosition(const glm::vec3 &position)
 // if(input::Keyboard.isKeyPressed(input::KeyCode::D))
 //     position += velocity * glm::normalize(glm::cross(m_camera->getForward(), m_camera->getUp()));
 //
-// this->setPosition(position);
+// Player::setPosition(position);

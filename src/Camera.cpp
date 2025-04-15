@@ -6,10 +6,15 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/quaternion_geometric.hpp>
 #include "WindowsManager.hpp"
+#include "DebugTextHolder.hpp"
+
+unsigned int textIndex{0};
 
 Camera::Camera()
 {
     updateCameraVectors();
+
+    textIndex = debug::DebugTextHolder::instance().addText("Camera position " + std::to_string(m_position.x) + " " + std::to_string(m_position.y) + " " + std::to_string(m_position.z));
 }
 
 void Camera::update(float deltaTime)
@@ -95,6 +100,9 @@ float Camera::getPitch() const
 void Camera::setPosition(const glm::vec3 &position)
 {
     m_position = position;
+
+    debug::DebugTextHolder::instance().changeText(textIndex, "Camera position " + std::to_string(m_position.x) + " " + std::to_string(m_position.y) + " " + std::to_string(m_position.z));
+
 }
 
 void Camera::setCameraMode(const CameraMode &mode)

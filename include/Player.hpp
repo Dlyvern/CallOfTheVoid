@@ -3,7 +3,6 @@
 
 #include "GameObject.hpp"
 #include "Camera.hpp"
-#include <memory>
 #include "Physics.hpp"
 
 class Player final : public GameObject
@@ -19,6 +18,8 @@ public:
 
 private:
     void move(const glm::vec3& direction, float deltaTime);
+    void interact();
+
     Camera* m_camera{nullptr};
     float m_movementSpeed{3.0f};
 

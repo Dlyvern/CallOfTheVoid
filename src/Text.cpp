@@ -192,3 +192,13 @@ void Text::setColor(const glm::vec3 &color)
 {
     m_color = color;
 }
+
+float Text::getX() const
+{
+    return m_x;
+}
+
+float Text::getY() const
+{
+    return m_y;
+}

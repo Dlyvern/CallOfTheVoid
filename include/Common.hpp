@@ -13,11 +13,13 @@ namespace physx {
 
 namespace common
 {
-    enum LayerMask
+    //Maybe 32 is way too big
+    enum LayerMask : uint32_t
     {
-        DEFAULT,
-        GROUND,
-        PLAYER,
+        DEFAULT = 1 << 0,
+        GROUND = 1 << 1,
+        PLAYER = 1 << 2,
+        INTERACTABLE = 1 << 3,
     };
 
     struct Vertex

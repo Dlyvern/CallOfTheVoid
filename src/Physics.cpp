@@ -70,8 +70,15 @@ physx::PxRigidDynamic* physics::PhysicsController::addDynamicActor(std::shared_p
     physx::PxRigidDynamic* box = m_physics->createRigidDynamic(transform);
 
     physx::PxShape* shape = m_physics->createShape(physx::PxBoxGeometry(actor->getScale().x * 0.5f, actor->getScale().y * 0.5f, actor->getScale().z * 0.5f), *material);
-    // shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+    shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+    shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+    physx::PxFilterData filterData;
+    filterData.word0 = actor->getLayerMask();
+    shape->setSimulationFilterData(filterData);
+    shape->setQueryFilterData(filterData);
+
     box->attachShape(*shape);
+    box->userData = actor.get();
 
     physx::PxRigidBodyExt::updateMassAndInertia(*box, 10.0f);
 
@@ -87,8 +94,25 @@ physx::PxRigidStatic * physics::PhysicsController::addStaticActor(std::shared_pt
     physx::PxRigidStatic* staticBody = m_physics->createRigidStatic(transform);
 
     physx::PxShape* shape = m_physics->createShape(physx::PxBoxGeometry(actor->getScale().x * 0.5f, actor->getScale().y * 0.5f, actor->getScale().z * 0.5f),  *material);
+    shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true); // Enable raycasting
+    shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);   // Optional if you want physics
+    physx::PxFilterData filterData;
+    filterData.word0 = actor->getLayerMask();
+    shape->setSimulationFilterData(filterData);
+    shape->setQueryFilterData(filterData);
+
     staticBody->attachShape(*shape);
+    staticBody->userData = actor.get();
 
     m_scene->addActor(*staticBody);
+
     return staticBody;
 }
+
+// physx::PxFilterData filterData;
+// filterData.word0 = actor->getLayerMask();     // The layer this object belongs to
+// filterData.word1 = common::LayerMask::DEFAULT | common::LayerMask::GROUND;  // What this object can collide/interact with
+//
+// shape->setSimulationFilterData(filterData);
+// shape->setQueryFilterData(filterData);
+

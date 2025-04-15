@@ -12,7 +12,7 @@
 
 geometries::Cube::Cube(const std::string &name) : GameObject(name)
 {
-
+    setLayerMask(common::LayerMask::DEFAULT);
 }
 
 void geometries::Cube::create()
@@ -92,6 +92,11 @@ void geometries::Cube::setRigidBody(physx::PxRigidActor* rigidBody)
     m_rigidBody = rigidBody;
 }
 
+physx::PxRigidActor* geometries::Cube::getRigidBody()
+{
+    return m_rigidBody;
+}
+
 void geometries::Cube::setRotation(const float angle, const glm::vec3& axis)
 {
     if (axis == glm::vec3(1.0f, 0.0f, 0.0f))
@@ -100,4 +105,16 @@ void geometries::Cube::setRotation(const float angle, const glm::vec3& axis)
         m_rotation.y += angle;
     else if (axis == glm::vec3(0.0f, 0.0f, 1.0f))
         m_rotation.z += angle;
+
+    // if (m_rigidBody)
+    // {
+    //     physx::PxVec3 pxAxis(axis.x, axis.y, axis.z);
+    //     float angleRadians = glm::radians(angle);
+    //
+    //     physx::PxQuat rotationQuat(angleRadians, pxAxis);
+    //     physx::PxVec3 position = m_rigidBody->getGlobalPose().p;
+    //
+    //     physx::PxTransform newTransform(position, rotationQuat);
+    //     m_rigidBody->setGlobalPose(newTransform);
+    // }
 }

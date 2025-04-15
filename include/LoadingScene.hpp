@@ -3,7 +3,6 @@
 
 #include "Scene.hpp"
 #include <future>
-
 #include "Text.hpp"
 
 class LoadingScene final : public Scene
@@ -20,10 +19,9 @@ public:
     ~LoadingScene() override;
 
 private:
-    void loadAllAssets();
+    static void loadAllAssets();
     std::future<void> m_future;
     bool m_endScene{false};
-
     Text m_text;
 };
 

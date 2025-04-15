@@ -12,7 +12,7 @@
              },
              "scale":
              {
-                 "x": 20.0,
+                 "x": 22.0,
                  "y": 0.1,
                  "z": 20.0
              },
@@ -27,13 +27,13 @@
          },
         {
             "name": "wall_1",
-            "textureName": "wallParking_d.png",
+            "textureName": "default_texture.png",
             "modelName": "cube.obj",
             "position":
             {
-                "x": 0.0,
+                "x": 8.50,
                 "y": 1.0,
-                "z": 1.0
+                "z": -9.95
             },
             "scale":
             {
@@ -48,8 +48,342 @@
                 "z": 0.0,
                 "angle": 90
             }
+        },
+        {
+            "name": "wall_2",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": 8.50,
+                "y": 1.0,
+                "z": 9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_3",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": 5.50,
+                "y": 1.0,
+                "z": 9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_4",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": 2.50,
+                "y": 1.0,
+                "z": 9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_5",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": -0.50,
+                "y": 1.0,
+                "z": 9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_6",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": -3.50,
+                "y": 1.0,
+                "z": 9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_7",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": -6.50,
+                "y": 1.0,
+                "z": 9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_8",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": -9.50,
+                "y": 1.0,
+                "z": 9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_9",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": 5.50,
+                "y": 1.0,
+                "z": -9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_10",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": 2.50,
+                "y": 1.0,
+                "z": -9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_11",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": -0.50,
+                "y": 1.0,
+                "z": -9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_12",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": -3.50,
+                "y": 1.0,
+                "z": -9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_13",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": -6.50,
+                "y": 1.0,
+                "z": -9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_14",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": -9.50,
+                "y": 1.0,
+                "z": -9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 90
+            }
+        },
+        {
+            "name": "wall_15",
+            "textureName": "default_texture.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": -10.0,
+                "y": 1.0,
+                "z": 9.95
+            },
+            "scale":
+            {
+                "x": 3.0,
+                "y": 3.0,
+                "z": 0.1
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 1.0,
+                "angle": 180
+            }
         }
-
-
     ]
 }

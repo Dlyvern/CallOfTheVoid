@@ -60,6 +60,16 @@ std::vector<common::BoneInfo> & Skeleton::getBones()
     return m_bonesInfo;
 }
 
+common::BoneInfo* Skeleton::getBone(const std::string &boneName)
+{
+    int id = getBoneId(boneName);
+
+    if (id == -1)
+        return  nullptr;
+
+    return &m_bonesInfo[id];
+}
+
 common::BoneInfo* Skeleton::getBone(int boneID)
 {
     if (m_bonesInfo.size() < boneID)

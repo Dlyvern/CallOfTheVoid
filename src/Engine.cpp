@@ -12,6 +12,7 @@
 #include "Mouse.hpp"
 
 #include "CameraManager.hpp"
+#include "DebugTextHolder.hpp"
 #include "Physics.hpp"
 #include "WindowsManager.hpp"
 
@@ -29,7 +30,7 @@ void Engine::run()
         lastFrame = currentFrame;
 
         // glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -43,6 +44,7 @@ void Engine::run()
         {
             CameraManager::getInstance().getActiveCamera()->update(deltaTime);
             physics::PhysicsController::instance().simulate(deltaTime);
+            debug::DebugTextHolder::instance().update(deltaTime);
             (*m_currentScene)->update(deltaTime);
         }
 
@@ -69,12 +71,14 @@ void Engine::init()
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
 
     window::WindowsManager::instance().setCurrentWindow(window::WindowsManager::instance().createWindow());
+
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
+        throw std::runtime_error("Engine::init(): Failed to initialize GLAD");
+
     CameraManager::getInstance().setActiveCamera(CameraManager::getInstance().createCamera());
     physics::PhysicsController::instance().init();
 
     m_mainWindow = window::WindowsManager::instance().getCurrentWindow();
-    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
-        throw std::runtime_error("Engine::init(): Failed to initialize GLAD");
 
     glfwSetKeyCallback(m_mainWindow->getOpenGLWindow(), input::KeysManager::keyCallback);
     glfwSetCursorPosCallback(m_mainWindow->getOpenGLWindow(), input::MouseManager::mouseCallback);
@@ -122,6 +126,10 @@ void Engine::glCheckError(const char *file, const int line)
             default:                               error = "UNDEFINED_ERROR"; break;
         }
 
-        std::cout << error << " | " << file << " (" << line << ")" << std::endl;
+        const std::string errorText = error + " | " + file + " (" + std::to_string(line) + ")";
+
+        std::cout << errorText << std::endl;
+
+        debug::DebugTextHolder::instance().addText(errorText);
     }
 }

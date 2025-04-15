@@ -23,6 +23,7 @@ namespace geometries
         void setRotation(float angle, const glm::vec3& axis);
         void rotate(bool rotateClockwise);
         void setRigidBody(physx::PxRigidActor* rigidBody);
+        physx::PxRigidActor* getRigidBody();
     private:
         bool m_rotate{false};
 

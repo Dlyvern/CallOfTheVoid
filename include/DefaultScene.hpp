@@ -2,13 +2,8 @@
 #define DEFAULT_SCENE_HPP
 
 #include "Scene.hpp"
-
-#include "Cube.hpp"
 #include "Player.hpp"
-#include "Void.hpp"
-
-
-
+#include "Skybox.hpp"
 
 class DefaultScene final : public Scene
 {
@@ -25,9 +20,8 @@ public:
 
 private:
     std::vector<std::shared_ptr<GameObject>> m_gameObjects;
-    std::shared_ptr<Void> m_man;
     std::shared_ptr<Player> m_player;
+    Skybox m_skybox;
 };
-
 
 #endif //DEFAULT_SCENE_HPP
