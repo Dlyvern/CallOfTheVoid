@@ -8,7 +8,7 @@
 #include "SkinnedModel.hpp"
 
 #include "Animator.hpp"
-
+#include "Material.hpp"
 
 class Void : public GameObject
 {
@@ -16,26 +16,26 @@ public:
     explicit Void(const std::string& name);
 
     void create();
-    void setTexture(textures::Texture* texture);
     void setModel(SkinnedModel* model);
     void update(float deltaTime) override;
     void setRotation(float angle, const glm::vec3& axis);
     void rotate(bool rotateClockwise);
     void playAnimation();
 
+    void setMaterial(const Material& material);
+
     ~Void() override;
 private:
     bool m_rotate{false};
 
-    // AnimatedGameObject* m_animatedGameObject;
-
+    Material m_material;
     common::Animation* m_animation{nullptr};
 
     Animator m_animator;
 
-    textures::Texture* m_texture{nullptr};
     SkinnedModel* m_model{nullptr};
     Shader m_shader;
+    Shader m_shadowShader;
     glm::vec3 m_rotation{0.0f};
     float m_rotationSpeed{50.0f};
     bool m_rotateClockwise{true};

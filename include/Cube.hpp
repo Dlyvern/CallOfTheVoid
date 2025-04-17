@@ -10,6 +10,9 @@
 #include "StaticModel.hpp"
 #include "Physics.hpp"
 
+
+#include "Material.hpp"
+
 namespace geometries
 {
     class Cube : public GameObject
@@ -17,26 +20,29 @@ namespace geometries
     public:
         explicit Cube(const std::string& name);
         void create();
-        void setTexture(textures::Texture* texture);
         void setModel(StaticModel* model);
         void update(float deltaTime) override;
         void setRotation(float angle, const glm::vec3& axis);
         void rotate(bool rotateClockwise);
         void setRigidBody(physx::PxRigidActor* rigidBody);
-        physx::PxRigidActor* getRigidBody();
+        physx::PxRigidActor* getRigidBody() const;
+
+        void updateShadowMap(Shader& shader);
+        void setMaterial(const Material& material);
     private:
         bool m_rotate{false};
 
-        physx::PxRigidActor* m_rigidBody{nullptr};
+        glm::mat4 computeModelMatrix() const;
 
-        textures::Texture* m_texture{nullptr};
+        Material m_material;
+
+        physx::PxRigidActor* m_rigidBody{nullptr};
         StaticModel* m_model{nullptr};
         Shader m_shader;
         glm::vec3 m_rotation{0.0f};
         float m_rotationSpeed{50.0f};
         bool m_rotateClockwise{true};
     };
-
 } //namespace geometries
 
 #endif //CUBE_HPP

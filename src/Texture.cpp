@@ -87,6 +87,11 @@ void textures::Texture::bind(unsigned int slot)
     glBindTexture(GL_TEXTURE_2D, m_id);
 }
 
+textures::Texture::~Texture()
+{
+    // glDeleteTextures(1, &m_id);
+}
+
 GLuint textures::Texture::getId() const
 {
     return m_id;

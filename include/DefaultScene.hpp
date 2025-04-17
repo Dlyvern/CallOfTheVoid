@@ -22,6 +22,8 @@ private:
     std::vector<std::shared_ptr<GameObject>> m_gameObjects;
     std::shared_ptr<Player> m_player;
     Skybox m_skybox;
+    Shader m_shadowShader;
+    Shader m_shadowDebugShader;
 };
 
 #endif //DEFAULT_SCENE_HPP

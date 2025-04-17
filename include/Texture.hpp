@@ -14,6 +14,20 @@ namespace textures
         unsigned char* data;
     };
 
+    enum class TextureType
+    {
+        Diffuse,
+        Specular,
+        Normal,
+        Metallic,
+        Roughness,
+        AO,
+        Emissive,
+        Height,
+        Glossiness,
+        Opacity
+    };
+
     class Texture
     {
     public:
@@ -29,7 +43,9 @@ namespace textures
 
         void bake();
 
-        void bind(unsigned int slot);
+        void bind(unsigned int slot = 0);
+
+        ~Texture();
 
     private:
         unsigned int m_id;

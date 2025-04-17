@@ -44,7 +44,7 @@ void Engine::run()
         {
             CameraManager::getInstance().getActiveCamera()->update(deltaTime);
             physics::PhysicsController::instance().simulate(deltaTime);
-            debug::DebugTextHolder::instance().update(deltaTime);
+            // debug::DebugTextHolder::instance().update(deltaTime);
             (*m_currentScene)->update(deltaTime);
         }
 
@@ -82,7 +82,7 @@ void Engine::init()
 
     glfwSetKeyCallback(m_mainWindow->getOpenGLWindow(), input::KeysManager::keyCallback);
     glfwSetCursorPosCallback(m_mainWindow->getOpenGLWindow(), input::MouseManager::mouseCallback);
-    glfwSetInputMode(m_mainWindow->getOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    glfwSetInputMode(m_mainWindow->getOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // #define GLFW_CURSOR_NORMAL          0x00034001
     // #define GLFW_CURSOR_HIDDEN          0x00034002

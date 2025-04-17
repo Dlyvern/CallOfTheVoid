@@ -21,8 +21,6 @@ public:
     float radius{2.0f};
     LightType type{LightType::POINT};
     glm::vec3 direction;
-    float cutoff;
-    float outerCutoff;
 };
 } //namespace lighting
 

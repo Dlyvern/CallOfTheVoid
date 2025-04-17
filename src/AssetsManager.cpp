@@ -347,8 +347,8 @@ std::vector<common::Animation> AssetsManager::extractAnimationsFromModel(const s
 
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        std::cerr << "AssetsManager::extractAnimationsFromModel(): ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
-        throw std::runtime_error("Could not load model " + pathToModel);
+        std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
+        return {};
     }
 
     return extractAnimations(scene);
@@ -525,3 +525,12 @@ SkinnedModel AssetsManager::loadSkinnedModel(const std::string &path)
 }
 
 AssetsManager::~AssetsManager() = default;
+
+//
+// if (mat->GetTextureCount(type) > 0) {
+//     aiString str;
+//     mat->GetTexture(type, 0, &str);
+//     std::string fullPath = directory + "/" + str.C_Str();
+//     auto texture = std::make_shared<Texture>(fullPath);
+//     material->setTexture(myType, texture);
+// }

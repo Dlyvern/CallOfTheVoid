@@ -11,6 +11,10 @@ void LightManager::addLight(const lighting::Light &light)
     m_lights.push_back(light);
 }
 
+std::vector<lighting::Light> LightManager::getLights()
+{
+    return m_lights;
+}
 void LightManager::sendLightsIntoShader(Shader &shader)
 {
     auto light = m_lights.begin();
@@ -18,6 +22,7 @@ void LightManager::sendLightsIntoShader(Shader &shader)
     shader.setVec3("light.color", light->color);
     shader.setFloat("light.strength", light->strength);
     shader.setFloat("light.radius", light->radius);
+    shader.setVec3("light.direction", light->direction);
 
     // for (size_t i = 0; i < m_lights.size(); ++i)
     // {
@@ -31,8 +36,17 @@ void LightManager::sendLightsIntoShader(Shader &shader)
     //     if (light.type == lighting::LightType::SPOT)
     //     {
     //         shader.setVec3("lights[" + std::to_string(i) + "].direction", light.direction);
-    //         shader.setFloat("lights[" + std::to_string(i) + "].cutoff", light.cutoff);
-    //         shader.setFloat("lights[" + std::to_string(i) + "].outerCutoff", light.outerCutoff);
     //     }
     // }
 }
+
+glm::mat4 LightManager::getLightSpaceMatrix() const
+{
+    return m_lightSpaceMatrix;
+}
+
+void LightManager::setLightSpaceMatrix(const glm::mat4 &matrix)
+{
+    m_lightSpaceMatrix = matrix;
+}
+

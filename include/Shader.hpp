@@ -22,8 +22,6 @@ public:
 
     void setInt(const std::string& name, int value);
 
-    void setUniform1i(const std::string& name, int value);
-
 private:
     int m_id{-1};
 };

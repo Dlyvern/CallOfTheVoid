@@ -15,8 +15,16 @@ public:
 
     void sendLightsIntoShader(Shader& shader);
 
+    glm::mat4 getLightSpaceMatrix() const;
+
+    void setLightSpaceMatrix(const glm::mat4& matrix);
+
+    std::vector<lighting::Light> getLights();
+
 private:
     std::vector<lighting::Light> m_lights;
+
+    glm::mat4 m_lightSpaceMatrix;
 
     LightManager() = default;
     LightManager(const LightManager&) = delete;

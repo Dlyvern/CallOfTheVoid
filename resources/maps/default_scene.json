@@ -1,6 +1,31 @@
 {
     "walls":[
-         {
+        {
+            "name": "door",
+            "textureName": "concrete_d.png",
+            "modelName": "Jail_Door.fbx",
+            "position":
+            {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "scale":
+            {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "rotation":
+            {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": -90
+            }
+
+        },
+        {
              "name": "plane",
              "textureName": "concrete_d.png",
              "modelName": "cube.obj",
@@ -26,8 +51,33 @@
 
          },
         {
+            "name": "cube",
+            "textureName": "concrete_d.png",
+            "modelName": "cube.obj",
+            "position":
+            {
+                "x": -3.0,
+                "y": 0.5,
+                "z": 1.0
+            },
+            "scale":
+            {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "rotation":
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "angle": 0
+            }
+
+        },
+        {
             "name": "wall_1",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -51,7 +101,7 @@
         },
         {
             "name": "wall_2",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -75,7 +125,7 @@
         },
         {
             "name": "wall_3",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -99,7 +149,7 @@
         },
         {
             "name": "wall_4",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -123,7 +173,7 @@
         },
         {
             "name": "wall_5",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -147,7 +197,7 @@
         },
         {
             "name": "wall_6",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -171,7 +221,7 @@
         },
         {
             "name": "wall_7",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -195,7 +245,7 @@
         },
         {
             "name": "wall_8",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -219,7 +269,7 @@
         },
         {
             "name": "wall_9",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -243,7 +293,7 @@
         },
         {
             "name": "wall_10",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -267,7 +317,7 @@
         },
         {
             "name": "wall_11",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -291,7 +341,7 @@
         },
         {
             "name": "wall_12",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -315,7 +365,7 @@
         },
         {
             "name": "wall_13",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -339,7 +389,7 @@
         },
         {
             "name": "wall_14",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
@@ -363,7 +413,7 @@
         },
         {
             "name": "wall_15",
-            "textureName": "default_texture.png",
+            "textureName": "concrete_d.png",
             "modelName": "cube.obj",
             "position":
             {
