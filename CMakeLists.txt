@@ -40,7 +40,10 @@ find_package(Threads REQUIRED)
 
 add_executable(${PROJECT_NAME})
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR} ${LIBRARIES_DIR} ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${GLFW_INCLUDE_DIR} ${GLM_INCLUDE_DIR} ${ASSIMP_INCLUDE_DIR} ${FREETYPE_INCLUDE_DIRS} ${PHYSX_ROOT}/include)
+target_include_directories(${PROJECT_NAME} PUBLIC
+        ${INCLUDE_DIR} ${LIBRARIES_DIR} ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS}
+        ${GLFW_INCLUDE_DIR} ${GLM_INCLUDE_DIR} ${ASSIMP_INCLUDE_DIR}
+        ${FREETYPE_INCLUDE_DIRS} ${PHYSX_ROOT}/include  libraries/imgui)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC OpenGL::OpenGL ${GLUT_LIBRARY} ${FREETYPE_LIBRARIES} glfw glm::glm assimp::assimp Threads::Threads
         -Wl,--start-group
@@ -63,4 +66,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC OpenGL::OpenGL ${GLUT_LIBRARY} ${FR
         dl
 )
 
-target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES} PRIVATE ${PROJECT_HEADERS})
+target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES} PRIVATE ${PROJECT_HEADERS}
+        libraries/imgui/imgui.cpp
+        libraries/imgui/imgui_draw.cpp
+        libraries/imgui/imgui_widgets.cpp
+        libraries/imgui/imgui_tables.cpp
+        libraries/imgui/backends/imgui_impl_glfw.cpp
+        libraries/imgui/backends/imgui_impl_opengl3.cpp)

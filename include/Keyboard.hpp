@@ -16,6 +16,7 @@ enum class KeyCode : int
     D = GLFW_KEY_D,
     SPACE = GLFW_KEY_SPACE,
     E = GLFW_KEY_E,
+    K = GLFW_KEY_K,
 };
 
 class KeysManager
@@ -23,13 +24,13 @@ class KeysManager
 public:
     static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
     bool isKeyPressed(KeyCode keyCode);
+    bool isKeyReleased(KeyCode keyCode);
 
     static KeysManager& instance();
 private:
-    std::unordered_map<KeyCode, bool> m_keys
-    {
-        {input::KeyCode::W, false},
-    };
+    std::unordered_map<KeyCode, bool> m_keys;
+    std::unordered_map<KeyCode, bool> m_prevKeys;
+
 
     void keyPressed(KeyCode keyCode);
     void keyReleased(KeyCode keyCode);

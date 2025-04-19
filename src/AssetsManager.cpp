@@ -222,11 +222,14 @@ void AssetsManager::preLoadTextures(const std::vector<std::string> &paths)
 }
 
 
-void generateBoneHierarchy(const int parentId, const aiNode* src, Skeleton& skeleton)
+void generateBoneHierarchy(const int parentId, const aiNode* src, Skeleton& skeleton, const glm::mat4& parentTransform)
 {
     assert(src);
 
     std::string nodeName = src->mName.C_Str();
+    glm::mat4 localTransform = utilities::convertMatrixToGLMFormat(src->mTransformation);
+    glm::mat4 globalTransform = parentTransform * localTransform;
+
     // Clean up child name to avoid duplicates due to naming conventions
     size_t underscorePos = nodeName.find_first_of('_');
     
@@ -247,6 +250,8 @@ void generateBoneHierarchy(const int parentId, const aiNode* src, Skeleton& skel
 
     common::BoneInfo* currentBone = skeleton.getBone(boneID);
 
+    currentBone->globalBindTransform = globalTransform;
+
     if (auto parent = skeleton.getBone(parentId); parent && parent->id != boneID)
     {
         currentBone->parentId = parent->id;
@@ -255,7 +260,7 @@ void generateBoneHierarchy(const int parentId, const aiNode* src, Skeleton& skel
     }
 
     for (unsigned int i = 0; i < src->mNumChildren; i++)
-        generateBoneHierarchy(currentBone ? currentBone->id : -1, src->mChildren[i], skeleton);
+        generateBoneHierarchy(currentBone ? currentBone->id : -1, src->mChildren[i], skeleton, globalTransform);
 }
 
 std::vector<common::Animation> extractAnimations(const aiScene* scene)
@@ -278,18 +283,6 @@ std::vector<common::Animation> extractAnimations(const aiScene* scene)
             common::BoneAnimation boneAnimation;
 
             boneAnimation.boneName = channel->mNodeName.C_Str();
-
-            //Maybe we do not need that but some bones from animations do not load up into model bones
-            // bool cool = false;
-            // for (const auto& b : bones)
-            //     if (b.name == boneAnimation.boneName)
-            //         cool = true;
-            //
-            // if (!cool) {
-            //     common::BoneInfo tempBoneInfo;
-            //     tempBoneInfo.name = boneAnimation.boneName;
-            //     bones.push_back(tempBoneInfo);
-            // }
 
             std::map<float, common::SQT> tempKeyFrames;
 
@@ -393,7 +386,8 @@ void extractSkeleton(const aiMesh* mesh, const aiScene* scene, std::vector<commo
         }
     }
 
-    generateBoneHierarchy(-1, scene->mRootNode, skeleton);
+    skeleton.globalInverseTransform = glm::inverse(utilities::convertMatrixToGLMFormat(scene->mRootNode->mTransformation));
+    generateBoneHierarchy(-1, scene->mRootNode, skeleton, glm::mat4(1.0f));
     assignLocalBindTransforms(scene->mRootNode, skeleton);
 
     for (auto& boneData : skeleton.getBones())
@@ -424,21 +418,13 @@ void extractSkeleton(const aiMesh* mesh, const aiScene* scene, std::vector<commo
             }
         }
     }
-
-    // //TODO THIS CODE IS VERYYYYYYYYYYYYYYY SLOW
-    // for (auto& parentBone : skeleton.getBones())
-    //     for (int childID : parentBone.children)
-    //         if (skeleton.getBones()[childID].parentId == -1)
-    //             skeleton.getBones()[childID].parentId = parentBone.id;
 }
 
 StaticMesh processStaticMesh(aiMesh* mesh)
 {
     std::vector<common::Vertex> vertices;
     std::vector<unsigned int> indices;
-
     extractVerticesAndIndices(mesh, vertices, indices);
-    // glm::mat4 globalInverseTransform = utilities::convertMatrixToGLMFormat(scene->mRootNode->mTransformation);
 
     return {vertices, indices};
 }

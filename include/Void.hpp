@@ -1,7 +1,6 @@
 #ifndef VOID_HPP
 #define VOID_HPP
 
-#include "Texture.hpp"
 #include "Shader.hpp"
 #include "Common.hpp"
 #include "GameObject.hpp"
@@ -10,7 +9,7 @@
 #include "Animator.hpp"
 #include "Material.hpp"
 
-class Void : public GameObject
+class Void final : public GameObject
 {
 public:
     explicit Void(const std::string& name);
@@ -18,25 +17,34 @@ public:
     void create();
     void setModel(SkinnedModel* model);
     void update(float deltaTime) override;
-    void setRotation(float angle, const glm::vec3& axis);
     void rotate(bool rotateClockwise);
     void playAnimation();
+    void setRigidBody(physx::PxRigidActor* rigidBody);
+    physx::PxRigidActor* getRigidBody() const;
+
+    void setPosition(const glm::vec3& position) override;
+    void setScale(const glm::vec3& scale) override;
+
+    SkinnedModel* getModel();
 
     void setMaterial(const Material& material);
+
+    void calculateShadows(Shader& shader) override;
 
     ~Void() override;
 private:
     bool m_rotate{false};
 
+    glm::mat4 computeModelMatrix() const;
+
     Material m_material;
     common::Animation* m_animation{nullptr};
+    physx::PxRigidActor* m_rigidBody{nullptr};
 
     Animator m_animator;
 
     SkinnedModel* m_model{nullptr};
     Shader m_shader;
-    Shader m_shadowShader;
-    glm::vec3 m_rotation{0.0f};
     float m_rotationSpeed{50.0f};
     bool m_rotateClockwise{true};
 };

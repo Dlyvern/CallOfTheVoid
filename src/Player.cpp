@@ -5,6 +5,7 @@
 #include "Keyboard.hpp"
 #include "CameraManager.hpp"
 #include "Cube.hpp"
+#include "DebugEditor.hpp"
 #include "DebugTextHolder.hpp"
 #include "Raycasting.hpp"
 
@@ -83,6 +84,26 @@ void Player::interact()
 
 void Player::update(float deltaTime)
 {
+    if (DebugEditor::instance().getDebugMode()) {
+        float velocity = m_movementSpeed * deltaTime;
+        auto position = this->getPosition();
+
+        if(input::Keyboard.isKeyPressed(input::KeyCode::W))
+            position += m_camera->getForward() * velocity;
+
+        if(input::Keyboard.isKeyPressed(input::KeyCode::S))
+            position -= m_camera->getForward() * velocity;
+
+        if(input::Keyboard.isKeyPressed(input::KeyCode::A))
+            position -= velocity * glm::normalize(glm::cross(m_camera->getForward(), m_camera->getUp()));
+
+        if(input::Keyboard.isKeyPressed(input::KeyCode::D))
+            position += velocity * glm::normalize(glm::cross(m_camera->getForward(), m_camera->getUp()));
+
+        Player::setPosition(position);
+        return;
+    }
+
     if (!m_isGrounded)
         m_velocity.y -= 9.81f * deltaTime;
 
@@ -104,7 +125,7 @@ void Player::update(float deltaTime)
     if (input::Keyboard.isKeyPressed(input::KeyCode::D))
         moveDir += glm::normalize(glm::cross(forward, m_camera->getUp()));
 
-    if (input::Keyboard.isKeyPressed(input::KeyCode::E))
+    if (input::Keyboard.isKeyReleased(input::KeyCode::E))
         interact();
 
     if (glm::length(moveDir) > 0.0f)
@@ -133,19 +154,3 @@ void Player::setPosition(const glm::vec3 &position)
     m_camera->setPosition(getPosition() + glm::vec3(0, HEIGHT, 0.0f));
 }
 
-// float velocity = m_movementSpeed * deltaTime;
-// auto position = this->getPosition();
-//
-// if(input::Keyboard.isKeyPressed(input::KeyCode::W))
-//     position += m_camera->getForward() * velocity;
-//
-// if(input::Keyboard.isKeyPressed(input::KeyCode::S))
-//     position -= m_camera->getForward() * velocity;
-//
-// if(input::Keyboard.isKeyPressed(input::KeyCode::A))
-//     position -= velocity * glm::normalize(glm::cross(m_camera->getForward(), m_camera->getUp()));
-//
-// if(input::Keyboard.isKeyPressed(input::KeyCode::D))
-//     position += velocity * glm::normalize(glm::cross(m_camera->getForward(), m_camera->getUp()));
-//
-// Player::setPosition(position);

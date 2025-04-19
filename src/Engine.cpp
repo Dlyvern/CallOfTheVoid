@@ -16,6 +16,19 @@
 #include "Physics.hpp"
 #include "WindowsManager.hpp"
 
+#include "imgui/imgui.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_opengl3.h"
+#include "DebugEditor.hpp"
+
+Engine &Engine::instance()
+{
+    static Engine engine{};
+
+    return engine;
+}
+
+
 void Engine::run()
 {
     init();
@@ -29,9 +42,10 @@ void Engine::run()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-        // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if((*m_currentScene)->isOver() && m_currentScene + 1 != m_allScenes.end())
@@ -44,20 +58,17 @@ void Engine::run()
         {
             CameraManager::getInstance().getActiveCamera()->update(deltaTime);
             physics::PhysicsController::instance().simulate(deltaTime);
+            DebugEditor::instance().update();
             // debug::DebugTextHolder::instance().update(deltaTime);
             (*m_currentScene)->update(deltaTime);
         }
 
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(m_mainWindow->getOpenGLWindow());
         glfwPollEvents();
     }
-}
-
-Engine &Engine::instance()
-{
-    static Engine engine{};
-
-    return engine;
 }
 
 void Engine::init()
@@ -79,10 +90,11 @@ void Engine::init()
     physics::PhysicsController::instance().init();
 
     m_mainWindow = window::WindowsManager::instance().getCurrentWindow();
-
     glfwSetKeyCallback(m_mainWindow->getOpenGLWindow(), input::KeysManager::keyCallback);
+    glfwSetMouseButtonCallback(m_mainWindow->getOpenGLWindow(), input::MouseManager::mouseButtonCallback);
     glfwSetCursorPosCallback(m_mainWindow->getOpenGLWindow(), input::MouseManager::mouseCallback);
     glfwSetInputMode(m_mainWindow->getOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 
     // #define GLFW_CURSOR_NORMAL          0x00034001
     // #define GLFW_CURSOR_HIDDEN          0x00034002
@@ -90,10 +102,22 @@ void Engine::init()
     // #define GLFW_CURSOR_CAPTURED        0x00034004
 
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    ImGui::StyleColorsDark();
+    const char* glsl_version = "#version 330";
+    ImGui_ImplGlfw_InitForOpenGL(m_mainWindow->getOpenGLWindow(), true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+    // input::MouseManager::instance().init();
 
     AssetsManager::instance().preLoadPathsForAllModels();
     AssetsManager::instance().preLoadPathsForAllTextures();

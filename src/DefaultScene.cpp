@@ -1,6 +1,5 @@
 #include "DefaultScene.hpp"
 #include "AssetsManager.hpp"
-#include "Raycasting.hpp"
 #include "../libraries/json/json.hpp"
 #include <fstream>
 #include <glad.h>
@@ -11,7 +10,6 @@
 #include "Light.hpp"
 #include "LightManager.hpp"
 #include "Physics.hpp"
-#include "DebugLine.hpp"
 #include "WindowsManager.hpp"
 #include <glm/gtc/type_ptr.hpp>
 
@@ -19,28 +17,16 @@
 #include "Void.hpp"
 GLuint depthMapFBO;
 GLuint depthMap;
-const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
+constexpr unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 float nearPlane = 1.0f, farPlane = 7.5f;
-
-
-
-// Shader shader;
-
 
 DefaultScene::DefaultScene() = default;
 
 void DefaultScene::create()
 {
-    const std::string textureFolder = filesystem::getTexturesFolderPath().string();
-
-    m_skybox.init({
-        textureFolder + "/right.jpg",
-        textureFolder + "/left.jpg",
-        textureFolder + "/top.jpg",
-        textureFolder + "/bottom.jpg",
-        textureFolder + "/front.jpg",
-        textureFolder + "/back.jpg"
-    });
+    const std::string texturesFolder = filesystem::getTexturesFolderPath();
+    m_skybox.init({});
+    m_skybox.loadFromHDR(texturesFolder + "/galaxies_skybox.hdr");
 
     // //TODO FIX IT LATER, Bake textures after creating?
     AssetsManager::instance().getTextureByName("wooden_floor.png")->bake();
@@ -63,62 +49,36 @@ void DefaultScene::create()
 
     Material doorMaterial;
     doorMaterial.addTexture(textures::TextureType::Diffuse, AssetsManager::instance().getTextureByName("concrete_d.png"));
-    // auto door = std::make_shared<geometries::Cube>("door");
-    // door->create();
-    // door->setMaterial(doorMaterial);
-    // door->setModel(AssetsManager::instance().getStaticModelByName("Jail_Door.fbx"));
-    // door->setRotation(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-    // door->setPosition({1.0, 0.0, 0.0});
-    // door->setScale({1.0f, 1.0f, 1.0f});
-    // door->setRigidBody(physics::PhysicsController::instance().addStaticActor(door));
 
     Material mannequinMaterial;
-    mannequinMaterial.addTexture(textures::TextureType::Diffuse, AssetsManager::instance().getTextureByName("MannequinDiffuse.png"));
-    // mannequinMaterial.addTexture(textures::TextureType::Normal, AssetsManager::instance().getTextureByName("MannequinNormal.png"));
-    // mannequinMaterial.addTexture(textures::TextureType::Specular, AssetsManager::instance().getTextureByName("MannequinSpecular.png"));
-    // mannequinMaterial.addTexture(textures::TextureType::AO, AssetsManager::instance().getTextureByName("MannequinAo.png"));
+    mannequinMaterial.addTexture(textures::TextureType::Diffuse, AssetsManager::instance().getTextureByName("void.png"));
 
     auto mannequin = std::make_shared<Void>("mannequin");
     mannequin->create();
     mannequin->setMaterial(mannequinMaterial);
-    mannequin->setModel(AssetsManager::instance().getSkinnedModelByName("Mannequin.fbx"));
-    mannequin->setPosition(glm::vec3(-5.0f, 0.0f, 0.0f));
-    mannequin->setScale(glm::vec3(0.01, 0.01, 0.01));
-    // mannequin->playAnimation();
+    mannequin->setModel(AssetsManager::instance().getSkinnedModelByName("mannequin.fbx"));
+    mannequin->setPosition(glm::vec3(-5.0f, -0.5f, 0.0f));
+    mannequin->setScale(glm::vec3(0.015, 0.015, 0.015));
+    mannequin->setRigidBody(physics::PhysicsController::instance().addStaticActor(mannequin, true));
+    mannequin->playAnimation();
 
-    // Material planeMaterial;
-    // planeMaterial.addTexture(textures::TextureType::Diffuse, AssetsManager::instance().getTextureByName("older-wood-flooring_albedo.png"));
-    // planeMaterial.addTexture(textures::TextureType::AO, AssetsManager::instance().getTextureByName("older-wood-flooring_ao.png"));
-    // planeMaterial.addTexture(textures::TextureType::Height, AssetsManager::instance().getTextureByName("older-wood-flooring_height.png"));
-    // planeMaterial.addTexture(textures::TextureType::Metallic, AssetsManager::instance().getTextureByName("older-wood-flooring_metallic.png"));
-    // planeMaterial.addTexture(textures::TextureType::Roughness, AssetsManager::instance().getTextureByName("older-wood-flooring_roughness.png"));
-    //
-    // auto plane = std::make_shared<geometries::Cube>("plane");
-    // plane->create();
-    // plane->setMaterial(planeMaterial);
-    // plane->setModel(AssetsManager::instance().getStaticModelByName("cube.obj"));
-    // plane->setPosition({0, -0.5, 0});
-    // plane->setScale({20, 0.1, 20});
-    // plane->setRigidBody(physics::PhysicsController::instance().addStaticActor(plane));
-    // plane->setRotation({});
-
-
-    // auto voidObject = std::make_shared<Void>("void");
-    // voidObject->create();
-    // voidObject->setTexture(AssetsManager::instance().getTextureByName("void.png"));
-    // voidObject->setModel(AssetsManager::instance().getSkinnedModelByName("void.fbx"));
-    // voidObject->setScale(glm::vec3{0.003f, 0.003f, 0.003f});
-    // voidObject->setRotation(180, glm::vec3{0.0, 1.0, 0.0});
-    // voidObject->setPosition({5.0f, 0.0f, 0.0f});
+    auto voidObject = std::make_shared<Void>("void");
+    voidObject->create();
+    voidObject->setMaterial(mannequinMaterial);
+    voidObject->setModel(AssetsManager::instance().getSkinnedModelByName("void.fbx"));
+    voidObject->setScale(glm::vec3{0.003f, 0.003f, 0.003f});
+    voidObject->setRotation(180, glm::vec3{0.0, 1.0, 0.0});
+    voidObject->setPosition({5.0f, 0.0f, 0.0f});
+    voidObject->setRigidBody(physics::PhysicsController::instance().addStaticActor(voidObject, true));
     // voidObject->playAnimation();
 
-    // auto cube = std::make_shared<geometries::Cube>("cube");
-    // cube->create();
-    // cube->setMaterial(doorMaterial);
-    // cube->setModel(AssetsManager::instance().getStaticModelByName("cube.obj"));
-    // cube->setPosition({1.0, 5.0, -4.0});
-    // cube->setScale({1.0f, 1.0f, 1.0f});
-    // cube->setRigidBody(physics::PhysicsController::instance().addDynamicActor(cube));
+    auto cube = std::make_shared<geometries::Cube>("cube");
+    cube->create();
+    cube->setMaterial(doorMaterial);
+    cube->setModel(AssetsManager::instance().getStaticModelByName("cube.obj"));
+    cube->setPosition({1.0, 5.0, -4.0});
+    cube->setScale({1.0f, 1.0f, 1.0f});
+    cube->setRigidBody(physics::PhysicsController::instance().addDynamicActor(cube));
 
     CameraManager::getInstance().getActiveCamera()->setCameraMode(CameraMode::FPS);
 
@@ -134,7 +94,6 @@ void DefaultScene::create()
         defaultMaterial.addTexture(textures::TextureType::Diffuse, AssetsManager::instance().getTextureByName(wall["textureName"]));
 
         //TODO MAKE UNIQUE NAME
-        //SCENE GAME OBJECTS SHOULD NOT HAVE SAME NAMES
         auto gameObject = std::make_shared<geometries::Cube>(wall["name"]);
         gameObject->create();
         gameObject->setMaterial(defaultMaterial);
@@ -146,29 +105,16 @@ void DefaultScene::create()
         m_gameObjects.push_back(gameObject);
     }
 
-    // std::shared_ptr<Void> man = std::make_shared<Void>("man");
-    // man->create();
-    // man->setTexture(AssetsManager::instance().getTextureByName("man_Packed0_Diffuse.png"));
-    // man->setModel(AssetsManager::instance().getSkinnedModelByName("man.fbx"));
-    // man->setPosition({0.0f, 0.0f, -1.0f});
-    // man->setScale({0.01f, 0.01f, 0.01f});
-
     m_player = std::make_shared<Player>("player");
     m_player->init({0.0f, 1.0f, 0.0f});
-    // m_gameObjects.push_back(man);
     m_gameObjects.push_back(m_player);
-    // m_gameObjects.push_back(voidObject);
+    m_gameObjects.push_back(voidObject);
     m_gameObjects.push_back(mannequin);
-    // m_gameObjects.push_back(door);
-    // m_gameObjects.push_back(cube);
-
-    // m_gameObjects.push_back(plane);
-
 
     lighting::Light directionalLight;
     directionalLight.type = lighting::LightType::DIRECTIONAL;
     directionalLight.direction = glm::vec3(-0.2f, -1.0f, -0.3f);
-    directionalLight.position = glm::vec3(-2.0f, 4.0f, -1.0f);
+    directionalLight.position = glm::vec3(0.0f, 4.0f, 2.0f);
     directionalLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
     directionalLight.strength = 2.0f;
     LightManager::instance().addLight(directionalLight);
@@ -185,6 +131,7 @@ void DefaultScene::create()
 
     auto shadersPath = filesystem::getShadersFolderPath().string();
     m_shadowShader.load(shadersPath + "/shadow_map.vert", shadersPath + "/shadow_map.frag");
+    m_skinnedShadowShader.load(shadersPath + "/shadow.vert", shadersPath + "/shadow.frag");
 
     glGenFramebuffers(1, &depthMapFBO);
     glGenTextures(1, &depthMap);
@@ -219,21 +166,22 @@ void calculateShadows(Shader& shader, std::vector<std::shared_ptr<GameObject>>& 
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glClear(GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_FRONT);
+
     for (auto& obj : gameObjects)
-        if (auto* cube = dynamic_cast<geometries::Cube*>(obj.get()))
-            cube->updateShadowMap(shader);
+        obj->calculateShadows(shader);
+
     glCullFace(GL_BACK);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    auto* win = window::WindowsManager::instance().getCurrentWindow();
+    const auto* win = window::WindowsManager::instance().getCurrentWindow();
 
     glViewport(0, 0, win->getWidth(), win->getHeight());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-
 void DefaultScene::update(float deltaTime)
 {
     calculateShadows(m_shadowShader, m_gameObjects);
+    calculateShadows(m_skinnedShadowShader, m_gameObjects);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, depthMap);
@@ -244,16 +192,16 @@ void DefaultScene::update(float deltaTime)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depthMap);
 
-    debug::DebugLine debugLine;
+    // debug::DebugLine debugLine;
 
-    const auto* camera = CameraManager::getInstance().getActiveCamera();
-
-    glm::vec3 rayOrigin = {camera->getPosition().x, camera->getPosition().y + 0.001f, camera->getPosition().z};
-    glm::vec3 rayDir = glm::normalize(camera->getForward());
-    float rayLength = 100.0f;
-    glm::vec3 rayEnd = rayOrigin + rayDir * rayLength;
-
-    debugLine.draw(rayOrigin, rayEnd);
+    // const auto* camera = CameraManager::getInstance().getActiveCamera();
+    //
+    // glm::vec3 rayOrigin = {camera->getPosition().x, camera->getPosition().y + 0.001f, camera->getPosition().z};
+    // glm::vec3 rayDir = glm::normalize(camera->getForward());
+    // float rayLength = 100.0f;
+    // glm::vec3 rayEnd = rayOrigin + rayDir * rayLength;
+    //
+    // // debugLine.draw(rayOrigin, rayEnd);
 
     m_skybox.render();
 

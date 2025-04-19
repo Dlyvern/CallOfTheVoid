@@ -1,10 +1,6 @@
 #include "Camera.hpp"
-
-#include <iostream>
-#include "Keyboard.hpp"
 #include "Mouse.hpp"
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/quaternion_geometric.hpp>
+#include "DebugEditor.hpp"
 #include "WindowsManager.hpp"
 #include "DebugTextHolder.hpp"
 
@@ -25,11 +21,36 @@ void Camera::update(float deltaTime)
         return;
     }
 
-    static float lastX = window::WindowsManager::instance().getCurrentWindow()->getWidth() / 2.0f;
-    static float lastY = window::WindowsManager::instance().getCurrentWindow()->getHeight() / 2.0f;
+    static bool mouseLocked{false};
 
-    const float xPosition = input::Mouse.getX();
-    const float yPosition = input::Mouse.getY();
+    auto* window = window::WindowsManager::instance().getCurrentWindow();
+
+    if (DebugEditor::instance().getDebugMode())
+    {
+        if (input::Mouse.isRightButtonPressed() && !mouseLocked)
+        {
+            glfwSetInputMode(window->getOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            m_firstClick = true;
+            mouseLocked = true;
+        }
+        else if((!input::Mouse.isRightButtonPressed()) && mouseLocked)
+        {
+            glfwSetInputMode(window->getOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            mouseLocked = false;
+        }
+
+        if (!mouseLocked)
+        {
+            updateCameraVectors();
+            return;
+        }
+    }
+
+    static float lastX = static_cast<float>(window->getWidth()) / 2.0f;
+    static float lastY = static_cast<float>(window->getHeight()) / 2.0f;
+
+    const auto xPosition = static_cast<float>(input::Mouse.getX());
+    const auto yPosition = static_cast<float>(input::Mouse.getY());
 
     if(m_firstClick)
     {
@@ -102,7 +123,6 @@ void Camera::setPosition(const glm::vec3 &position)
     m_position = position;
 
     debug::DebugTextHolder::instance().changeText(textIndex, "Camera position " + std::to_string(m_position.x) + " " + std::to_string(m_position.y) + " " + std::to_string(m_position.z));
-
 }
 
 void Camera::setCameraMode(const CameraMode &mode)

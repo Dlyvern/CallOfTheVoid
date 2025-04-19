@@ -4,7 +4,7 @@
 
 void input::KeysManager::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    input::KeyCode keyCode = static_cast<input::KeyCode>(key);
+    auto keyCode = static_cast<input::KeyCode>(key);
 
     if(action == GLFW_PRESS)
     {
@@ -22,6 +22,17 @@ bool input::KeysManager::isKeyPressed(KeyCode keyCode)
     return it != m_keys.end() && it->second;
 }
 
+bool input::KeysManager::isKeyReleased(KeyCode keyCode)
+{
+    if (const auto it = m_keys.find(keyCode); it != m_keys.end() && !it->second && m_prevKeys[keyCode])
+    {
+        m_prevKeys[keyCode] = false;
+        return true;
+    }
+    return false;
+
+}
+
 input::KeysManager &input::KeysManager::instance()
 {
     static input::KeysManager keyboard;
@@ -31,6 +42,7 @@ input::KeysManager &input::KeysManager::instance()
 void input::KeysManager::keyPressed(KeyCode keyCode)
 {
     m_keys[keyCode] = true;
+    m_prevKeys[keyCode] = true;
 }
 
 void input::KeysManager::keyReleased(KeyCode keyCode)

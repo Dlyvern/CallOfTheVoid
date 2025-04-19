@@ -7,6 +7,7 @@
 #include "PxPhysicsAPI.h"
 
 #include "GameObject.hpp"
+#include "Skeleton.hpp"
 
 //TODO Make clear PxScene in different Scenes
 namespace physics
@@ -18,7 +19,7 @@ namespace physics
         static PhysicsController& instance();
         void simulate(float deltaTime);
         physx::PxRigidDynamic* addDynamicActor(std::shared_ptr<GameObject> actor);
-        physx::PxRigidStatic* addStaticActor(std::shared_ptr<GameObject> actor);
+        physx::PxRigidStatic* addStaticActor(std::shared_ptr<GameObject> actor, bool fixSize = false);
 
         void release();
 
@@ -28,55 +29,7 @@ namespace physics
 
         physx::PxScene* getScene();
 
-        void createRagdoll(const std::vector<common::BoneInfo> &boneInfos, std::vector<common::RagdollBone>& ragdollBones)
-        {
-            for (int i = 0; i < boneInfos.size(); ++i) {
-                physx::PxTransform pxTransform = physx::PxTransform(
-                    physx::PxVec3(0, 5 + i * 0.5f, 0), physx::PxQuat(physx::PxIdentity));
-
-                auto* body = m_physics->createRigidDynamic(pxTransform);
-                auto* shape = m_physics->createShape(physx::PxCapsuleGeometry(0.1f, 0.3f), *m_physics->createMaterial(0.5f, 0.5f, 0.5f));
-                body->attachShape(*shape);
-                physx::PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
-                m_scene->addActor(*body);
-
-                common::RagdollBone ragdollBone;
-
-                ragdollBone.actor = body;
-                ragdollBone.joint = nullptr;
-                ragdollBone.bindTransform = glm::mat4(1.0f);
-                ragdollBone.boneId = i;
-
-
-                ragdollBones.push_back(ragdollBone);
-
-                // Create joint with parent
-                int parentIdx = boneInfos[i].parentId;
-
-                if (parentIdx >= 0)
-                {
-                    physx::PxTransform parentTransform = body->getGlobalPose();
-                    ragdollBones[i].joint =physx::PxD6JointCreate(*m_physics,
-                        ragdollBones[parentIdx].actor, physx::PxTransform(physx::PxIdentity),
-                        ragdollBones[i].actor, physx::PxTransform(physx::PxIdentity));
-                }
-            }
-        }
-
-        void updateBoneMatricesFromRagdoll(const std::vector<common::BoneInfo>& boneInfos, const std::vector<common::RagdollBone>& ragdollBones, std::vector<glm::mat4>& final)
-        {
-            for (int i = 0; i < boneInfos.size(); ++i)
-                final.emplace_back(glm::mat4(1.0f));
-
-            for (int i = 0; i < boneInfos.size(); ++i)
-            {
-                physx::PxTransform t = ragdollBones[i].actor->getGlobalPose();
-                glm::mat4 world = glm::translate(glm::mat4(1.0f), glm::vec3(t.p.x, t.p.y, t.p.z));
-                final[i] = world * boneInfos[i].offsetMatrix;
-            }
-        }
-
-
+        void createRagdoll(Skeleton& skeleton);
     private:
         physx::PxPhysics* m_physics{nullptr};
         physx::PxScene* m_scene{nullptr};

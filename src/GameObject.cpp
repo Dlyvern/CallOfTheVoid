@@ -16,6 +16,17 @@ const common::LayerMask &GameObject::getLayerMask() const
     return m_layerMask;
 }
 
+void GameObject::setRotation(float angle, const glm::vec3 &axis)
+{
+    if (axis == glm::vec3(1.0f, 0.0f, 0.0f))
+        m_rotation.x += angle;
+    else if (axis == glm::vec3(0.0f, 1.0f, 0.0f))
+        m_rotation.y += angle;
+    else if (axis == glm::vec3(0.0f, 0.0f, 1.0f))
+        m_rotation.z += angle;
+}
+
+
 const std::string &GameObject::getName() const
 {
     return m_name;
@@ -45,6 +56,11 @@ glm::vec3 GameObject::getPosition() const
 glm::vec3 GameObject::getScale() const
 {
     return m_scale;
+}
+
+glm::vec3 GameObject::getRotation() const
+{
+    return m_rotation;
 }
 
 const common::AABB &GameObject::getBoundingBox() const

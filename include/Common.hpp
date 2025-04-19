@@ -33,13 +33,6 @@ namespace common
         glm::vec4 weight = glm::vec4(0);
     };
 
-    struct RagdollBone {
-        physx::PxRigidDynamic* actor = nullptr;
-        physx::PxD6Joint* joint = nullptr;
-        int boneId = -1;
-        glm::mat4 bindTransform;
-    };
-
     struct BoneInfo
     {
         std::string name;
@@ -47,9 +40,11 @@ namespace common
         glm::mat4 offsetMatrix;
         glm::mat4 finalTransformation;
         glm::mat4 localBindTransform{1.0f};
+        glm::mat4 globalBindTransform{1.0f};
         std::vector<int> children;
         std::vector<BoneInfo*> childrenInfo;
         int parentId{-1};
+        physx::PxRigidDynamic* rigidBody = nullptr;
     };
 
     class Mesh

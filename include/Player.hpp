@@ -16,6 +16,8 @@ public:
 
     void setPosition(const glm::vec3& position) override;
 
+    void calculateShadows(Shader& shader) override{}
+
 private:
     void move(const glm::vec3& direction, float deltaTime);
     void interact();

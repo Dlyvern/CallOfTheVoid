@@ -23,6 +23,7 @@ private:
     std::shared_ptr<Player> m_player;
     Skybox m_skybox;
     Shader m_shadowShader;
+    Shader m_skinnedShadowShader;
     Shader m_shadowDebugShader;
 };
 

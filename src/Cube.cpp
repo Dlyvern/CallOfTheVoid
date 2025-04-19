@@ -19,29 +19,32 @@ void geometries::Cube::create()
     m_shader.load(shadersPath + "/cube.vert", shadersPath + "/cube.frag");
 }
 
-void geometries::Cube::updateShadowMap(Shader& shader)
+void geometries::Cube::calculateShadows(Shader& shader)
 {
     shader.setMat4("model", computeModelMatrix());
 
     m_model->draw();
 }
 
-glm::mat4 geometries::Cube::computeModelMatrix() const
+glm::mat4 geometries::Cube::computeModelMatrix()
 {
     glm::mat4 model = glm::mat4(1.0f);
 
     if (m_rigidBody)
     {
         const physx::PxTransform transform = m_rigidBody->getGlobalPose();
+
+        this->setPosition({transform.p.x, transform.p.y, transform.p.z});
+
         model = glm::translate(model, glm::vec3(transform.p.x, transform.p.y, transform.p.z));
     }
     else
         model = glm::translate(model, getPosition());
 
     model = glm::scale(model, getScale());
-    model = glm::rotate(model, glm::radians(m_rotation.x), glm::vec3(1, 0, 0));
-    model = glm::rotate(model, glm::radians(m_rotation.y), glm::vec3(0, 1, 0));
-    model = glm::rotate(model, glm::radians(m_rotation.z), glm::vec3(0, 0, 1));
+    model = glm::rotate(model, glm::radians(getRotation().x), glm::vec3(1, 0, 0));
+    model = glm::rotate(model, glm::radians(getRotation().y), glm::vec3(0, 1, 0));
+    model = glm::rotate(model, glm::radians(getRotation().z), glm::vec3(0, 0, 1));
 
     return model;
 }
@@ -50,11 +53,11 @@ void geometries::Cube::update(float deltaTime)
 {
     m_shader.bind();
 
-    if(m_rotate)
-    {
-        m_rotateClockwise ? m_rotation += m_rotationSpeed * deltaTime : m_rotation -= m_rotationSpeed * deltaTime;
-        m_rotate = false;
-    }
+    // if(m_rotate)
+    // {
+    //     m_rotateClockwise ? m_rotation += m_rotationSpeed * deltaTime : m_rotation -= m_rotationSpeed * deltaTime;
+    //     m_rotate = false;
+    // }
 
     const auto* currentWindow = window::WindowsManager::instance().getCurrentWindow();
     const float aspect = static_cast<float>(currentWindow->getWidth()) / static_cast<float>(currentWindow->getHeight());
@@ -97,17 +100,21 @@ physx::PxRigidActor*geometries::Cube::getRigidBody() const
     return m_rigidBody;
 }
 
+void geometries::Cube::setPosition(const glm::vec3 &position)
+{
+    GameObject::setPosition(position);
+
+    if (m_rigidBody)
+        m_rigidBody->setGlobalPose({position.x, position.y, position.z});
+}
+
+void geometries::Cube::setScale(const glm::vec3 &scale)
+{
+    GameObject::setScale(scale);
+    // m_rigidBody.get
+}
+
 void geometries::Cube::setMaterial(const Material &material)
 {
     m_material = material;
-}
-
-void geometries::Cube::setRotation(const float angle, const glm::vec3& axis)
-{
-    if (axis == glm::vec3(1.0f, 0.0f, 0.0f))
-        m_rotation.x += angle;
-    else if (axis == glm::vec3(0.0f, 1.0f, 0.0f))
-        m_rotation.y += angle;
-    else if (axis == glm::vec3(0.0f, 0.0f, 1.0f))
-        m_rotation.z += angle;
 }

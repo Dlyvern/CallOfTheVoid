@@ -20,36 +20,16 @@ public:
     common::BoneInfo* getBone(const std::string& boneName);
     common::BoneInfo* getBone(int boneID);
 
-    void calculateBindPoseTransforms(std::vector<glm::mat4>& outMatrices)
-    {
-        outMatrices.resize(m_bonesInfo.size(), glm::mat4(1.0f));
+    common::BoneInfo* getParent();
 
-        glm::mat4 identity(1.0f);
+    void calculateRagdollBoneMatrices(std::vector<glm::mat4>& outMatrices) const;
 
-        std::function<void(int, glm::mat4)> processBone;
-        processBone = [&](int boneID, glm::mat4 parentTransform)
-        {
-            common::BoneInfo& bone = m_bonesInfo[boneID];
-            glm::mat4 globalTransform = parentTransform * bone.localBindTransform;
+    void calculateBindPoseTransforms(std::vector<glm::mat4>& outMatrices);
 
-            outMatrices[boneID] = globalTransform * bone.offsetMatrix;
-
-            for (int childID : bone.children)
-                processBone(childID, globalTransform);
-        };
-
-        for (const auto& bone : m_bonesInfo)
-        {
-            if (bone.parentId == -1)
-                processBone(bone.id, identity);
-        }
-    }
-
-
+    glm::mat4 globalInverseTransform;
 private:
     std::unordered_map<std::string, unsigned int> m_boneMap;
     std::vector<common::BoneInfo> m_bonesInfo;
 };
-
 
 #endif //SKELETON_HPP
