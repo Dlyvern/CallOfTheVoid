@@ -2,12 +2,16 @@
 
 #include <glad.h>
 #include <imgui.h>
+#include <imgui_internal.h>
 
+#include "AssetsManager.hpp"
 #include "CameraManager.hpp"
+#include "Cube.hpp"
 #include "DebugLine.hpp"
 #include "Mouse.hpp"
 #include "Keyboard.hpp"
 #include "Raycasting.hpp"
+#include "SceneManager.hpp"
 #include "Void.hpp"
 #include "WindowsManager.hpp"
 
@@ -89,7 +93,44 @@ bool DebugEditor::getDebugMode()
 
 void DebugEditor::showDebugInfo()
 {
-    if (!m_selectedGameObject)
+    showObjectInfo(m_selectedGameObject);
+
+    ImGui::Begin("Objects");
+
+    auto allModels = AssetsManager::instance().getAllLoadedModelsNames();
+
+    for (auto& modelName : allModels)
+    {
+        if (ImGui::Button(modelName.c_str()))
+        {
+            //TODO: make it not like this....
+            if (auto skinnedModel = AssetsManager::instance().getSkinnedModelByName(modelName); skinnedModel)
+            {
+                auto skinnedGameObject = std::make_shared<Void>("new_void");
+                skinnedGameObject->setModel(skinnedModel);
+                skinnedGameObject->setRigidBody(physics::PhysicsController::instance().addStaticActor(skinnedGameObject));
+                skinnedGameObject->setPosition({0.0f, 0.0f, 0.0f});
+                SceneManager::instance().getCurrentScene()->addGameObject(skinnedGameObject);
+                m_selectedGameObject = skinnedGameObject.get();
+            }
+            else if (auto staticModel = AssetsManager::instance().getStaticModelByName(modelName); staticModel)
+            {
+                auto staticGameObject = std::make_shared<geometries::Cube>("new_cube");
+                staticGameObject->setRigidBody(physics::PhysicsController::instance().addStaticActor(staticGameObject));
+                staticGameObject->setModel(staticModel);
+                SceneManager::instance().getCurrentScene()->addGameObject(staticGameObject);
+                m_selectedGameObject = staticGameObject.get();
+            }
+        }
+
+    }
+
+    ImGui::End();
+}
+
+void DebugEditor::showObjectInfo(GameObject* gameObject)
+{
+    if (!gameObject)
         return;
 
     ImGui::Begin("Engine Debug");
@@ -109,11 +150,104 @@ void DebugEditor::showDebugInfo()
 
             glm::vec3 rotation = m_selectedGameObject->getRotation();
             ImGui::Text("Rotation");
-            ImGui::InputFloat3("Rotation", &rotation[0]);
+            bool rotationEdited = ImGui::InputFloat3("Rotation", &rotation[0]);
+
+            if (rotationEdited && ImGui::IsItemDeactivatedAfterEdit())
+                m_selectedGameObject->setRotation(90, rotation);
 
             glm::vec3 scale = m_selectedGameObject->getScale();
             ImGui::Text("Scale");
-            ImGui::InputFloat3("Scale", &scale[0]);
+            bool sizeEdited = ImGui::InputFloat3("Scale", &scale[0]);
+
+            if (sizeEdited && ImGui::IsItemDeactivatedAfterEdit())
+                m_selectedGameObject->setScale(scale);
+
+            if (auto skeleton = dynamic_cast<Void*>(m_selectedGameObject); skeleton)
+            {
+                ImGui::Text("Material %s", skeleton->getMaterial().getName().c_str());
+                ImGui::SameLine();
+
+                std::vector<std::string> loadedMaterials = AssetsManager::instance().getAllLoadedMaterialsNames();
+
+                std::vector<const char*> materialNamesCStr;
+
+                for (const auto& mat : loadedMaterials)
+                    materialNamesCStr.push_back(mat.c_str());
+
+                auto it = std::find_if(materialNamesCStr.begin(), materialNamesCStr.end(),
+                [&skeleton](const char* materialName){return skeleton->getMaterial().getName().c_str() == materialName;});
+
+                static int selectedMaterial = std::distance(materialNamesCStr.begin(), it);
+
+                if (ImGui::Combo("##Material combo", &selectedMaterial, materialNamesCStr.data(), static_cast<int>(materialNamesCStr.size())))
+                {
+                    if (auto mat = AssetsManager::instance().getMaterialByName(materialNamesCStr[selectedMaterial]); mat)
+                        skeleton->setMaterial(*mat);
+                }
+
+                ImGui::Text("Model %s", skeleton->getModel()->getName().c_str());
+                ImGui::SameLine();
+
+                auto models = AssetsManager::instance().getAllLoadedModelsNames();
+
+                std::vector<const char*> modelNames;
+
+                for (const auto& modelName : models)
+                    modelNames.push_back(modelName.c_str());
+
+                auto i = std::find_if(modelNames.begin(), modelNames.end(),
+                [&skeleton](const std::string& modelName){return skeleton->getModel()->getName() == modelName;});
+
+                static int selectedModel = std::distance(modelNames.begin(), i);
+
+                if (ImGui::Combo("##Model combo", &selectedModel, modelNames.data(), static_cast<int>(modelNames.size())))
+                {
+                    if (auto m = AssetsManager::instance().getSkinnedModelByName(modelNames[selectedModel]); m)
+                        skeleton->setModel(m);
+                }
+            }
+            else if (auto cube = dynamic_cast<geometries::Cube*>(m_selectedGameObject); cube)
+            {
+                ImGui::Text("Material %s", cube->getMaterial().getName().c_str());
+                ImGui::SameLine();
+
+                std::vector<std::string> loadedMaterials = AssetsManager::instance().getAllLoadedMaterialsNames();
+
+                std::vector<const char*> materialNamesCStr;
+
+                for (const auto& mat : loadedMaterials)
+                    materialNamesCStr.push_back(mat.c_str());
+
+                auto it = std::find_if(materialNamesCStr.begin(), materialNamesCStr.end(),
+                [&cube](const char* materialName){return cube->getMaterial().getName().c_str() == materialName;});
+
+                static int selectedMaterial = std::distance(materialNamesCStr.begin(), it);
+
+                if (ImGui::Combo("##Material combo", &selectedMaterial, materialNamesCStr.data(), static_cast<int>(materialNamesCStr.size())))
+                    cube->setMaterial(AssetsManager::instance().getMaterialByName(materialNamesCStr[selectedMaterial]));
+
+                ImGui::Text("Model %s", cube->getModel()->getName().c_str());
+                ImGui::SameLine();
+
+                auto models = AssetsManager::instance().getAllLoadedModelsNames();
+
+                std::vector<const char*> modelNames;
+
+                for (const auto& modelName : models)
+                    modelNames.push_back(modelName.c_str());
+
+                auto i = std::find_if(modelNames.begin(), modelNames.end(),
+                [&cube](const std::string& modelName){return cube->getModel()->getName() == modelName;});
+
+                static int selectedModel = std::distance(modelNames.begin(), i);
+
+                if (ImGui::Combo("##Model combo", &selectedModel, modelNames.data(), static_cast<int>(modelNames.size())))
+                {
+                    if (auto m = AssetsManager::instance().getStaticModelByName(modelNames[selectedModel]); m)
+                        cube->setModel(m);
+                }
+
+            }
 
             ImGui::EndTabItem();
         }
@@ -124,12 +258,21 @@ void DebugEditor::showDebugInfo()
             ImGui::EndTabItem();
         }
 
+        if (auto skeleton = dynamic_cast<Void*>(m_selectedGameObject); skeleton && ImGui::BeginTabItem("Animation"))
+        {
+            const auto& animations = skeleton->getModel()->getAnimations();
+
+            for (const auto& anim : animations)
+                ImGui::Text("Animation %s", anim.name.c_str());
+
+            ImGui::EndTabItem();
+        }
+
         ImGui::EndTabBar();
     }
 
     ImGui::End();
 }
-
 
 void DebugEditor::displayBonesHierarchy(Skeleton* skeleton, common::BoneInfo* parent)
 {
@@ -141,10 +284,7 @@ void DebugEditor::displayBonesHierarchy(Skeleton* skeleton, common::BoneInfo* pa
     if (ImGui::TreeNode(bone->name.c_str()))
     {
         for (const auto& childBone : bone->children)
-        {
-            auto bo = skeleton->getBone(childBone);
-            displayBonesHierarchy(skeleton, bo);
-        }
+            displayBonesHierarchy(skeleton, skeleton->getBone(childBone));
 
         ImGui::TreePop();
     }

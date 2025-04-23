@@ -15,10 +15,8 @@
 class Text
 {
 public:
-    Text(const std::string& vertexPath, const std::string& fragmentPath);
     Text();
 
-    void initShader(const std::string& vertexPath, const std::string& fragmentPath);
 
     //TODO: Maybe we can actually use font folder here, I think it will be stupid as fuck
     void setFont(const std::string& pathToFont);
@@ -36,6 +34,8 @@ public:
     void draw();
 
 private:
+    void initShader(const std::string& vertexPath, const std::string& fragmentPath);
+
     //TODO Do we actually need it here????
     struct Character
     {

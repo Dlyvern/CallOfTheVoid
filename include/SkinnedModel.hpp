@@ -23,6 +23,8 @@ public:
 
     [[nodiscard]] const std::string& getName() const;
 
+    ModelType getType() override {return ModelType::SKINNED;}
+
     Skeleton& getSkeleton();
 
     void draw() override;

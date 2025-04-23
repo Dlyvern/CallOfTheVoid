@@ -4,6 +4,7 @@
 #include "Scene.hpp"
 #include "Player.hpp"
 #include "Skybox.hpp"
+#include "ShadowHandler.hpp"
 
 class DefaultScene final : public Scene
 {
@@ -17,14 +18,10 @@ public:
     bool isOver() override;
 
     ~DefaultScene() override;
-
 private:
-    std::vector<std::shared_ptr<GameObject>> m_gameObjects;
+    ShadowHandler m_shadowHandler;
     std::shared_ptr<Player> m_player;
     Skybox m_skybox;
-    Shader m_shadowShader;
-    Shader m_skinnedShadowShader;
-    Shader m_shadowDebugShader;
 };
 
 #endif //DEFAULT_SCENE_HPP

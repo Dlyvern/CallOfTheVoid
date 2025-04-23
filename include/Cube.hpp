@@ -15,11 +15,10 @@
 
 namespace geometries
 {
-    class Cube : public GameObject
+    class Cube final : public GameObject
     {
     public:
         explicit Cube(const std::string& name);
-        void create();
         void setModel(StaticModel* model);
         void update(float deltaTime) override;
         void rotate(bool rotateClockwise);
@@ -29,9 +28,16 @@ namespace geometries
         void setPosition(const glm::vec3& position) override;
         void setScale(const glm::vec3& scale) override;
 
+        Material getMaterial() const;
+
+        StaticModel* getModel() const;
 
         void calculateShadows(Shader& shader) override;
         void setMaterial(const Material& material);
+        void setMaterial(Material* material);
+
+        Shader& getShader();
+
     private:
         bool m_rotate{false};
 
@@ -41,7 +47,6 @@ namespace geometries
 
         physx::PxRigidActor* m_rigidBody{nullptr};
         StaticModel* m_model{nullptr};
-        Shader m_shader;
         float m_rotationSpeed{50.0f};
         bool m_rotateClockwise{true};
     };

@@ -13,12 +13,16 @@ public:
     bool getDebugMode();
 private:
     void showDebugInfo();
+    void showObjectInfo(GameObject* gameObject);
 
     void displayBonesHierarchy(Skeleton* skeleton, common::BoneInfo* parent = nullptr);
 
     DebugEditor();
     DebugEditor(const DebugEditor&) = delete;
     DebugEditor& operator=(const DebugEditor&) = delete;
+    DebugEditor(DebugEditor&&) = delete;
+    DebugEditor& operator=(DebugEditor&&) = delete;
+
 
     GameObject* m_selectedGameObject{nullptr};
 

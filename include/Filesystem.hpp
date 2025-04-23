@@ -25,32 +25,50 @@ namespace filesystem
 
     inline std::filesystem::path getResourcesFolderPath()
     {
-        return std::filesystem::path("/home/dlyvern/Projects/CallOfTheVoid/resources");
+        std::string path = getCurrentWorkingDirectory().string();
+
+        const size_t position = path.find_last_of('/');
+
+        path = path.substr(0, position);
+
+        path += "/resources";
+
+        return {path};
+    }
+
+    inline std::filesystem::path getSkyboxesFolderPath()
+    {
+        return {getResourcesFolderPath().string() + "/skyboxes"};
+    }
+
+    inline std::filesystem::path getMaterialsFolderPath()
+    {
+        return {getResourcesFolderPath().string() + "/materials"};
     }
 
     inline std::filesystem::path getTexturesFolderPath()
     {
-        return std::filesystem::path(getResourcesFolderPath().string() + "/textures");
+        return {getResourcesFolderPath().string() + "/textures"};
     }
 
     inline std::filesystem::path getModelsFolderPath()
     {
-        return std::filesystem::path(getResourcesFolderPath().string() + "/models");
+        return {getResourcesFolderPath().string() + "/models"};
     }
 
     inline std::filesystem::path getMapsFolderPath()
     {
-        return std::filesystem::path(getResourcesFolderPath().string() + "/maps");
+        return {getResourcesFolderPath().string() + "/maps"};
     }
 
     inline std::filesystem::path getShadersFolderPath()
     {
-        return std::filesystem::path(getResourcesFolderPath().string() + "/shaders");
+        return {getResourcesFolderPath().string() + "/shaders"};
     }
 
     inline std::filesystem::path getFontsFolderPath()
     {
-        return std::filesystem::path(getResourcesFolderPath().string() + "/fonts");
+        return {getResourcesFolderPath().string() + "/fonts"};
     }
 }
 

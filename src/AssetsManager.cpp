@@ -10,6 +10,7 @@
 
 #include <unordered_map>
 #include <map>
+#include <json/json.hpp>
 
 #include "Skeleton.hpp"
 #include "Utilities.hpp"
@@ -99,6 +100,47 @@ textures::Texture AssetsManager::loadTexture(const std::string &path)
     return textures::Texture{path};
 }
 
+std::vector<common::Model*> AssetsManager::getAllLoadedModels() const
+{
+    std::vector<common::Model*> loadedModels;
+
+    loadedModels.reserve(m_skinnedModels.size() + m_staticModels.size());
+
+    for (auto m : m_skinnedModels)
+        loadedModels.push_back(&m.second);
+
+    for (auto m : m_staticModels)
+        loadedModels.push_back(&m.second);
+
+    return loadedModels;
+}
+
+std::vector<std::string> AssetsManager::getAllLoadedModelsNames() const
+{
+    std::vector<std::string> loadedModelNames;
+
+    loadedModelNames.reserve(m_skinnedModels.size() + m_staticModels.size());
+
+    for (const auto& m : m_skinnedModels)
+        loadedModelNames.push_back(m.first);
+    for (const auto& m : m_staticModels)
+        loadedModelNames.push_back(m.first);
+
+    return loadedModelNames;
+}
+
+std::vector<std::string> AssetsManager::getAllLoadedMaterialsNames() const
+{
+    std::vector<std::string> loadedMaterialNames;
+
+    loadedMaterialNames.reserve(m_materials.size());
+
+    for (const auto& material : m_materials)
+        loadedMaterialNames.push_back(material.first);
+
+    return loadedMaterialNames;
+}
+
 void AssetsManager::preLoadPathsForAllTextures()
 {
     const std::filesystem::path texturesFolderPath = filesystem::getTexturesFolderPath();
@@ -119,6 +161,30 @@ void AssetsManager::preLoadPathsForAllTextures()
                 continue;
 
             m_texturesPaths.insert(textureName);
+        }
+    }
+}
+
+void AssetsManager::preLoadPathsForAllMaterials()
+{
+    auto materialsFolderPath = filesystem::getMaterialsFolderPath();
+
+    if (!std::filesystem::exists(materialsFolderPath))
+    {
+        std::cerr << ("AssetsManager::preLoadPathsForAllMaterials(): materials folder does not exist") << std::endl;
+        return;
+    }
+
+    for (const auto& entry : std::filesystem::directory_iterator(materialsFolderPath))
+    {
+        if (entry.path().extension() == ".mat")
+        {
+            auto materialName = entry.path().string();
+
+            if (m_materialsPaths.contains(materialName))
+                continue;
+
+            m_materialsPaths.insert(materialName);
         }
     }
 }
@@ -153,6 +219,31 @@ void AssetsManager::preLoadPathsForAllModels()
             auto modelType = detectModelType(scene->mRootNode, scene, foundSkinned);
 
             modelType == ModelType::STATIC ? m_staticModelsPaths.insert(entry.path().string()) : m_skinnedModelsPaths.insert(entry.path().string());
+        }
+    }
+}
+
+void AssetsManager::preLoadMaterials(const std::vector<std::string> &paths)
+{
+    for(const auto& path : paths)
+    {
+        if (m_materials.contains(path))
+            continue;
+
+        const auto materialsFolderPath = filesystem::getMaterialsFolderPath().string() + "/" + path;
+
+        if (auto it = m_materialsPaths.find(path); it != m_materialsPaths.end())
+            m_materials[path] = loadMaterial(materialsFolderPath);
+        else
+        {
+            if (std::filesystem::exists(materialsFolderPath))
+            {
+                m_materialsPaths.insert(materialsFolderPath);
+
+                m_materials[path] = loadMaterial(materialsFolderPath);
+            }
+            else
+                std::cerr << "AssetsManager::preLoadMaterials(): Could not find " << path << std::endl;
         }
     }
 }
@@ -330,6 +421,38 @@ std::vector<common::Animation> extractAnimations(const aiScene* scene)
     }
 
     return animations;
+}
+
+Material AssetsManager::loadMaterial(const std::string &path)
+{
+    std::ifstream file(path);
+    nlohmann::json json;
+
+    file >> json;
+
+    Material material;
+
+    if (json.contains("name"))
+        material.setName(json["name"].get<std::string>());
+
+    if (json.contains("color"))
+    {
+        auto color = json["color"];
+        material.setBaseColor(glm::vec3(color[0].get<int>(), color[1].get<int>(), color[2].get<int>()));
+    }
+
+    if (json.contains("textures"))
+        for (const auto& [key, value] : json["textures"].items())
+        {
+            if (!value.is_string() || value.get<std::string>().empty())
+                continue;
+
+            if (const auto textureType = textures::fromStringToTextureType(key); textureType != textures::TextureType::Undefined)
+                if (auto texture = getTextureByName(value.get<std::string>()))
+                    material.addTexture(textureType, texture);
+        }
+
+    return material;
 }
 
 std::vector<common::Animation> AssetsManager::extractAnimationsFromModel(const std::string &pathToModel)

@@ -58,7 +58,15 @@ namespace common
     class Model
     {
     public:
+        enum class ModelType : uint8_t
+        {
+            SKINNED = 0,
+            STATIC = 1
+        };
+
         virtual ~Model() = default;
+
+        virtual ModelType getType() = 0;
 
         virtual void draw() = 0;
     };

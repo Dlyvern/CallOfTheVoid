@@ -19,6 +19,8 @@ public:
 
     void setLightSpaceMatrix(const glm::mat4& matrix);
 
+    void bindGlobalLighting(Shader& shader);
+
     std::vector<lighting::Light> getLights();
 
 private:

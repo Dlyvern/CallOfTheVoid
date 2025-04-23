@@ -1,0 +1,37 @@
+#include "ShaderManager.hpp"
+#include "Filesystem.hpp"
+#include "Skeleton.hpp"
+
+ShaderManager& ShaderManager::instance()
+{
+    static ShaderManager instance;
+    return instance;
+}
+
+Shader* ShaderManager::getShader(const ShaderType& type)
+{
+    return &m_shaders[type];
+}
+
+void ShaderManager::preLoadShaders()
+{
+    const std::string shadersPath = filesystem::getShadersFolderPath().string();
+
+    auto createShader = [](const std::string& vert, const std::string& frag)
+    {
+        Shader shader;
+        shader.load(vert, frag);
+        return shader;
+    };
+
+    m_shaders[SKELETON] = createShader(shadersPath + "/skeleton.vert", shadersPath + "/skeleton.frag");
+    m_shaders[STATIC] = createShader(shadersPath + "/cube.vert", shadersPath + "/cube.frag");
+    m_shaders[STATIC_SHADOW] = createShader(shadersPath + "/shadow_map.vert", shadersPath + "/shadow_map.frag");
+    m_shaders[SKELETON_SHADOW] = createShader(shadersPath + "/shadow.vert", shadersPath + "/shadow.frag");
+
+    // m_shader.load(shadersPath + "/cube.vert", shadersPath + "/cube.frag");
+    // m_shadowShader.load(shadersPath + "/shadow_map.vert", shadersPath + "/shadow_map.frag");
+    // m_skinnedShadowShader.load(shadersPath + "/shadow.vert", shadersPath + "/shadow.frag");
+    // m_shader.load(shadersPath + "/skeleton.vert", shadersPath + "/skeleton.frag");
+
+}

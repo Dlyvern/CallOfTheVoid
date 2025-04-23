@@ -1,0 +1,11 @@
+{
+    "name": "floor_material.mat",
+    "color": [1.0, 1.0, 1.0],
+    "textures": {
+    "Diffuse": "wood_floor_d.png",
+    "Normal": "wood_floor_n.png",
+    "Metallic": "wood_floor_m.png",
+    "Roughness": "wood_floor_r.png",
+    "AO": "wood_floor_ao.png"
+    }
+}

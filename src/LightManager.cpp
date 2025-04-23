@@ -1,6 +1,6 @@
 #include "LightManager.hpp"
 
-LightManager & LightManager::instance()
+LightManager& LightManager::instance()
 {
     static LightManager instance;
     return instance;
@@ -23,7 +23,12 @@ void LightManager::sendLightsIntoShader(Shader &shader)
     shader.setFloat("light.strength", light->strength);
     shader.setFloat("light.radius", light->radius);
     shader.setVec3("light.direction", light->direction);
-
+    // int maxLights = 16;
+    // int count = (int)m_lights.size();
+    // if (count > maxLights) count = maxLights;
+    //
+    // shader.setInt("numLights", count);
+    //
     // for (size_t i = 0; i < m_lights.size(); ++i)
     // {
     //     const lighting::Light& light = m_lights[i];
@@ -33,10 +38,13 @@ void LightManager::sendLightsIntoShader(Shader &shader)
     //     shader.setFloat("lights[" + std::to_string(i) + "].strength", light.strength);
     //     shader.setFloat("lights[" + std::to_string(i) + "].radius", light.radius);
     //
-    //     if (light.type == lighting::LightType::SPOT)
-    //     {
-    //         shader.setVec3("lights[" + std::to_string(i) + "].direction", light.direction);
-    //     }
+    //
+    //     shader.setVec3("lights[" + std::to_string(i) + "].direction", light.direction);
+    //
+    //     // if (light.type == lighting::LightType::SPOT)
+    //     // {
+    //     //     shader.setVec3("lights[" + std::to_string(i) + "].direction", light.direction);
+    //     // }
     // }
 }
 
@@ -50,3 +58,9 @@ void LightManager::setLightSpaceMatrix(const glm::mat4 &matrix)
     m_lightSpaceMatrix = matrix;
 }
 
+void LightManager::bindGlobalLighting(Shader &shader)
+{
+    shader.setMat4("lightSpaceMatrix", getLightSpaceMatrix());
+    shader.setInt("shadowMap", 8);
+    sendLightsIntoShader(shader);
+}

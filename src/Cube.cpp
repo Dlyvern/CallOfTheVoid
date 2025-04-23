@@ -6,17 +6,13 @@
 #include "CameraManager.hpp"
 #include "WindowsManager.hpp"
 #include "LightManager.hpp"
+#include "ShaderManager.hpp"
+#include "LightComponent.hpp"
 
 geometries::Cube::Cube(const std::string &name) : GameObject(name)
 {
-    setLayerMask(common::LayerMask::DEFAULT);
-}
-
-void geometries::Cube::create()
-{
-    const std::string shadersPath = filesystem::getShadersFolderPath().string();
-
-    m_shader.load(shadersPath + "/cube.vert", shadersPath + "/cube.frag");
+    GameObject::setLayerMask(common::LayerMask::DEFAULT);
+    this->addComponent<LightComponent>();
 }
 
 void geometries::Cube::calculateShadows(Shader& shader)
@@ -51,30 +47,24 @@ glm::mat4 geometries::Cube::computeModelMatrix()
 
 void geometries::Cube::update(float deltaTime)
 {
-    m_shader.bind();
+    auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::STATIC);
 
-    // if(m_rotate)
-    // {
-    //     m_rotateClockwise ? m_rotation += m_rotationSpeed * deltaTime : m_rotation -= m_rotationSpeed * deltaTime;
-    //     m_rotate = false;
-    // }
+    shader->bind();
 
     const auto* currentWindow = window::WindowsManager::instance().getCurrentWindow();
     const float aspect = static_cast<float>(currentWindow->getWidth()) / static_cast<float>(currentWindow->getHeight());
 
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
+    const glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 
-    m_shader.setMat4("model", computeModelMatrix());
-    m_shader.setMat4("view", CameraManager::getInstance().getActiveCamera()->getViewMatrix());
-    m_shader.setMat4("projection", projection);
-    m_shader.setVec3("viewPos", CameraManager::getInstance().getActiveCamera()->getPosition());
-    m_shader.setMat4("lightSpaceMatrix", LightManager::instance().getLightSpaceMatrix());
+    shader->setMat4("model", computeModelMatrix());
+    shader->setMat4("view", CameraManager::getInstance().getActiveCamera()->getViewMatrix());
+    shader->setMat4("projection", projection);
+    shader->setVec3("viewPos", CameraManager::getInstance().getActiveCamera()->getPosition());
+    // shader->setMat4("lightSpaceMatrix", LightManager::instance().getLightSpaceMatrix());
 
-    LightManager::instance().sendLightsIntoShader(m_shader);
+    // LightManager::instance().sendLightsIntoShader(*shader);
 
-    m_material.bind(m_shader);
-
-    m_shader.setInt("shadowMap", 1);
+    m_material.bind(*shader);
 
     m_model->draw();
 }
@@ -83,6 +73,12 @@ void geometries::Cube::rotate(const bool rotateClockwise)
 {
     m_rotate = true;
     m_rotateClockwise = rotateClockwise;
+
+    // if(m_rotate)
+    // {
+    //     m_rotateClockwise ? m_rotation += m_rotationSpeed * deltaTime : m_rotation -= m_rotationSpeed * deltaTime;
+    //     m_rotate = false;
+    // }
 }
 
 void geometries::Cube::setModel(StaticModel* model)
@@ -111,10 +107,30 @@ void geometries::Cube::setPosition(const glm::vec3 &position)
 void geometries::Cube::setScale(const glm::vec3 &scale)
 {
     GameObject::setScale(scale);
-    // m_rigidBody.get
+}
+
+Material geometries::Cube::getMaterial() const
+{
+    return m_material;
+}
+
+StaticModel* geometries::Cube::getModel() const
+{
+    return m_model;
 }
 
 void geometries::Cube::setMaterial(const Material &material)
 {
     m_material = material;
+}
+
+void geometries::Cube::setMaterial(Material *material)
+{
+    m_material = *material;
+}
+
+Shader& geometries::Cube::getShader()
+{
+    auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::STATIC);
+    return *shader;
 }

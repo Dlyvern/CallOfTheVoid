@@ -146,6 +146,17 @@ void Player::update(float deltaTime)
     }
 
     Player::setPosition(glm::vec3(m_controller->getFootPosition().x, m_controller->getFootPosition().y, m_controller->getFootPosition().z));
+
+    // debug::DebugLine debugLine;
+
+    // const auto* camera = CameraManager::getInstance().getActiveCamera();
+    //
+    // glm::vec3 rayOrigin = {camera->getPosition().x, camera->getPosition().y + 0.001f, camera->getPosition().z};
+    // glm::vec3 rayDir = glm::normalize(camera->getForward());
+    // float rayLength = 100.0f;
+    // glm::vec3 rayEnd = rayOrigin + rayDir * rayLength;
+    //
+    // // debugLine.draw(rayOrigin, rayEnd);
 }
 
 void Player::setPosition(const glm::vec3 &position)

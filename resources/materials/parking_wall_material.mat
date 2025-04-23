@@ -1,0 +1,11 @@
+{
+    "name": "parking_wall_material.mat",
+    "color": [1.0, 1.0, 1.0],
+    "textures": {
+    "Diffuse": "wall_parking_d.png",
+    "Normal": "wall_parking_n.png",
+    "Metallic": "",
+    "Roughness": "",
+    "AO": ""
+    }
+}

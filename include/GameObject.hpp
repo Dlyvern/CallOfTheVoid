@@ -1,8 +1,13 @@
 #ifndef GAME_OBJECT_HPP
 #define GAME_OBJECT_HPP
 
+#include <memory>
+#include <typeindex>
+#include <unordered_map>
+
 #include "Common.hpp"
 #include "Shader.hpp"
+#include "Component.hpp"
 
 class GameObject
 {
@@ -24,8 +29,37 @@ public:
     virtual void update(float deltaTime) = 0;
     virtual void calculateShadows(Shader &shader) = 0;
 
+    template<typename T, typename... Args>
+    T* addComponent(Args&&... args) {
+        auto type = std::type_index(typeid(T));
+        auto comp = std::make_unique<T>(std::forward<Args>(args)...);
+        T* ptr = comp.get();
+        comp->setOwner(this);
+        m_components[type] = std::move(comp);
+        return ptr;
+    }
+
+    template<typename T>
+    T* getComponent() {
+        auto it = m_components.find(std::type_index(typeid(T)));
+        return it != m_components.end() ? static_cast<T*>(it->second.get()) : nullptr;
+    }
+
+    template<typename T>
+    bool hasComponent() const {
+        return m_components.contains(std::type_index(typeid(T)));
+    }
+
     virtual ~GameObject();
+
+protected:
+    void updateComponents(float deltaTime)
+    {
+        for (auto& [_, comp] : m_components)
+            comp->update(deltaTime);
+    }
 private:
+    std::unordered_map<std::type_index, std::unique_ptr<Component>> m_components;
     common::LayerMask m_layerMask{common::LayerMask::DEFAULT};
     glm::vec3 m_position{glm::vec3(0.0f, 0.0f, 0.0f)};
     glm::vec3 m_scale{glm::vec3(1.0f, 1.0f, 1.0f)};

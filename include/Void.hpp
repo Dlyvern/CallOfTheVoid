@@ -14,7 +14,6 @@ class Void final : public GameObject
 public:
     explicit Void(const std::string& name);
 
-    void create();
     void setModel(SkinnedModel* model);
     void update(float deltaTime) override;
     void rotate(bool rotateClockwise);
@@ -25,11 +24,15 @@ public:
     void setPosition(const glm::vec3& position) override;
     void setScale(const glm::vec3& scale) override;
 
+    Material getMaterial() const;
+
     SkinnedModel* getModel();
 
     void setMaterial(const Material& material);
 
     void calculateShadows(Shader& shader) override;
+
+    Shader& getShader();
 
     ~Void() override;
 private:
@@ -44,7 +47,6 @@ private:
     Animator m_animator;
 
     SkinnedModel* m_model{nullptr};
-    Shader m_shader;
     float m_rotationSpeed{50.0f};
     bool m_rotateClockwise{true};
 };

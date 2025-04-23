@@ -2,8 +2,8 @@
     "walls":[
         {
             "name": "door",
-            "textureName": "concrete_d.png",
-            "modelName": "Jail_Door.fbx",
+            "material": "default_material.mat",
+            "modelName": "jail_door.fbx",
             "position":
             {
                 "x": 1.0,
@@ -27,7 +27,7 @@
         },
         {
              "name": "plane",
-             "textureName": "concrete_d.png",
+             "material": "default_material.mat",
              "modelName": "cube.obj",
              "position":
              {
@@ -52,7 +52,7 @@
          },
         {
             "name": "cube",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -77,7 +77,7 @@
         },
         {
             "name": "wall_1",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -101,7 +101,7 @@
         },
         {
             "name": "wall_2",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -125,7 +125,7 @@
         },
         {
             "name": "wall_3",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -149,7 +149,7 @@
         },
         {
             "name": "wall_4",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -173,7 +173,7 @@
         },
         {
             "name": "wall_5",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -197,7 +197,7 @@
         },
         {
             "name": "wall_6",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -221,7 +221,7 @@
         },
         {
             "name": "wall_7",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -245,7 +245,7 @@
         },
         {
             "name": "wall_8",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -269,7 +269,7 @@
         },
         {
             "name": "wall_9",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -293,7 +293,7 @@
         },
         {
             "name": "wall_10",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -317,7 +317,7 @@
         },
         {
             "name": "wall_11",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -341,7 +341,7 @@
         },
         {
             "name": "wall_12",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -365,7 +365,7 @@
         },
         {
             "name": "wall_13",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -389,7 +389,7 @@
         },
         {
             "name": "wall_14",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {
@@ -413,7 +413,7 @@
         },
         {
             "name": "wall_15",
-            "textureName": "concrete_d.png",
+            "material": "default_material.mat",
             "modelName": "cube.obj",
             "position":
             {

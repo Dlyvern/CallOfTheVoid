@@ -6,12 +6,8 @@ LoadingScene::LoadingScene() = default;
 
 void LoadingScene::create()
 {
-    AssetsManager::instance().preLoadModels({"Sitting_Angry.fbx","Mannequin.fbx", "cube.obj", "man.fbx", "mannequin.fbx", "Jail_Door.fbx", "void.fbx"});
-
-    const std::string shadersDirectory = filesystem::getShadersFolderPath().string();
+    AssetsManager::instance().preLoadModels({"Mannequin.fbx", "cube.obj", "mannequin.fbx", "jail_door.fbx", "void.fbx"});
     const std::string fontName = filesystem::getFontsFolderPath().string() + "/ghostmane_font.ttf";
-
-    m_text.initShader(shadersDirectory + "/text.vert", shadersDirectory + "/text.frag");
     m_text.setText("LOADING");
     m_text.setFont(fontName);
 
@@ -21,26 +17,30 @@ void LoadingScene::create()
 void LoadingScene::loadAllAssets()
 {
     const std::vector<std::string> modelsPaths{
-        "void.fbx", "blender_cube.obj",
-        "mannequin.fbx", "man.fbx"
+        "void.fbx",
+        "mannequin.fbx",
     };
 
     const std::vector<std::string> texturesPaths{
-        "void.png", "wooden_floor.png",
-        "man_Packed0_Diffuse.png", "wallParking_d.png",
-        "concrete_d.png", "default_texture.png",
+        "void.png", "wall_parking_d.png",
+        "concrete_d.png", "wall_parking_n.png",
 
         "MannequinDiffuse.png", "MannequinNormal.png",
         "MannequinSpecular.png", "MannequinAo.png",
 
-        "older-wood-flooring_albedo.png",
-        "older-wood-flooring_ao.png", "older-wood-flooring_height.png",
-        "older-wood-flooring_metallic.png", "older-wood-flooring_roughness.png"
+        "wood_floor_d.png", "wood_floor_n.png",
+        "wood_floor_ao.png", "older-wood-flooring_height.png",
+        "wood_floor_m.png", "wood_floor_r.png"
+    };
 
+    const std::vector<std::string> materialsPaths
+    {
+        "default_material.mat", "floor_material.mat", "parking_wall_material.mat"
     };
 
     AssetsManager::instance().preLoadModels(modelsPaths);
     AssetsManager::instance().preLoadTextures(texturesPaths);
+    AssetsManager::instance().preLoadMaterials(materialsPaths);
 }
 
 void LoadingScene::update(float deltaTime)

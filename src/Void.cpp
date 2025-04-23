@@ -4,6 +4,7 @@
 #include "CameraManager.hpp"
 #include "LightManager.hpp"
 #include "Physics.hpp"
+#include "ShaderManager.hpp"
 #include "WindowsManager.hpp"
 
 Void::Void(const std::string &name) : GameObject(name)
@@ -44,18 +45,18 @@ void Void::calculateShadows(Shader &shader)
     m_model->draw();
 }
 
-void Void::create()
+Shader& Void::getShader()
 {
-    const std::string& shadersPath = filesystem::getShadersFolderPath().string();
-
-    m_shader.load(shadersPath + "/skeleton.vert", shadersPath + "/skeleton.frag");
+    auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::SKELETON);
+    return *shader;
 }
 
 void Void::update(float deltaTime)
 {
      m_animator.updateAnimation(deltaTime);
+     auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::SKELETON);
 
-     m_shader.bind();
+     shader->bind();
 
      std::vector<glm::mat4> boneMatrices;
 
@@ -71,22 +72,20 @@ void Void::update(float deltaTime)
      for (unsigned int i = 0; i < boneMatrices.size(); ++i)
      {
          std::string uniformName = "finalBonesMatrices[" + std::to_string(i) + "]";
-         m_shader.setMat4(uniformName, boneMatrices[i]);
+         shader->setMat4(uniformName, boneMatrices[i]);
      }
 
      const auto* currentWindow = window::WindowsManager::instance().getCurrentWindow();
      const float aspect = static_cast<float>(currentWindow->getWidth()) / currentWindow->getHeight();
      const glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 
-     m_shader.setMat4("model", computeModelMatrix());
-     m_shader.setMat4("view", CameraManager::getInstance().getActiveCamera()->getViewMatrix());
-     m_shader.setMat4("projection", projection);
+     shader->setMat4("model", computeModelMatrix());
+     shader->setMat4("view", CameraManager::getInstance().getActiveCamera()->getViewMatrix());
+     shader->setMat4("projection", projection);
 
-     LightManager::instance().sendLightsIntoShader(m_shader);
+     LightManager::instance().sendLightsIntoShader(*shader);
 
-     m_material.bind(m_shader);
-
-     m_shader.setInt("shadowMap", 1);
+     m_material.bind(*shader);
 
      m_model->draw();
 }
@@ -96,7 +95,6 @@ void Void::rotate(bool rotateClockwise)
     m_rotate = true;
     m_rotateClockwise = rotateClockwise;
 }
-
 
 void Void::setModel(SkinnedModel* model)
 {
@@ -136,6 +134,11 @@ void Void::setPosition(const glm::vec3 &position)
 void Void::setScale(const glm::vec3 &scale)
 {
     GameObject::setScale(scale);
+}
+
+Material Void::getMaterial() const
+{
+    return m_material;
 }
 
 SkinnedModel* Void::getModel()

@@ -83,6 +83,8 @@ common::BoneInfo* Skeleton::getParent()
     for (auto& bone : m_bonesInfo)
         if (bone.parentId == -1)
             return &bone;
+
+    return nullptr;
 }
 
 void Skeleton::calculateRagdollBoneMatrices(std::vector<glm::mat4> &outMatrices) const

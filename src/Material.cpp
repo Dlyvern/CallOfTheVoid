@@ -3,6 +3,25 @@
 #include <glad.h>
 #include <glm/gtc/type_ptr.hpp>
 
+Material::Material() = default;
+
+Material::Material(const std::string &name) : m_name(name){}
+
+std::string Material::getName() const
+{
+    return m_name;
+}
+
+void Material::setName(const std::string &name)
+{
+    m_name = name;
+}
+
+void Material::setBaseColor(const glm::vec3 &color)
+{
+    m_baseColor = color;
+}
+
 void Material::addTexture(const textures::TextureType &type, textures::Texture *texture)
 {
     m_textures[type] = texture;

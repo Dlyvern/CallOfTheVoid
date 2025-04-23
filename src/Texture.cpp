@@ -12,22 +12,16 @@
 //Maybe fix it later...
 namespace
 {
-    inline textures::TextureData getTextureDataFromFile(const std::string& filePath, const bool stbiSetFlipVerticallyOnLoad = false)
+    textures::TextureData getTextureDataFromFile(const std::string& filePath, const bool stbiSetFlipVerticallyOnLoad = false)
     {
         stbi_set_flip_vertically_on_load(stbiSetFlipVerticallyOnLoad);
 
-        textures::TextureData textureData;
+        textures::TextureData textureData{};
 
         textureData.data = stbi_load(filePath.data(), &textureData.width, &textureData.height, &textureData.numberOfChannels, 0);
 
         if(!textureData.data)
             std::cout << "Failed to load a texture";
-
-        // std::string message;
-
-        // message = textureData.data ? "Texture loaded" : "Failed to load a texture";
-
-        // std::cout << message << std::endl;
 
         return textureData;
     }
@@ -79,6 +73,12 @@ void textures::Texture::bake()
     glBindTexture(GL_TEXTURE_2D, 0);
 
     m_textureData.data = nullptr;
+    m_isBaked = true;
+}
+
+bool textures::Texture::isBaked() const
+{
+    return m_isBaked;
 }
 
 void textures::Texture::bind(unsigned int slot)
@@ -89,7 +89,7 @@ void textures::Texture::bind(unsigned int slot)
 
 textures::Texture::~Texture()
 {
-    // glDeleteTextures(1, &m_id);
+    glDeleteTextures(1, &m_id);
 }
 
 GLuint textures::Texture::getId() const

@@ -5,18 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/ext/matrix_clip_space.hpp>
 #include "WindowsManager.hpp"
-
-Text::Text(const std::string& vertexPath, const std::string& fragmentPath)
-{
-    if (FT_Init_FreeType(&m_ftLibrary))
-    {
-        //Are we stupid here?
-        std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-        throw std::runtime_error("ERROR::FREETYPE: Could not init FreeType Library");
-    }
-
-    initShader(vertexPath, fragmentPath);
-}
+#include "Filesystem.hpp"
 
 Text::Text()
 {
@@ -26,6 +15,10 @@ Text::Text()
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
         throw std::runtime_error("ERROR::FREETYPE: Could not init FreeType Library");
     }
+
+    const std::string shadersDirectory = filesystem::getShadersFolderPath().string();
+
+    initShader(shadersDirectory + "/text.vert", shadersDirectory + "/text.frag");
 }
 
 void Text::draw()

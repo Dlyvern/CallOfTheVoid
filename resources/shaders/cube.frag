@@ -37,6 +37,11 @@ uniform vec3 baseColor;
 
 uniform vec3 viewPos;
 
+
+#define MAX_LIGHTS 16
+uniform int lightCount;
+uniform Light lights[MAX_LIGHTS];
+
 uniform Light light;
 
 uniform sampler2D shadowMap;
@@ -77,6 +82,29 @@ void main()
     float ao        = use_AO        ? texture(u_AO, fs_in.TexCoords).r          : 1.0;
 
     vec3 normal = normalize(fs_in.Normal);
+//    vec3 result = vec3(0.0);
+//
+//    for (int i = 0; i < lightCount; ++i)
+//    {
+//        Light light = lights[i];
+//
+//        vec3 lightDir = normalize(light.position - fs_in.FragPos);
+//        float diff = max(dot(normal, lightDir), 0.0);
+//        vec3 viewDir = normalize(viewPos - fs_in.FragPos);
+//        vec3 halfwayDir = normalize(lightDir + viewDir);
+//        float shininess = mix(8.0, 128.0, 1.0 - roughness);
+//        float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+//
+//        vec3 ambient  = 0.03 * albedo * ao;
+//        vec3 diffuse  = diff * albedo * light.color * light.strength;
+//        vec3 specular = spec * mix(vec3(0.04), albedo, metallic) * light.strength;
+//
+//        result += ambient + diffuse + specular;
+//    }
+//    float shadow = ShadowCalculation(fs_in.FragPosLightSpace);
+//    result *= (1.0 - shadow);
+//    FragColor = vec4(result, 1.0);
+
     vec3 lightDir = normalize(light.position - fs_in.FragPos);
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);

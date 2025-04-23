@@ -15,7 +15,6 @@ unsigned int debug::DebugTextHolder::addText(const std::string &text)
     const auto shadersDirectory = filesystem::getShadersFolderPath();
     const std::string font_name = filesystem::getFontsFolderPath().string() + "/ghostmane_font.ttf";
 
-    debugText.initShader(shadersDirectory.string() + "/text.vert", shadersDirectory.string() + "/text.frag");
     debugText.setText(text);
     debugText.setFont(font_name);
     debugText.setScale(0.5f);

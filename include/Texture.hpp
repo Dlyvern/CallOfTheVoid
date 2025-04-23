@@ -25,8 +25,35 @@ namespace textures
         Emissive,
         Height,
         Glossiness,
-        Opacity
+        Opacity,
+        Undefined
     };
+
+    inline TextureType fromStringToTextureType(const std::string& type)
+    {
+        if (type == "Diffuse")
+            return TextureType::Diffuse;
+        if (type == "Specular")
+            return TextureType::Specular;
+        if (type == "Normal")
+            return TextureType::Normal;
+        if (type == "Metallic")
+            return TextureType::Metallic;
+        if (type == "Roughness")
+            return TextureType::Roughness;
+        if (type == "AO")
+            return TextureType::AO;
+        if (type == "Emissive")
+            return TextureType::Emissive;
+        if (type == "Height")
+            return TextureType::Height;
+        if (type == "Glossiness")
+            return TextureType::Glossiness;
+        if (type == "Opacity")
+            return TextureType::Opacity;
+        else
+            return TextureType::Undefined;
+    }
 
     class Texture
     {
@@ -43,11 +70,14 @@ namespace textures
 
         void bake();
 
+        bool isBaked() const;
+
         void bind(unsigned int slot = 0);
 
         ~Texture();
 
     private:
+        bool m_isBaked;
         unsigned int m_id;
         TextureData m_textureData;
         std::string m_name;

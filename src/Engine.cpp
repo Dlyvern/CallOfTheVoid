@@ -20,6 +20,8 @@
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
 #include "DebugEditor.hpp"
+#include "SceneManager.hpp"
+#include "ShaderManager.hpp"
 
 Engine &Engine::instance()
 {
@@ -47,21 +49,18 @@ void Engine::run()
         ImGui::NewFrame();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        
         if((*m_currentScene)->isOver() && m_currentScene + 1 != m_allScenes.end())
         {
             ++m_currentScene;
             (*m_currentScene)->create();
+            SceneManager::instance().setCurrentScene(m_currentScene->get());
         }
 
-        if((*m_currentScene))
-        {
-            CameraManager::getInstance().getActiveCamera()->update(deltaTime);
-            physics::PhysicsController::instance().simulate(deltaTime);
-            DebugEditor::instance().update();
-            // debug::DebugTextHolder::instance().update(deltaTime);
-            (*m_currentScene)->update(deltaTime);
-        }
+        CameraManager::getInstance().getActiveCamera()->update(deltaTime);
+        physics::PhysicsController::instance().simulate(deltaTime);
+        DebugEditor::instance().update();
+        SceneManager::instance().updateCurrentScene(deltaTime);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -116,18 +115,19 @@ void Engine::init()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
     // input::MouseManager::instance().init();
 
     AssetsManager::instance().preLoadPathsForAllModels();
     AssetsManager::instance().preLoadPathsForAllTextures();
+    AssetsManager::instance().preLoadPathsForAllMaterials();
+    ShaderManager::instance().preLoadShaders();
 
     m_allScenes.emplace_back(std::make_shared<LoadingScene>());
     m_allScenes.emplace_back(std::make_shared<DefaultScene>());
 
     m_currentScene = m_allScenes.begin();
-
     (*m_currentScene)->create();
+    SceneManager::instance().setCurrentScene(m_currentScene->get());
 }
 
 void Engine::glCheckError(const char *file, const int line)
