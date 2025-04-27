@@ -1,5 +1,6 @@
 #include "StaticMesh.hpp"
 #include "glad.h"
+#include "ShaderManager.hpp"
 
 StaticMesh::StaticMesh(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices)
 {
@@ -29,16 +30,39 @@ StaticMesh::StaticMesh(const std::vector<common::Vertex> &vertices, const std::v
 
     glBindVertexArray(0);
 
-
-    // glBindBuffer(GL_ARRAY_BUFFER, 0);
-	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     m_indicesCount = indices.size();
 }
 
 void StaticMesh::draw()
 {
+    if (m_material)
+    {
+        auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::STATIC);
+        m_material->bind(*shader);
+    }
+
     glBindVertexArray(m_vao);
     glDrawElements(GL_TRIANGLES, m_indicesCount, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
+}
+
+void StaticMesh::setMaterial(Material *material)
+{
+    m_material = material;
+}
+
+Material* StaticMesh::getMaterial()
+{
+    return m_material;
+}
+
+StaticMesh::~StaticMesh()
+{
+    // if (m_ebo) glDeleteBuffers(1, &m_ebo);
+    // if (m_vbo) glDeleteBuffers(1, &m_vbo);
+    // if (m_vao) glDeleteVertexArrays(1, &m_vao);
 }

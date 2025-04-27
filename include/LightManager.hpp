@@ -11,20 +11,20 @@ class LightManager
 public:
     static LightManager& instance();
 
-    void addLight(const lighting::Light& light);
+    void addLight(lighting::Light* light);
 
-    void sendLightsIntoShader(Shader& shader);
+    void sendLightsIntoShader(GLitch::Shader& shader);
 
     glm::mat4 getLightSpaceMatrix() const;
 
     void setLightSpaceMatrix(const glm::mat4& matrix);
 
-    void bindGlobalLighting(Shader& shader);
+    void bindGlobalLighting(GLitch::Shader& shader);
 
-    std::vector<lighting::Light> getLights();
+    std::vector<lighting::Light*> getLights();
 
 private:
-    std::vector<lighting::Light> m_lights;
+    std::vector<lighting::Light*> m_lights;
 
     glm::mat4 m_lightSpaceMatrix;
 

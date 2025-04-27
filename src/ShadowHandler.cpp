@@ -1,7 +1,5 @@
 #include "ShadowHandler.hpp"
-
 #include <glad.h>
-
 #include "WindowsManager.hpp"
 
 void ShadowHandler::initShadows()
@@ -21,7 +19,6 @@ void ShadowHandler::initShadows()
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 }
 
 void ShadowHandler::bindShadows()
@@ -40,7 +37,6 @@ void ShadowHandler::unbindShadows()
 
     glViewport(0, 0, win->getWidth(), win->getHeight());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 }
 
 void ShadowHandler::activateTexture()

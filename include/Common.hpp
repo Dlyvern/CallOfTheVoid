@@ -51,7 +51,6 @@ namespace common
     {
     public:
         virtual void draw() = 0;
-
         virtual ~Mesh() = default;
     };
 
@@ -112,9 +111,10 @@ namespace common
 
         common::BoneInfo* findParent()
         {
-            for (int i = 0; i < modelBones->size(); ++i)
-                if (modelBones->at(i).parentId == -1)
-                    return &modelBones->at(i);
+            for (auto& modelBone : *modelBones)
+                if (modelBone.parentId == -1)
+                    return &modelBone;
+
             return nullptr;
         }
 

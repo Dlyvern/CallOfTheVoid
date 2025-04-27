@@ -1,10 +1,7 @@
 #ifndef ANIMATOR_HPP
 #define ANIMATOR_HPP
 
-#include <cmath>
-#include <glm/gtx/string_cast.hpp>
-
-#include "Interpolation.hpp"
+#include "Common.hpp"
 
 class Animator
 {
@@ -15,12 +12,13 @@ public:
 
 	void playAnimation(common::Animation* animation, bool repeat = true);
 
+	void stopAnimation();
+
 	void calculateBoneTransform(common::BoneInfo* boneInfo, const glm::mat4 &parentTransform, common::Animation* animation, float currentTime);
 
-	bool isAnimationPlaying() const;
+	[[nodiscard]] bool isAnimationPlaying() const;
 
 	std::vector<glm::mat4> getFinalBoneMatrices();
-
 private:
 	bool m_isAnimationPaused{false};
 	bool m_isAnimationLooped{true};

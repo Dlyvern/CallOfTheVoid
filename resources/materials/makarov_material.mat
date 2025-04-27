@@ -1,0 +1,15 @@
+{
+    "color": [
+        0.047634001821279526,
+        0.047634001821279526,
+        0.047634001821279526
+    ],
+    "name": "makarov_material.mat",
+    "textures": {
+        "AO": "",
+        "Diffuse": "Makarov_main_Base_Color.png",
+        "Metallic": "",
+        "Normal": "Makarov_main_Normal_OpenGL.png",
+        "Roughness": ""
+    }
+}

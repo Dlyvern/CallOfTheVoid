@@ -17,6 +17,8 @@ enum class KeyCode : int
     SPACE = GLFW_KEY_SPACE,
     E = GLFW_KEY_E,
     K = GLFW_KEY_K,
+    O = GLFW_KEY_O,
+    DELETE = GLFW_KEY_DELETE,
 };
 
 class KeysManager

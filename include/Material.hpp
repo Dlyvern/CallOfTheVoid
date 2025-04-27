@@ -1,9 +1,11 @@
 #ifndef MATERIAL_HPP
 #define MATERIAL_HPP
 
+#include <Texture.hpp>
+
 #include "Texture.hpp"
-#include "Shader.hpp"
 #include <unordered_map>
+#include "Shader.hpp"
 
 class Material
 {
@@ -18,14 +20,16 @@ public:
 
     void setBaseColor(const glm::vec3& color);
 
-    void addTexture(const textures::TextureType& type, textures::Texture* texture);
+    void addTexture(const GLitch::Texture::TextureType& type, GLitch::Texture* texture);
 
-    textures::Texture* getTexture(const textures::TextureType& type);
+    GLitch::Texture* getTexture(const GLitch::Texture::TextureType& type);
 
-    void bind(Shader& shader);
+    const glm::vec3& getBaseColor() const;
+
+    void bind(GLitch::Shader& shader);
 private:
     std::string m_name{"Undefined"};
-    std::unordered_map<textures::TextureType, textures::Texture*> m_textures;
+    std::unordered_map<GLitch::Texture::TextureType, GLitch::Texture*> m_textures;
     glm::vec3 m_baseColor = glm::vec3(128, 128, 128);
     bool m_useBaseColor = true;
 };

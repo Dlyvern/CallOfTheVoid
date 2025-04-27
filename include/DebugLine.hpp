@@ -2,7 +2,6 @@
 #define DEBUG_LINE_HPP
 
 #include "Shader.hpp"
-
 namespace debug
 {
 class DebugLine
@@ -23,7 +22,7 @@ private:
 
     glm::vec4 m_color{0, 1, 0, 1};
 
-    Shader m_shader;
+    GLitch::Shader m_shader;
 };
 } //namespace debug
 

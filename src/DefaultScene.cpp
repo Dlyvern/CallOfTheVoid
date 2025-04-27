@@ -20,18 +20,12 @@ void DefaultScene::create()
     m_skybox.init({});
     m_skybox.loadFromHDR(skyboxesFolder + "/nice.hdr");
 
-    const std::vector<std::string> neededTexturesNames{
-        "wall_parking_d.png", "wall_parking_n.png", "concrete_d.png", "void.png", "MannequinDiffuse.png",
-        "MannequinNormal.png", "MannequinSpecular.png", "MannequinAo.png", "wood_floor_d.png", "wood_floor_n.png",
-        "wood_floor_ao.png", "older-wood-flooring_height.png", "wood_floor_m.png", "wood_floor_r.png"
-    };
+    CameraManager::getInstance().getActiveCamera()->setCameraMode(CameraMode::FPS);
 
-    for (const auto& textureName : neededTexturesNames)
-        if (auto texture = AssetsManager::instance().getTextureByName(textureName); texture && !texture->isBaked())
-            texture->bake();
+    this->setGameObjects(SceneManager::loadObjectsFromFile(filesystem::getMapsFolderPath().string() + "/default_scene.json"));
 
     Material mannequinMaterial;
-    mannequinMaterial.addTexture(textures::TextureType::Diffuse, AssetsManager::instance().getTextureByName("void.png"));
+    mannequinMaterial.addTexture(GLitch::Texture::TextureType::Diffuse, AssetsManager::instance().getTextureByName("Ch36_1001_Diffuse.png"));
 
     auto mannequin = std::make_shared<Void>("mannequin");
     mannequin->setMaterial(mannequinMaterial);
@@ -52,10 +46,6 @@ void DefaultScene::create()
     // voidObject->playAnimation();
     // this->addGameObject(voidObject);
 
-    CameraManager::getInstance().getActiveCamera()->setCameraMode(CameraMode::FPS);
-
-    for (const auto& ob : SceneManager::loadObjectsFromFile(filesystem::getMapsFolderPath().string() + "/default_scene.json"))
-        this->addGameObject(ob);
 
     m_player = std::make_shared<Player>("player");
     m_player->init({0.0f, 1.0f, 0.0f});
@@ -68,6 +58,13 @@ void DefaultScene::create()
     directionalLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
     directionalLight.strength = 2.0f;
 
+    lighting::Light secondLight;
+    secondLight.type = lighting::LightType::DIRECTIONAL;
+    secondLight.direction = glm::vec3(-0.2f, -1.0f, -0.3f);
+    secondLight.position = glm::vec3(4.0f, 4.0f, 2.0f);
+    secondLight.color = glm::vec3(255.0f, 0.0f, 0.0f);
+    secondLight.strength = 0.1f;
+
     auto lightObject = std::make_shared<geometries::Cube>("light");
     lightObject->setModel(AssetsManager::instance().getStaticModelByName("cube.obj"));
     lightObject->setPosition(directionalLight.position);
@@ -75,19 +72,27 @@ void DefaultScene::create()
     lightObject->setRigidBody(physics::PhysicsController::instance().addStaticActor(lightObject));
     lightObject->addComponent<LightComponent>(directionalLight);
 
-    LightManager::instance().addLight(lightObject->getComponent<LightComponent>()->getLight());
+    // auto secondLightObject = std::make_shared<geometries::Cube>("second_light");
+    // secondLightObject->setModel(AssetsManager::instance().getStaticModelByName("cube.obj"));
+    // secondLightObject->setPosition(secondLight.position);
+    // secondLightObject->setScale({0.5f, 0.5f, 0.5f});
+    // secondLightObject->setRigidBody(physics::PhysicsController::instance().addStaticActor(secondLightObject));
+    // secondLightObject->addComponent<LightComponent>(secondLight);
 
+    LightManager::instance().addLight(lightObject->getComponent<LightComponent>()->getLight());
+    // LightManager::instance().addLight(secondLightObject->getComponent<LightComponent>()->getLight());
 
     this->addGameObject(lightObject);
+    // this->addGameObject(secondLightObject);
 
     m_shadowHandler.initShadows();
 }
 
-void calculateShadows(Shader& shader, const std::vector<std::shared_ptr<GameObject>>& gameObjects, ShadowHandler& shadowHandler)
+void calculateShadows(GLitch::Shader& shader, const std::vector<std::shared_ptr<GameObject>>& gameObjects, ShadowHandler& shadowHandler)
 {
     static constexpr float nearPlane = 1.0f, farPlane = 7.5f;
 
-    glm::vec3 lightPos = LightManager::instance().getLights()[0].position;
+    glm::vec3 lightPos = LightManager::instance().getLights()[0]->position;
     glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
     glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 lightSpaceMatrix = lightProjection * lightView;

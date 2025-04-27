@@ -1,5 +1,6 @@
 #include "SkeletalMesh.hpp"
 #include "glad.h"
+#include "ShaderManager.hpp"
 
 SkeletalMesh::SkeletalMesh(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices) : m_vertices(vertices)
 {
@@ -53,7 +54,22 @@ SkeletalMesh::SkeletalMesh(const std::vector<common::Vertex> &vertices, const st
 
 void SkeletalMesh::draw()
 {
+    if (m_material)
+    {
+        auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::SKELETON);
+        m_material->bind(*shader);
+    }
     glBindVertexArray(m_vao);
     glDrawElements(GL_TRIANGLES, m_indicesCount, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
+}
+
+void SkeletalMesh::setMaterial(Material *material)
+{
+    m_material = material;
+}
+
+Material* SkeletalMesh::getMaterial() const
+{
+    return m_material;
 }

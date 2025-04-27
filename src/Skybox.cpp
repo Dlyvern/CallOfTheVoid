@@ -160,7 +160,7 @@ void Skybox::loadFromHDR(const std::string &path)
 
     const std::string shaderPath = filesystem::getShadersFolderPath().string();
 
-    Shader convertShader;
+    GLitch::Shader convertShader;
     convertShader.load(shaderPath + "/equirectangular_to_cubemap.vert", shaderPath + "/equirectangular_to_cubemap.frag");
     convertShader.bind();
     convertShader.setInt("equirectangularMap", 0);
@@ -208,7 +208,7 @@ unsigned int Skybox::loadCubemap(const std::vector<std::string>& faces)
         }
         else
         {
-            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            std::cout << "Skybox::loadCubemap(): Cubemap texture failed to load at path: " << faces[i] << std::endl;
             stbi_image_free(data);
         }
     }

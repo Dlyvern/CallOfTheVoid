@@ -1,9 +1,7 @@
 #ifndef SCENE_HPP
 #define SCENE_HPP
-#include <vector>
 
 #include "GameObject.hpp"
-#include <memory>
 
 class Scene
 {
@@ -19,6 +17,10 @@ public:
     virtual bool isOver() = 0;
 
     void addGameObject(std::shared_ptr<GameObject> gameObject);
+
+    void setGameObjects(const std::vector<std::shared_ptr<GameObject>>& gameObjects);
+
+    bool deleteGameObject(GameObject* gameObject);
 
     const std::vector<std::shared_ptr<GameObject>>& getGameObjects();
 

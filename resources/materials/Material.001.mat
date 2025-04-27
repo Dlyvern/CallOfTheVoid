@@ -1,0 +1,15 @@
+{
+    "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929
+    ],
+    "name": "Material.001.mat",
+    "textures": {
+        "AO": "",
+        "Diffuse": "Ch36_1001_Diffuse.png",
+        "Metallic": "",
+        "Normal": "",
+        "Roughness": ""
+    }
+}

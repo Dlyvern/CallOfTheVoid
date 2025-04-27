@@ -25,6 +25,8 @@ public:
 
     ModelType getType() override {return ModelType::SKINNED;}
 
+    std::vector<SkeletalMesh>& getMeshes();
+
     Skeleton& getSkeleton();
 
     void draw() override;

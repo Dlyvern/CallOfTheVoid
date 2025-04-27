@@ -1,0 +1,15 @@
+{
+    "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929
+    ],
+    "name": "VendingMachine_01.mat",
+    "textures": {
+        "AO": "",
+        "Diffuse": "vendingMachine_BaseColor.png",
+        "Metallic": "",
+        "Normal": "vendingMachine_Normal.png",
+        "Roughness": ""
+    }
+}

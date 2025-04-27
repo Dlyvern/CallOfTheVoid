@@ -14,6 +14,7 @@ public:
 private:
     void showDebugInfo();
     void showObjectInfo(GameObject* gameObject);
+    void showAllObjectsInTheScene();
 
     void displayBonesHierarchy(Skeleton* skeleton, common::BoneInfo* parent = nullptr);
 
@@ -22,7 +23,6 @@ private:
     DebugEditor& operator=(const DebugEditor&) = delete;
     DebugEditor(DebugEditor&&) = delete;
     DebugEditor& operator=(DebugEditor&&) = delete;
-
 
     GameObject* m_selectedGameObject{nullptr};
 

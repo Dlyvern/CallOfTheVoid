@@ -1,4 +1,5 @@
 #include "Animator.hpp"
+#include "Utilities.hpp"
 
 Animator::Animator()
 {
@@ -62,6 +63,11 @@ void Animator::playAnimation(common::Animation *animation, const bool repeat)
     }
 }
 
+void Animator::stopAnimation()
+{
+    m_currentAnimation = nullptr;
+}
+
 void Animator::calculateBoneTransform(common::BoneInfo *boneInfo, const glm::mat4 &parentTransform, common::Animation *animation, const float currentTime)
 {
     std::string nodeName = boneInfo->name;
@@ -69,7 +75,7 @@ void Animator::calculateBoneTransform(common::BoneInfo *boneInfo, const glm::mat
 
     if (common::BoneAnimation* boneAnimation = animation->getBoneAnimation(nodeName))
     {
-        auto [startFrame, endFrame] = findKeyframes(boneAnimation->keyFrames, currentTime);
+        auto [startFrame, endFrame] = utilities::findKeyframes(boneAnimation->keyFrames, currentTime);
 
         if (!startFrame || !endFrame)
             return;
@@ -78,9 +84,9 @@ void Animator::calculateBoneTransform(common::BoneInfo *boneInfo, const glm::mat
         float t = (deltaTime == 0) ? 0.0f : (currentTime - startFrame->timeStamp) / deltaTime;
         t = glm::clamp(t, 0.0f, 1.0f);
 
-        glm::vec3 position = interpolate(startFrame->position, endFrame->position, t);
+        glm::vec3 position = utilities::interpolate(startFrame->position, endFrame->position, t);
         glm::quat rotation = glm::normalize(glm::slerp(startFrame->rotation, endFrame->rotation, t));
-        glm::vec3 scale = interpolate(startFrame->scale, endFrame->scale, t);
+        glm::vec3 scale = utilities::interpolate(startFrame->scale, endFrame->scale, t);
 
         boneTransform = glm::translate(glm::mat4(1.0f), position) *
                     glm::toMat4(rotation) *

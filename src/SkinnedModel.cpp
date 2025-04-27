@@ -24,6 +24,11 @@ const std::string &SkinnedModel::getName() const
     return m_name;
 }
 
+std::vector<SkeletalMesh>& SkinnedModel::getMeshes()
+{
+    return m_meshes;
+}
+
 Skeleton& SkinnedModel::getSkeleton()
 {
     return m_skeleton;

@@ -1,8 +1,8 @@
 #ifndef SKYBOX_HPP
 #define SKYBOX_HPP
 
-#include "Shader.hpp"
 #include <vector>
+#include "Shader.hpp"
 
 class Skybox
 {
@@ -16,9 +16,8 @@ public:
     void render();
 
     void loadFromHDR(const std::string& path);
-
 private:
-    Shader m_skyboxShader;
+    GLitch::Shader m_skyboxShader;
     unsigned int m_vao, m_vbo, m_ebo;
     unsigned int m_cubeMapTextureId;
 

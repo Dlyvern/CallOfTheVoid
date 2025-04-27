@@ -6,6 +6,7 @@
 #include "AssetsManager.hpp"
 #include "Cube.hpp"
 #include "Filesystem.hpp"
+#include "Void.hpp"
 
 SceneManager& SceneManager::instance()
 {
@@ -36,32 +37,26 @@ void SceneManager::saveObjectsIntoFile(const std::vector<std::shared_ptr<GameObj
     for (const auto& object : objects)
     {
         json["name"] = object->getName();
+
+        if (auto cube = dynamic_cast<geometries::Cube*>(object.get()))
+            json["model"] = cube->getModel() ? cube->getModel()->getName() : "";
+        else if (auto voidObject = dynamic_cast<Void*>(object.get()))
+            json["model"] = voidObject->getModel() ? voidObject->getModel()->getName() : "";
+
+        json["position"] = {object->getPosition().x, object->getPosition().y, object->getPosition().z};
+        json["scale"] = {object->getScale().x,object->getScale().y, object->getScale().z};
+        json["rotation"] = {object->getRotation().x, object->getRotation().y, object->getRotation().z};
     }
 
-//
-//     "name": "door",
-// "material": "default_material.mat",
-// "modelName": "jail_door.fbx",
-// "position":
-// {
-//     "x": 1.0,
-//     "y": -0.5,
-//     "z": 0.0
-// },
-// "scale":
-// {
-//     "x": 1.0,
-//     "y": 1.0,
-//     "z": 1.0
-// },
-// "rotation":
-// {
-//     "x": 1.0,
-//     "y": 0.0,
-//     "z": 0.0,
-//     "angle": -90
-// }
+    std::ofstream file(filePath);
 
+    if (file.is_open())
+    {
+        file << std::setw(4) << json << std::endl;
+        file.close();
+    }
+    else
+        std::cout << "SceneManager::saveObjectsIntoFile(): Could not open file to save game objects: " << filePath << std::endl;
 }
 
 std::vector<std::shared_ptr<GameObject>> SceneManager::loadObjectsFromFile(const std::string &filePath)

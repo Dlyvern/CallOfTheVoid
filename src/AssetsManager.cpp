@@ -17,6 +17,60 @@
 
 namespace
 {
+        inline std::string fromTypeToString(const GLitch::Texture::TextureType& type)
+    {
+        switch (type)
+        {
+            case GLitch::Texture::TextureType::Diffuse:
+                return "Diffuse";
+            case GLitch::Texture::TextureType::Specular:
+                return "Specular";
+            case GLitch::Texture::TextureType::Normal:
+                return "Normal";
+            case GLitch::Texture::TextureType::Metallic:
+                return "Metallic";
+            case GLitch::Texture::TextureType::Roughness:
+                return "Roughness";
+            case GLitch::Texture::TextureType::AO:
+                return "AO";
+            case GLitch::Texture::TextureType::Emissive:
+                return "Emissive";
+            case GLitch::Texture::TextureType::Height:
+                return "Height";
+            case GLitch::Texture::TextureType::Glossiness:
+                return "Glossiness";
+            case GLitch::Texture::TextureType::Opacity:
+                return "Opacity";
+            default:
+                return "Undefined";
+        }
+    }
+
+    inline GLitch::Texture::TextureType fromStringToTextureType(const std::string& type)
+    {
+        if (type == "Diffuse")
+            return GLitch::Texture::TextureType::Diffuse;
+        if (type == "Specular")
+            return GLitch::Texture::TextureType::Specular;
+        if (type == "Normal")
+            return GLitch::Texture::TextureType::Normal;
+        if (type == "Metallic")
+            return GLitch::Texture::TextureType::Metallic;
+        if (type == "Roughness")
+            return GLitch::Texture::TextureType::Roughness;
+        if (type == "AO")
+            return GLitch::Texture::TextureType::AO;
+        if (type == "Emissive")
+            return GLitch::Texture::TextureType::Emissive;
+        if (type == "Height")
+            return GLitch::Texture::TextureType::Height;
+        if (type == "Glossiness")
+            return GLitch::Texture::TextureType::Glossiness;
+        if (type == "Opacity")
+            return GLitch::Texture::TextureType::Opacity;
+        return GLitch::Texture::TextureType::Undefined;
+    }
+
     void extractVerticesAndIndices(aiMesh* mesh, std::vector<common::Vertex>& vertices, std::vector<unsigned int>& indices)
     {
         for(unsigned int j = 0; j < mesh->mNumVertices; j++)
@@ -95,9 +149,9 @@ AssetsManager& AssetsManager::instance()
     return assetsManager;
 }
 
-textures::Texture AssetsManager::loadTexture(const std::string &path)
+GLitch::Texture AssetsManager::loadTexture(const std::string &path)
 {
-    return textures::Texture{path};
+    return GLitch::Texture{path};
 }
 
 std::vector<common::Model*> AssetsManager::getAllLoadedModels() const
@@ -187,6 +241,166 @@ void AssetsManager::preLoadPathsForAllMaterials()
             m_materialsPaths.insert(materialName);
         }
     }
+
+    for (const auto& preLoadedMaterial : m_materialsPaths)
+        std::cout << "Preloaded material: " << preLoadedMaterial << std::endl;
+}
+
+std::vector<std::string> AssetsManager::getAllSkinnedModelsNames() const
+{
+    std::vector<std::string> skinnedModels;
+
+    skinnedModels.reserve(m_skinnedModels.size());
+
+    for (const auto &key: m_skinnedModels | std::views::keys)
+        skinnedModels.push_back(key);
+
+    return skinnedModels;
+}
+
+std::vector<std::string> AssetsManager::getAllStaticModelsNames() const
+{
+    std::vector<std::string> staticModelNames;
+
+    staticModelNames.reserve(m_staticModels.size());
+
+    for (const auto& key: m_staticModels | std::views::keys)
+        staticModelNames.push_back(key);
+
+    return staticModelNames;
+}
+
+Material* AssetsManager::loadMaterialFromModel(aiMaterial *aiMat)
+{
+    Material material;
+    std::string modelDirectory;
+
+    aiString name;
+
+    if (aiMat->Get(AI_MATKEY_NAME, name) == AI_SUCCESS)
+        material.setName(name.C_Str());
+
+    if (m_materials.contains(material.getName()))
+        return &m_materials[material.getName()];
+
+    if (m_materialsPaths.contains(filesystem::getMaterialsFolderPath().string() + '/' + material.getName() + ".mat"))
+    {
+        preLoadMaterials({material.getName() + ".mat"});
+
+        std::cout << "Preloading material" << std::endl;
+
+        auto m = getMaterialByName(material.getName() + ".mat");
+
+        if (!m)
+            std::cout << "Material " << material.getName() << " not found" << std::endl;
+        else
+            std::cout << "Material " << material.getName() << " loaded" << std::endl;
+
+        return m;
+    }
+
+    std::cout << "Material name: " << material.getName() << std::endl;
+
+    if (aiMat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+    {
+        aiString path;
+        if (aiMat->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS)
+        {
+            std::string textureName = path.C_Str();
+            std::ranges::replace(textureName, '\\', '/');
+
+            size_t pos = textureName.find_last_of('/');
+
+            if (pos != std::string::npos)
+                textureName = textureName.substr(pos + 1, textureName.size() - pos);
+
+            if (std::filesystem::path(textureName).extension() == ".jpg")
+            {
+                size_t extension = textureName.find_last_of('.');
+
+                if (extension != std::string::npos)
+                {
+                    textureName = textureName.substr(0, extension);
+                    textureName += ".png";
+                }
+            }
+
+            std::cout << textureName << std::endl;
+
+            auto* texture = getTextureByName(textureName);
+
+            material.addTexture(GLitch::Texture::TextureType::Diffuse, texture);
+        }
+    }
+
+    if (aiMat->GetTextureCount(aiTextureType_NORMALS) > 0)
+    {
+        aiString path;
+        if (aiMat->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS)
+        {
+            std::string textureName = path.C_Str();
+            std::ranges::replace(textureName, '\\', '/');
+
+            size_t pos = textureName.find_last_of('/');
+
+            if (pos != std::string::npos)
+                textureName = textureName.substr(pos + 1, textureName.size() - pos);
+
+            if (std::filesystem::path(textureName).extension() == ".jpg")
+            {
+                size_t extension = textureName.find_last_of('.');
+
+                if (extension != std::string::npos)
+                {
+                    textureName = textureName.substr(0, extension);
+                    textureName += ".png";
+                }
+            }
+
+            std::cout << textureName << std::endl;
+
+            auto* texture = getTextureByName(textureName);
+
+            material.addTexture(GLitch::Texture::TextureType::Normal, texture);
+        }
+    }
+
+    aiColor3D color(0.f, 0.f, 0.f);
+    if (aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS)
+    {
+        material.setBaseColor(glm::vec3(color.r, color.g, color.b));
+    }
+
+    m_materials[material.getName()] = material;
+
+    nlohmann::json json;
+
+    json["name"] = material.getName() + ".mat";
+
+    const auto& col = material.getBaseColor();
+
+    json["color"] = {col.r, col.g, col.b};
+    json["textures"] = {
+        { "Diffuse", material.getTexture(GLitch::Texture::TextureType::Diffuse) ? material.getTexture(GLitch::Texture::TextureType::Diffuse)->getName() : "" },
+        { "Normal", material.getTexture(GLitch::Texture::TextureType::Normal) ? material.getTexture(GLitch::Texture::TextureType::Normal)->getName() : "" },
+        { "Metallic", material.getTexture(GLitch::Texture::TextureType::Metallic) ? material.getTexture(GLitch::Texture::TextureType::Metallic)->getName() : "" },
+        { "Roughness", material.getTexture(GLitch::Texture::TextureType::Roughness) ? material.getTexture(GLitch::Texture::TextureType::Roughness)->getName() : "" },
+        { "AO", material.getTexture(GLitch::Texture::TextureType::AO) ? material.getTexture(GLitch::Texture::TextureType::AO)->getName() : "" }
+    };
+
+    auto fileName = filesystem::getMaterialsFolderPath().string() + "/" + material.getName() + ".mat";
+
+    std::ofstream outFile(fileName);
+
+    if (outFile.is_open())
+    {
+        outFile << std::setw(4) << json << std::endl;
+        outFile.close();
+    }
+    else
+        std::cout << "Could not open file " << fileName << std::endl;
+
+    return &m_materials[material.getName()];
 }
 
 void AssetsManager::preLoadPathsForAllModels()
@@ -447,7 +661,7 @@ Material AssetsManager::loadMaterial(const std::string &path)
             if (!value.is_string() || value.get<std::string>().empty())
                 continue;
 
-            if (const auto textureType = textures::fromStringToTextureType(key); textureType != textures::TextureType::Undefined)
+            if (const auto textureType = ::fromStringToTextureType(key); textureType != GLitch::Texture::TextureType::Undefined)
                 if (auto texture = getTextureByName(value.get<std::string>()))
                     material.addTexture(textureType, texture);
         }
@@ -543,13 +757,33 @@ void extractSkeleton(const aiMesh* mesh, const aiScene* scene, std::vector<commo
     }
 }
 
-StaticMesh processStaticMesh(aiMesh* mesh)
+StaticMesh processStaticMesh(aiMesh* mesh, const aiScene* scene)
 {
     std::vector<common::Vertex> vertices;
     std::vector<unsigned int> indices;
     extractVerticesAndIndices(mesh, vertices, indices);
 
-    return {vertices, indices};
+    unsigned int materialIndex = mesh->mMaterialIndex;
+
+    aiMaterial* tmpMaterial = scene->mMaterials[materialIndex];
+    StaticMesh staticMesh{vertices, indices};
+
+    if (tmpMaterial)
+    {
+        auto staticMaterial = AssetsManager::instance().loadMaterialFromModel(tmpMaterial);
+
+        if (staticMaterial)
+        {
+            staticMesh.setMaterial(staticMaterial);
+            std::cout << "Successfully loaded material " << staticMaterial->getName() << std::endl;
+        }
+        else
+            std::cout << "Failed to load material" << std::endl;
+    }
+    else
+        std::cout << "No material in the model" << std::endl;
+
+    return staticMesh;
 }
 
 SkeletalMesh processSkeletalMesh(aiMesh* mesh, const aiScene* scene, Skeleton& skeleton)
@@ -560,7 +794,28 @@ SkeletalMesh processSkeletalMesh(aiMesh* mesh, const aiScene* scene, Skeleton& s
     extractVerticesAndIndices(mesh, vertices, indices);
     extractSkeleton(mesh, scene, vertices, skeleton);
 
-    return {vertices, indices};
+    SkeletalMesh skeletalMesh{vertices, indices};
+
+    unsigned int materialIndex = mesh->mMaterialIndex;
+
+    aiMaterial* tmpMaterial = scene->mMaterials[materialIndex];
+
+    if (tmpMaterial)
+    {
+        auto skeletonMaterial = AssetsManager::instance().loadMaterialFromModel(tmpMaterial);
+
+        if (skeletonMaterial)
+        {
+            skeletalMesh.setMaterial(skeletonMaterial);
+            std::cout << "Successfully loaded material " << skeletonMaterial->getName() << std::endl;
+        }
+        else
+            std::cout << "Failed to load material" << std::endl;
+    }
+    else
+        std::cout << "No material in the model" << std::endl;
+
+    return skeletalMesh;
 }
 
 void processStaticModel(aiNode* node, const aiScene* scene, std::vector<StaticMesh>& meshes)
@@ -568,7 +823,7 @@ void processStaticModel(aiNode* node, const aiScene* scene, std::vector<StaticMe
     for (unsigned int i = 0; i < node->mNumMeshes; ++i)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.emplace_back(processStaticMesh(mesh));
+        meshes.emplace_back(processStaticMesh(mesh, scene));
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; ++i)
@@ -622,6 +877,8 @@ SkinnedModel AssetsManager::loadSkinnedModel(const std::string &path)
     Skeleton skeleton;
     std::vector<SkeletalMesh> meshes;
     processSkinnedModel(scene->mRootNode, scene, meshes, skeleton);
+
+
 
     const std::string name = std::filesystem::path(path).filename().string();
 

@@ -8,6 +8,7 @@
 #include "SkinnedModel.hpp"
 #include <set>
 
+#include "Filesystem.hpp"
 #include "Material.hpp"
 #include "SkeletalMesh.hpp"
 #include "StaticModel.hpp"
@@ -21,12 +22,17 @@ class AssetsManager
 public:
     static AssetsManager& instance();
 
-    inline textures::Texture* getTextureByName(const std::string& name);
+    inline GLitch::Texture* getTextureByName(const std::string& name);
     inline SkinnedModel* getSkinnedModelByName(const std::string& name);
     inline StaticModel* getStaticModelByName(const std::string& name);
     inline common::Model* getModelByName(const std::string& name);
     std::vector<common::Model*> getAllLoadedModels() const;
     inline Material* getMaterialByName(const std::string& name);
+
+    std::vector<std::string> getAllSkinnedModelsNames() const;
+    std::vector<std::string> getAllStaticModelsNames() const;
+
+    Material* loadMaterialFromModel(aiMaterial* aiMat);
 
     void preLoadPathsForAllModels();
     void preLoadPathsForAllTextures();
@@ -38,7 +44,7 @@ public:
 
     //TODO Make private
     Material loadMaterial(const std::string& path);
-    textures::Texture loadTexture(const std::string& path);
+    GLitch::Texture loadTexture(const std::string& path);
     SkinnedModel loadSkinnedModel(const std::string& path);
     StaticModel loadStaticModel(const std::string &path);
 
@@ -49,7 +55,7 @@ public:
 
     ~AssetsManager();
 private:
-    std::unordered_map<std::string, textures::Texture> m_textures;
+    std::unordered_map<std::string, GLitch::Texture> m_textures;
     std::unordered_map<std::string, SkinnedModel> m_skinnedModels;
     std::unordered_map<std::string, StaticModel> m_staticModels;
     std::unordered_map<std::string, Material> m_materials;
@@ -102,10 +108,21 @@ inline SkinnedModel* AssetsManager::getSkinnedModelByName(const std::string& nam
     return nullptr;
 }
 
-inline textures::Texture* AssetsManager::getTextureByName(const std::string& name)
+inline GLitch::Texture* AssetsManager::getTextureByName(const std::string& name)
 {
     if(auto it = m_textures.find(name); it != m_textures.cend())
         return &it->second;
+
+    auto folderPath = filesystem::getTexturesFolderPath().string() + "/" + name;
+
+    if (std::filesystem::exists(folderPath))
+    {
+        preLoadTextures({name});
+
+        if(auto it = m_textures.find(name); it != m_textures.cend())
+            return &it->second;
+    }
+
 
     std::cout << "AssetsManager::getTextureByName(): '" << name << "' does not exist" << std::endl;
     

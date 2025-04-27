@@ -2,7 +2,6 @@
 #define SHADER_MANAGER_HPP
 
 #include <unordered_map>
-
 #include "Shader.hpp"
 
 class ShaderManager
@@ -18,12 +17,12 @@ public:
 
     static ShaderManager& instance();
 
-    Shader* getShader(const ShaderType& type);
+    GLitch::Shader* getShader(const ShaderType& type);
 
     void preLoadShaders();
 
 private:
-    std::unordered_map<ShaderType, Shader> m_shaders;
+    std::unordered_map<ShaderType, GLitch::Shader> m_shaders;
 };
 
 #endif //SHADER_MANAGER_HPP

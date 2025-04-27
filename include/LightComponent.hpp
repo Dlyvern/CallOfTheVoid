@@ -9,13 +9,11 @@ class LightComponent final : public Component
 public:
     LightComponent() = default;
 
-    LightComponent(const lighting::Light& light) : m_light(light) {
-
-    }
+    explicit LightComponent(const lighting::Light& light) : m_light(light) {}
 
     void update(float deltaTime) override;
 
-    lighting::Light& getLight();
+    lighting::Light* getLight();
 private:
     lighting::Light m_light{};
 };

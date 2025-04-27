@@ -1,15 +1,9 @@
 #include "Void.hpp"
-
-#include "Filesystem.hpp"
-#include "CameraManager.hpp"
 #include "LightManager.hpp"
-#include "Physics.hpp"
+#include "Renderer.hpp"
 #include "ShaderManager.hpp"
-#include "WindowsManager.hpp"
 
-Void::Void(const std::string &name) : GameObject(name)
-{
-}
+Void::Void(const std::string &name) : GameObject(name) {}
 
 glm::mat4 Void::computeModelMatrix() const
 {
@@ -26,7 +20,7 @@ glm::mat4 Void::computeModelMatrix() const
     return model;
 }
 
-void Void::calculateShadows(Shader &shader)
+void Void::calculateShadows(GLitch::Shader &shader)
 {
     shader.setMat4("model", computeModelMatrix());
 
@@ -36,7 +30,6 @@ void Void::calculateShadows(Shader &shader)
         boneMatrices = m_animator.getFinalBoneMatrices();
 
     else
-        // m_model->getSkeleton().calculateRagdollBoneMatrices(boneMatrices);
         m_model->getSkeleton().calculateBindPoseTransforms(boneMatrices);
 
     for (int i = 0; i < boneMatrices.size(); ++i)
@@ -45,55 +38,42 @@ void Void::calculateShadows(Shader &shader)
     m_model->draw();
 }
 
-Shader& Void::getShader()
+void Void::destroy()
 {
-    auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::SKELETON);
-    return *shader;
+    GameObject::destroy();
+
+    if (m_rigidBody)
+    {
+        m_rigidBody->release();
+        m_rigidBody = nullptr;
+    }
 }
 
 void Void::update(float deltaTime)
 {
-     m_animator.updateAnimation(deltaTime);
-     auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::SKELETON);
+    m_animator.updateAnimation(deltaTime);
 
-     shader->bind();
+    const auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::SKELETON);
+    shader->bind();
 
-     std::vector<glm::mat4> boneMatrices;
+    std::vector<glm::mat4> boneMatrices;
 
-     if (m_animator.isAnimationPlaying())
-         boneMatrices = m_animator.getFinalBoneMatrices();
+    if (m_animator.isAnimationPlaying())
+        boneMatrices = m_animator.getFinalBoneMatrices();
+    else
+        m_model->getSkeleton().calculateBindPoseTransforms(boneMatrices);
 
-     else
-     {
-         // physics::PhysicsController::instance().updateBoneMatricesFromRagdoll(m_model->getSkeleton().getBones(), RagdollBones, boneMatrices);
-         m_model->getSkeleton().calculateBindPoseTransforms(boneMatrices);
-     }
+    for (unsigned int i = 0; i < boneMatrices.size(); ++i)
+        shader->setMat4("finalBonesMatrices[" + std::to_string(i) + "]", boneMatrices[i]);
 
-     for (unsigned int i = 0; i < boneMatrices.size(); ++i)
-     {
-         std::string uniformName = "finalBonesMatrices[" + std::to_string(i) + "]";
-         shader->setMat4(uniformName, boneMatrices[i]);
-     }
+    const auto& frameData = Renderer::instance().getFrameData();
+    shader->setMat4("model", computeModelMatrix());
+    shader->setMat4("view", frameData.viewMatrix);
+    shader->setMat4("projection", frameData.projectionMatrix);
 
-     const auto* currentWindow = window::WindowsManager::instance().getCurrentWindow();
-     const float aspect = static_cast<float>(currentWindow->getWidth()) / currentWindow->getHeight();
-     const glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
+    LightManager::instance().sendLightsIntoShader(*shader);
 
-     shader->setMat4("model", computeModelMatrix());
-     shader->setMat4("view", CameraManager::getInstance().getActiveCamera()->getViewMatrix());
-     shader->setMat4("projection", projection);
-
-     LightManager::instance().sendLightsIntoShader(*shader);
-
-     m_material.bind(*shader);
-
-     m_model->draw();
-}
-
-void Void::rotate(bool rotateClockwise)
-{
-    m_rotate = true;
-    m_rotateClockwise = rotateClockwise;
+    m_model->draw();
 }
 
 void Void::setModel(SkinnedModel* model)
@@ -118,7 +98,7 @@ void Void::setRigidBody(physx::PxRigidActor *rigidBody)
     m_rigidBody = rigidBody;
 }
 
-physx::PxRigidActor * Void::getRigidBody() const
+physx::PxRigidActor* Void::getRigidBody() const
 {
     return m_rigidBody;
 }
@@ -136,19 +116,9 @@ void Void::setScale(const glm::vec3 &scale)
     GameObject::setScale(scale);
 }
 
-Material Void::getMaterial() const
-{
-    return m_material;
-}
-
-SkinnedModel* Void::getModel()
+SkinnedModel* Void::getModel() const
 {
     return m_model;
-}
-
-void Void::setMaterial(const Material &material)
-{
-    m_material = material;
 }
 
 Void::~Void() = default;

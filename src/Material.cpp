@@ -22,24 +22,29 @@ void Material::setBaseColor(const glm::vec3 &color)
     m_baseColor = color;
 }
 
-void Material::addTexture(const textures::TextureType &type, textures::Texture *texture)
+void Material::addTexture(const GLitch::Texture::TextureType &type, GLitch::Texture *texture)
 {
     m_textures[type] = texture;
 
-    if (type == textures::TextureType::Diffuse)
+    if (type == GLitch::Texture::TextureType::Diffuse)
         m_useBaseColor = texture == nullptr;
 }
 
-textures::Texture* Material::getTexture(const textures::TextureType &type)
+GLitch::Texture* Material::getTexture(const GLitch::Texture::TextureType &type)
 {
     return m_textures[type];
 }
 
-void Material::bind(Shader &shader)
+const glm::vec3& Material::getBaseColor() const
+{
+    return m_baseColor;
+}
+
+void Material::bind(GLitch::Shader &shader)
 {
     int textureUnit = 0;
 
-    auto bindTex = [&shader, &textureUnit, this](textures::TextureType type, const std::string& uniformName, const std::string& enabledFlag)
+    auto bindTex = [&shader, &textureUnit, this](GLitch::Texture::TextureType type, const std::string& uniformName, const std::string& enabledFlag)
     {
         auto texture = getTexture(type);
 
@@ -47,17 +52,20 @@ void Material::bind(Shader &shader)
 
         if (texture)
         {
+            if (!texture->isBaked())
+                texture->bake();
+
             texture->bind(textureUnit);
             shader.setInt(uniformName, textureUnit);
             textureUnit++;
         }
     };
 
-    bindTex(textures::TextureType::Diffuse,   "u_Diffuse",   "use_Diffuse");
-    bindTex(textures::TextureType::Normal,    "u_Normal",    "use_Normal");
-    bindTex(textures::TextureType::Metallic,  "u_Metallic",  "use_Metallic");
-    bindTex(textures::TextureType::Roughness, "u_Roughness", "use_Roughness");
-    bindTex(textures::TextureType::AO,        "u_AO",        "use_AO");
+    bindTex(GLitch::Texture::TextureType::Diffuse,   "u_Diffuse",   "use_Diffuse");
+    bindTex(GLitch::Texture::TextureType::Normal,    "u_Normal",    "use_Normal");
+    bindTex(GLitch::Texture::TextureType::Metallic,  "u_Metallic",  "use_Metallic");
+    bindTex(GLitch::Texture::TextureType::Roughness, "u_Roughness", "use_Roughness");
+    bindTex(GLitch::Texture::TextureType::AO,        "u_AO",        "use_AO");
 
     shader.setVec3("baseColor", m_baseColor);
 }

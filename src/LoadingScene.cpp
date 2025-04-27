@@ -6,7 +6,7 @@ LoadingScene::LoadingScene() = default;
 
 void LoadingScene::create()
 {
-    AssetsManager::instance().preLoadModels({"Mannequin.fbx", "cube.obj", "mannequin.fbx", "jail_door.fbx", "void.fbx"});
+    AssetsManager::instance().preLoadModels({ "VendingMachine.fbx", "Arms_Mak.fbx", "cube.obj", "mannequin.fbx", "jail_door.fbx", "void.fbx"});
     const std::string fontName = filesystem::getFontsFolderPath().string() + "/ghostmane_font.ttf";
     m_text.setText("LOADING");
     m_text.setFont(fontName);
@@ -17,12 +17,12 @@ void LoadingScene::create()
 void LoadingScene::loadAllAssets()
 {
     const std::vector<std::string> modelsPaths{
-        "void.fbx",
-        "mannequin.fbx",
+        // "void.fbx",
+        // "mannequin.fbx",
     };
 
     const std::vector<std::string> texturesPaths{
-        "void.png", "wall_parking_d.png",
+        "Ch36_1001_Diffuse.png", "wall_parking_d.png",
         "concrete_d.png", "wall_parking_n.png",
 
         "MannequinDiffuse.png", "MannequinNormal.png",
@@ -30,7 +30,13 @@ void LoadingScene::loadAllAssets()
 
         "wood_floor_d.png", "wood_floor_n.png",
         "wood_floor_ao.png", "older-wood-flooring_height.png",
-        "wood_floor_m.png", "wood_floor_r.png"
+        "wood_floor_m.png", "wood_floor_r.png",
+
+        "armCcolor.png", "armCNormal.png", "armcRoughness.png",
+        "makarov_attachments_Base_Color.png",
+        "makarov_attachments_Emissive.png", "makarov_attachments_Metallic-makarov_attac.png",
+        "makarov_attachments_Normal_OpenGL.png", "Makarov_main_Base_Color.png",
+        "Makarov_main_Metallic_png-Makarov_main_Rou.png", "Makarov_main_Normal_OpenGL.png"
     };
 
     const std::vector<std::string> materialsPaths

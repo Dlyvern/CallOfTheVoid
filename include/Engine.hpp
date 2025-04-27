@@ -1,6 +1,12 @@
 #ifndef ENGINE_HPP
 #define ENGINE_HPP
 
+// #if defined(VULKAN_API)
+// namespace gfx = vk;
+// #else
+// namespace gfx = GLitch;
+// #endif
+
 #include <memory>
 #include <vector>
 #include "MainWindow.hpp"

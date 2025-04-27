@@ -11,3 +11,8 @@ void StaticModel::draw()
     for (auto& mesh : m_meshes)
         mesh.draw();
 }
+
+std::vector<StaticMesh>& StaticModel::getMeshes()
+{
+    return m_meshes;
+}

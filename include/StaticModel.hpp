@@ -14,6 +14,8 @@ public:
     std::string getName() {return m_name;}
 
     ModelType getType() override {return ModelType::STATIC;}
+
+    std::vector<StaticMesh>& getMeshes();
 private:
     std::vector<StaticMesh> m_meshes;
     std::string m_name{"undefined"};

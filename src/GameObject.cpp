@@ -11,7 +11,7 @@ void GameObject::setLayerMask(const common::LayerMask &layerMask)
     m_layerMask = layerMask;
 }
 
-const common::LayerMask &GameObject::getLayerMask() const
+const common::LayerMask& GameObject::getLayerMask() const
 {
     return m_layerMask;
 }
@@ -26,10 +26,24 @@ void GameObject::setRotation(float angle, const glm::vec3 &axis)
         m_rotation.z += angle;
 }
 
-
 const std::string &GameObject::getName() const
 {
     return m_name;
+}
+
+Material& GameObject::getMaterial()
+{
+    return m_material;
+}
+
+void GameObject::setMaterial(const Material &material)
+{
+    m_material = material;
+}
+
+void GameObject::setMaterial(Material *material)
+{
+    m_material = *material;
 }
 
 GameObject::~GameObject() = default;

@@ -20,7 +20,6 @@ public:
 private:
     Scene* m_currentScene{nullptr};
 
-
     SceneManager() = default;
     SceneManager(const SceneManager&) = delete;
     SceneManager& operator=(const SceneManager&) = delete;

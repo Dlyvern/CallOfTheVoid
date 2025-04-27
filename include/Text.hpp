@@ -51,7 +51,7 @@ private:
 
     std::string m_fontPath;
 
-    Shader m_shader;
+    GLitch::Shader m_shader;
 
     std::string m_text;
 

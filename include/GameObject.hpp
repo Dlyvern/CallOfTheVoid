@@ -8,6 +8,7 @@
 #include "Common.hpp"
 #include "Shader.hpp"
 #include "Component.hpp"
+#include "Material.hpp"
 
 class GameObject
 {
@@ -27,7 +28,7 @@ public:
     [[nodiscard]] const std::string& getName() const;
 
     virtual void update(float deltaTime) = 0;
-    virtual void calculateShadows(Shader &shader) = 0;
+    virtual void calculateShadows(GLitch::Shader &shader) = 0;
 
     template<typename T, typename... Args>
     T* addComponent(Args&&... args) {
@@ -50,6 +51,13 @@ public:
         return m_components.contains(std::type_index(typeid(T)));
     }
 
+    virtual void destroy() {}
+
+    Material& getMaterial();
+    
+    void setMaterial(const Material& material);
+    void setMaterial(Material* material);
+
     virtual ~GameObject();
 
 protected:
@@ -59,6 +67,7 @@ protected:
             comp->update(deltaTime);
     }
 private:
+    Material m_material;
     std::unordered_map<std::type_index, std::unique_ptr<Component>> m_components;
     common::LayerMask m_layerMask{common::LayerMask::DEFAULT};
     glm::vec3 m_position{glm::vec3(0.0f, 0.0f, 0.0f)};

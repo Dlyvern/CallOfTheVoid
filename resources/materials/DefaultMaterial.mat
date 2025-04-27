@@ -1,0 +1,11 @@
+{
+    "color": [1.0, 1.0, 1.0],
+    "name": "DefaultMaterial.mat",
+    "textures": {
+        "AO": "",
+        "Diffuse": "concrete_d.png",
+        "Metallic": "",
+        "Normal": "",
+        "Roughness": ""
+    }
+}

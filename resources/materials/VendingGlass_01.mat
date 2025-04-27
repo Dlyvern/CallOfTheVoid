@@ -1,0 +1,15 @@
+{
+    "color": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929
+    ],
+    "name": "VendingGlass_01.mat",
+    "textures": {
+        "AO": "",
+        "Diffuse": "glassVending_BaseColor.png",
+        "Metallic": "",
+        "Normal": "glassVending_Normal.png",
+        "Roughness": ""
+    }
+}

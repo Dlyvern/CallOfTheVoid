@@ -1,0 +1,15 @@
+{
+    "color": [
+        1.0,
+        1.0,
+        1.0
+    ],
+    "name": "Mat.mat",
+    "textures": {
+        "AO": "",
+        "Diffuse": "armCcolor.png",
+        "Metallic": "",
+        "Normal": "armCNormal.png",
+        "Roughness": ""
+    }
+}

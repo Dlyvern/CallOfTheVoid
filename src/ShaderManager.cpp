@@ -8,7 +8,7 @@ ShaderManager& ShaderManager::instance()
     return instance;
 }
 
-Shader* ShaderManager::getShader(const ShaderType& type)
+GLitch::Shader* ShaderManager::getShader(const ShaderType& type)
 {
     return &m_shaders[type];
 }
@@ -19,7 +19,7 @@ void ShaderManager::preLoadShaders()
 
     auto createShader = [](const std::string& vert, const std::string& frag)
     {
-        Shader shader;
+        GLitch::Shader shader;
         shader.load(vert, frag);
         return shader;
     };

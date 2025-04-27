@@ -31,6 +31,16 @@ else()
     add_compile_definitions(NDEBUG)
 endif()
 
+option(USE_VULKAN "Use Vulkan backend" OFF)
+
+if(!USE_VULKAN)
+    add_definitions(-DVULKAN_API)
+    add_subdirectory(API/VulkanShit)
+else()
+    add_definitions(-DOPENGL_API)
+    add_subdirectory(API/GLitch)
+endif ()
+
 find_package(OpenGL REQUIRED)
 find_package(glfw3 3.4 REQUIRED)
 find_package(assimp 5.0 REQUIRED)
@@ -39,6 +49,14 @@ find_package(Freetype REQUIRED)
 find_package(Threads REQUIRED)
 
 add_executable(${PROJECT_NAME})
+
+if(!USE_VULKAN)
+    target_include_directories(${PROJECT_NAME} PUBLIC API/VulkanShit/include)
+    target_sources(${PROJECT_NAME} PRIVATE API/VulkanShit/src/Shader.cpp)
+else()
+    target_include_directories(${PROJECT_NAME} PUBLIC API/GLitch/include)
+    target_sources(${PROJECT_NAME} PRIVATE API/GLitch/src/Shader.cpp API/GLitch/src/Texture.cpp)
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${INCLUDE_DIR} ${LIBRARIES_DIR} ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS}

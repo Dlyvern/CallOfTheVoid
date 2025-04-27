@@ -1,4 +1,4 @@
-#version 330 core
+#version 420 core
 
 out vec4 FragColor;
 
@@ -37,23 +37,18 @@ uniform vec3 baseColor;
 
 uniform vec3 viewPos;
 
-
-#define MAX_LIGHTS 16
-uniform int lightCount;
+#define MAX_LIGHTS 2
 uniform Light lights[MAX_LIGHTS];
-
-uniform Light light;
 
 uniform sampler2D shadowMap;
 
-float ShadowCalculation(vec4 fragPosLightSpace)
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 lightDir)
 {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
     float closestDepth = texture(shadowMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
     vec3 normal = normalize(fs_in.Normal);
-    vec3 lightDir = normalize(light.position - fs_in.FragPos);
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
@@ -82,39 +77,33 @@ void main()
     float ao        = use_AO        ? texture(u_AO, fs_in.TexCoords).r          : 1.0;
 
     vec3 normal = normalize(fs_in.Normal);
-//    vec3 result = vec3(0.0);
-//
-//    for (int i = 0; i < lightCount; ++i)
-//    {
-//        Light light = lights[i];
-//
-//        vec3 lightDir = normalize(light.position - fs_in.FragPos);
-//        float diff = max(dot(normal, lightDir), 0.0);
-//        vec3 viewDir = normalize(viewPos - fs_in.FragPos);
-//        vec3 halfwayDir = normalize(lightDir + viewDir);
-//        float shininess = mix(8.0, 128.0, 1.0 - roughness);
-//        float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
-//
-//        vec3 ambient  = 0.03 * albedo * ao;
-//        vec3 diffuse  = diff * albedo * light.color * light.strength;
-//        vec3 specular = spec * mix(vec3(0.04), albedo, metallic) * light.strength;
-//
-//        result += ambient + diffuse + specular;
-//    }
-//    float shadow = ShadowCalculation(fs_in.FragPosLightSpace);
-//    result *= (1.0 - shadow);
-//    FragColor = vec4(result, 1.0);
+    vec3 result = vec3(0.0);
 
-    vec3 lightDir = normalize(light.position - fs_in.FragPos);
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 viewDir = normalize(viewPos - fs_in.FragPos);
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    float shininess = mix(8.0, 128.0, 1.0 - roughness);
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
-    vec3 ambient  = 0.03 * albedo * ao;
-    vec3 diffuse  = diff * albedo * light.color * light.strength;
-    vec3 specular = spec * mix(vec3(0.04), albedo, metallic) * light.strength;
-    float shadow = ShadowCalculation(fs_in.FragPosLightSpace);
-    vec3 result = (ambient + diffuse + specular) * (1.0 - shadow);
+    vec3 shadowLightDir = normalize(lights[0].position - fs_in.FragPos);
+    float shadow = ShadowCalculation(fs_in.FragPosLightSpace, shadowLightDir);
+
+    for (int i = 0; i < MAX_LIGHTS; ++i)
+    {
+        Light lightV = lights[i];
+
+        vec3 lightDir = normalize(lightV.position - fs_in.FragPos);
+        float diff = max(dot(normal, lightDir), 0.0);
+        vec3 viewDir = normalize(viewPos - fs_in.FragPos);
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        float shininess = mix(8.0, 128.0, 1.0 - roughness);
+        float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+
+        vec3 ambient  = 0.03 * albedo * ao;
+        vec3 diffuse  = diff * albedo * lightV.color * lightV.strength;
+        vec3 specular = spec * mix(vec3(0.04), albedo, metallic) * lightV.strength;
+
+        vec3 lightResult = ambient + diffuse + specular;
+
+        if (i == 0)
+            lightResult *= (1.0 - shadow);
+
+        result += lightResult;
+    }
+
     FragColor = vec4(result, 1.0);
 }
