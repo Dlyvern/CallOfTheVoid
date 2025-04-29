@@ -22,6 +22,8 @@ public:
     glm::mat4 getViewMatrix() const;
     float getPitch() const;
 
+    glm::mat4 getProjectionMatrix(float aspectRatio) const;
+
     void setPosition(const glm::vec3& position);
 
     void setCameraMode(const CameraMode& mode);

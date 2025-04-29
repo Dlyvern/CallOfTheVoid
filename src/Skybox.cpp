@@ -10,6 +10,7 @@
 
 #include "CameraManager.hpp"
 #include "Filesystem.hpp"
+#include "Renderer.hpp"
 #include "WindowsManager.hpp"
 
 Skybox::Skybox() = default;
@@ -85,14 +86,13 @@ void Skybox::init(const std::vector<std::string> &faces)
 void Skybox::render()
 {
   glDepthFunc(GL_LEQUAL);
-  const auto* window = window::WindowsManager::instance().getCurrentWindow();
-  const auto* camera = CameraManager::getInstance().getActiveCamera();
 
   m_skyboxShader.bind();
-  glm::mat4 skyboxProjection = glm::perspective(glm::radians(45.0f), static_cast<float>(window->getWidth()) / static_cast<float>(window->getHeight()), 0.1f, 100.0f);
-  glm::mat4 skyboxView = glm::mat4(glm::mat3(camera->getViewMatrix()));
-  m_skyboxShader.setMat4("view", skyboxView);
-  m_skyboxShader.setMat4("projection", skyboxProjection);
+
+  const auto& frameData =  Renderer::instance().getFrameData();
+
+  m_skyboxShader.setMat4("view", glm::mat4(glm::mat3(frameData.viewMatrix)));
+  m_skyboxShader.setMat4("projection", frameData.projectionMatrix);
 
   glBindVertexArray(m_vao);
   glActiveTexture(GL_TEXTURE0);
@@ -123,7 +123,6 @@ void Skybox::loadFromHDR(const std::string &path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Set up cubemap framebuffer
     GLuint captureFBO, captureRBO;
     glGenFramebuffers(1, &captureFBO);
     glGenRenderbuffers(1, &captureRBO);
@@ -131,8 +130,7 @@ void Skybox::loadFromHDR(const std::string &path)
     glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
     glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
 
-
-   const unsigned int CUBE_MAP_SIZE = 2048;
+    const unsigned int CUBE_MAP_SIZE = 2048;
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, CUBE_MAP_SIZE, CUBE_MAP_SIZE);
 
@@ -147,7 +145,6 @@ void Skybox::loadFromHDR(const std::string &path)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Create capture projection/view matrices
     glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
     glm::mat4 captureViews[] = {
         glm::lookAt(glm::vec3(0,0,0), glm::vec3( 1, 0, 0), glm::vec3(0,-1, 0)),
@@ -183,7 +180,6 @@ void Skybox::loadFromHDR(const std::string &path)
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // Optional: generate mipmaps for IBL
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubeMapTextureId);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 }

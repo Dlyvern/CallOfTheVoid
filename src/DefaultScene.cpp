@@ -16,25 +16,25 @@ DefaultScene::DefaultScene() = default;
 
 void DefaultScene::create()
 {
-    const std::string skyboxesFolder = filesystem::getSkyboxesFolderPath();
-    m_skybox.init({});
-    m_skybox.loadFromHDR(skyboxesFolder + "/nice.hdr");
+    // const std::string skyboxesFolder = filesystem::getSkyboxesFolderPath();
+    // m_skybox.init({});
+    // m_skybox.loadFromHDR(skyboxesFolder + "/nice.hdr");
 
     CameraManager::getInstance().getActiveCamera()->setCameraMode(CameraMode::FPS);
 
-    this->setGameObjects(SceneManager::loadObjectsFromFile(filesystem::getMapsFolderPath().string() + "/default_scene.json"));
+    this->setGameObjects(SceneManager::loadObjectsFromFile(filesystem::getMapsFolderPath().string() + "/test_scene.json"));
 
     Material mannequinMaterial;
     mannequinMaterial.addTexture(GLitch::Texture::TextureType::Diffuse, AssetsManager::instance().getTextureByName("Ch36_1001_Diffuse.png"));
 
-    auto mannequin = std::make_shared<Void>("mannequin");
-    mannequin->setMaterial(mannequinMaterial);
-    mannequin->setModel(AssetsManager::instance().getSkinnedModelByName("mannequin.fbx"));
-    mannequin->setPosition(glm::vec3(-5.0f, -0.5f, 0.0f));
-    mannequin->setScale(glm::vec3(0.015, 0.015, 0.015));
-    mannequin->setRigidBody(physics::PhysicsController::instance().addStaticActor(mannequin, true));
-    mannequin->playAnimation();
-    this->addGameObject(mannequin);
+    // auto mannequin = std::make_shared<Void>("mannequin");
+    // mannequin->setMaterial(mannequinMaterial);
+    // mannequin->setModel(AssetsManager::instance().getSkinnedModelByName("mannequin.fbx"));
+    // mannequin->setPosition(glm::vec3(-5.0f, -0.5f, 0.0f));
+    // mannequin->setScale(glm::vec3(0.015, 0.015, 0.015));
+    // mannequin->setRigidBody(physics::PhysicsController::instance().addStaticActor(mannequin, true));
+    // mannequin->playAnimation();
+    // this->addGameObject(mannequin);
 
     // auto voidObject = std::make_shared<Void>("void");
     // voidObject->setMaterial(mannequinMaterial);
@@ -58,12 +58,12 @@ void DefaultScene::create()
     directionalLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
     directionalLight.strength = 2.0f;
 
-    lighting::Light secondLight;
-    secondLight.type = lighting::LightType::DIRECTIONAL;
-    secondLight.direction = glm::vec3(-0.2f, -1.0f, -0.3f);
-    secondLight.position = glm::vec3(4.0f, 4.0f, 2.0f);
-    secondLight.color = glm::vec3(255.0f, 0.0f, 0.0f);
-    secondLight.strength = 0.1f;
+    // lighting::Light secondLight;
+    // secondLight.type = lighting::LightType::DIRECTIONAL;
+    // secondLight.direction = glm::vec3(-0.2f, -1.0f, -0.3f);
+    // secondLight.position = glm::vec3(4.0f, 4.0f, 2.0f);
+    // secondLight.color = glm::vec3(255.0f, 0.0f, 0.0f);
+    // secondLight.strength = 0.1f;
 
     auto lightObject = std::make_shared<geometries::Cube>("light");
     lightObject->setModel(AssetsManager::instance().getStaticModelByName("cube.obj"));
@@ -128,7 +128,7 @@ void DefaultScene::update(float deltaTime)
 
     m_shadowHandler.deactivateTexture();
 
-    m_skybox.render();
+    // m_skybox.render();
 
     debug::DebugTextHolder::instance().update(deltaTime);
 }

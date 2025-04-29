@@ -9,17 +9,21 @@ class StaticMesh final : public common::Mesh
 public:
     StaticMesh(const std::vector<common::Vertex>& vertices, const std::vector<unsigned int>& indices);
 
+    StaticMesh();
+
     void draw() override;
 
-    void setMaterial(Material* material);
+    void setVerticesAndIndices(const std::vector<common::Vertex>& vertices, const std::vector<unsigned int>& indices);
 
-    Material* getMaterial();
+    void loadFromRaw();
 
     ~StaticMesh() override;
 private:
     unsigned int m_vao, m_vbo, m_ebo;
     uint32_t m_indicesCount{0};
-    Material* m_material{nullptr};
+
+    std::vector<common::Vertex> m_vertices;
+    std::vector<unsigned int> m_indices;
 };
 
 #endif //MESH_HPP

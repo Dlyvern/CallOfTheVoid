@@ -2,7 +2,9 @@
 
 #include <glad.h>
 #include <imgui.h>
+#include <ImGuizmo.h>
 #include <imgui_internal.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "AssetsManager.hpp"
 #include "CameraManager.hpp"
@@ -14,64 +16,7 @@
 #include "SceneManager.hpp"
 #include "Void.hpp"
 #include "WindowsManager.hpp"
-
-namespace {
-    inline std::string fromTypeToString(const GLitch::Texture::TextureType& type)
-    {
-        switch (type)
-        {
-            case GLitch::Texture::TextureType::Diffuse:
-                return "Diffuse";
-            case GLitch::Texture::TextureType::Specular:
-                return "Specular";
-            case GLitch::Texture::TextureType::Normal:
-                return "Normal";
-            case GLitch::Texture::TextureType::Metallic:
-                return "Metallic";
-            case GLitch::Texture::TextureType::Roughness:
-                return "Roughness";
-            case GLitch::Texture::TextureType::AO:
-                return "AO";
-            case GLitch::Texture::TextureType::Emissive:
-                return "Emissive";
-            case GLitch::Texture::TextureType::Height:
-                return "Height";
-            case GLitch::Texture::TextureType::Glossiness:
-                return "Glossiness";
-            case GLitch::Texture::TextureType::Opacity:
-                return "Opacity";
-            default:
-                return "Undefined";
-        }
-    }
-
-    inline GLitch::Texture::TextureType fromStringToTextureType(const std::string& type)
-    {
-        if (type == "Diffuse")
-            return GLitch::Texture::TextureType::Diffuse;
-        if (type == "Specular")
-            return GLitch::Texture::TextureType::Specular;
-        if (type == "Normal")
-            return GLitch::Texture::TextureType::Normal;
-        if (type == "Metallic")
-            return GLitch::Texture::TextureType::Metallic;
-        if (type == "Roughness")
-            return GLitch::Texture::TextureType::Roughness;
-        if (type == "AO")
-            return GLitch::Texture::TextureType::AO;
-        if (type == "Emissive")
-            return GLitch::Texture::TextureType::Emissive;
-        if (type == "Height")
-            return GLitch::Texture::TextureType::Height;
-        if (type == "Glossiness")
-            return GLitch::Texture::TextureType::Glossiness;
-        if (type == "Opacity")
-            return GLitch::Texture::TextureType::Opacity;
-        return GLitch::Texture::TextureType::Undefined;
-    }
-}
-
-
+#include "Utilities.hpp"
 
 
 DebugEditor& DebugEditor::instance()
@@ -95,26 +40,28 @@ void DebugEditor::update()
     }
 
     if (input::Keyboard.isKeyReleased(input::KeyCode::DELETE))
-    {
         if (m_selectedGameObject)
-        {
             if (SceneManager::instance().getCurrentScene()->deleteGameObject(m_selectedGameObject))
                 m_selectedGameObject = nullptr;
-        }
-    }
-    if (input::Keyboard.isKeyReleased(input::KeyCode::O)) {
+
+    if (input::Keyboard.isKeyReleased(input::KeyCode::O))
         SceneManager::saveObjectsIntoFile(SceneManager::instance().getCurrentScene()->getGameObjects(), filesystem::getMapsFolderPath().string() + "/test_scene.json");
-    }
 
     if (!m_isDebugMode)
         return;
 
+    if (input::Keyboard.isKeyReleased(input::KeyCode::W))
+        m_transformMode = TransformMode::Translate;
+
+    if (input::Keyboard.isKeyReleased(input::KeyCode::E))
+        m_transformMode = TransformMode::Scale;
+
+    if (input::Keyboard.isKeyReleased(input::KeyCode::R))
+        m_transformMode = TransformMode::Rotate;
 
     if (input::Mouse.isLeftButtonPressed())
     {
-        ImGuiIO& io = ImGui::GetIO();
-
-        if (!io.WantCaptureMouse)
+        if (ImGuiIO& io = ImGui::GetIO(); !io.WantCaptureMouse && !ImGuizmo::IsUsing())
         {
             glm::vec2 mouseNDC;
 
@@ -159,6 +106,7 @@ void DebugEditor::update()
     }
 
     showDebugInfo();
+
 }
 
 DebugEditor::~DebugEditor() = default;
@@ -264,9 +212,53 @@ void DebugEditor::showDebugInfo()
     showAllObjectsInTheScene();
     showObjectInfo(m_selectedGameObject);
 
+    if (m_selectedGameObject)
+    {
+        ImGuizmo::SetOrthographic(false);
+        ImGuizmo::SetDrawlist();
+        ImGuizmo::SetRect(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
+        ImGuizmo::BeginFrame();
+
+        glm::mat4 modelMatrix = m_selectedGameObject->getTransformMatrix();
+
+        const auto* window = window::WindowsManager::instance().getCurrentWindow();
+
+        float aspectRatio = static_cast<float>(window->getWidth()) / static_cast<float>(window->getHeight());
+
+        glm::mat4 viewMatrix = CameraManager::getInstance().getActiveCamera()->getViewMatrix();
+        glm::mat4 projMatrix = CameraManager::getInstance().getActiveCamera()->getProjectionMatrix(aspectRatio);
+
+        static ImGuizmo::MODE currentGizmoMode = ImGuizmo::WORLD;
+
+        ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
+
+        switch (m_transformMode)
+        {
+            case TransformMode::Translate: op = ImGuizmo::TRANSLATE; break;
+            case TransformMode::Rotate:    op = ImGuizmo::ROTATE;    break;
+            case TransformMode::Scale:     op = ImGuizmo::SCALE;     break;
+        }
+
+        ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), glm::value_ptr(projMatrix),
+                             op, currentGizmoMode,
+                             glm::value_ptr(modelMatrix));
+
+        if (ImGuizmo::IsUsing())
+        {
+            glm::vec3 translation, rotation, scale;
+            ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(modelMatrix),
+                                                  glm::value_ptr(translation),
+                                                  glm::value_ptr(rotation),
+                                                  glm::value_ptr(scale));
+            m_selectedGameObject->setPosition(translation);
+            m_selectedGameObject->setRotation(0, rotation);
+            m_selectedGameObject->setScale(scale);
+        }
+    }
+
     ImGui::Begin("Objects");
 
-    auto allModels = AssetsManager::instance().getAllLoadedModelsNames();
+    const auto allModels = AssetsManager::instance().getAllLoadedModelsNames();
 
     for (auto& modelName : allModels)
     {
@@ -277,7 +269,7 @@ void DebugEditor::showDebugInfo()
             {
                 auto skinnedGameObject = std::make_shared<Void>("new_void");
                 skinnedGameObject->setModel(skinnedModel);
-                skinnedGameObject->setRigidBody(physics::PhysicsController::instance().addStaticActor(skinnedGameObject));
+                skinnedGameObject->setRigidBody(physics::PhysicsController::instance().addStaticActor(skinnedGameObject, true));
                 skinnedGameObject->setPosition({0.0f, 0.0f, 0.0f});
                 SceneManager::instance().getCurrentScene()->addGameObject(skinnedGameObject);
                 m_selectedGameObject = skinnedGameObject.get();
@@ -291,7 +283,6 @@ void DebugEditor::showDebugInfo()
                 m_selectedGameObject = staticGameObject.get();
             }
         }
-
     }
 
     ImGui::End();
@@ -307,132 +298,97 @@ void DebugEditor::showObjectInfo(GameObject* gameObject)
         return;
     }
 
-    ImGui::Text("GameObject name: %s", m_selectedGameObject->getName().c_str());
+    static char nameBuffer[128];
+    strncpy(nameBuffer, m_selectedGameObject->getName().c_str(), sizeof(nameBuffer));
+    nameBuffer[sizeof(nameBuffer) - 1] = '\0';
+
+    if (ImGui::InputText("GameObject name", nameBuffer, IM_ARRAYSIZE(nameBuffer)))
+        m_selectedGameObject->setName(nameBuffer);
 
     if (ImGui::BeginTabBar("Tabs"))
     {
         if (ImGui::BeginTabItem("Transform"))
         {
             glm::vec3 position = m_selectedGameObject->getPosition();
-            ImGui::Text("Position");
-            bool positionEdited = ImGui::InputFloat3("Position", &position[0]);
-
-            if (positionEdited && ImGui::IsItemDeactivatedAfterEdit())
+            if (ImGui::DragFloat3("Position", &position[0], 0.1f))
                 m_selectedGameObject->setPosition(position);
 
             glm::vec3 rotation = m_selectedGameObject->getRotation();
-            ImGui::Text("Rotation");
-            bool rotationEdited = ImGui::InputFloat3("Rotation", &rotation[0]);
-
-            if (rotationEdited && ImGui::IsItemDeactivatedAfterEdit())
-                m_selectedGameObject->setRotation(90, rotation);
+            if (ImGui::DragFloat3("Rotation", &rotation[0], 1.0f))
+                m_selectedGameObject->setRotation(0, rotation);
 
             glm::vec3 scale = m_selectedGameObject->getScale();
-            ImGui::Text("Scale");
-            bool sizeEdited = ImGui::InputFloat3("Scale", &scale[0]);
-
-            if (sizeEdited && ImGui::IsItemDeactivatedAfterEdit())
+            if (ImGui::DragFloat3("Scale", &scale[0], 0.1f))
                 m_selectedGameObject->setScale(scale);
 
-
-            if (auto cube = dynamic_cast<geometries::Cube*>(m_selectedGameObject))
+            if (auto model = m_selectedGameObject->getModel())
             {
-                auto model = cube->getModel();
-
-                if (model)
+                for (unsigned int meshIndex = 0; meshIndex < model->getMeshesSize(); meshIndex++)
                 {
-                    for (unsigned int meshIndex = 0; meshIndex < model->getMeshes().size(); meshIndex++)
+                    auto* mesh = model->getMesh(meshIndex);
+
+                    auto* material = mesh->getMaterial();
+
+                    if (!material)
+                        continue;
+
+                    const std::string header = "Mesh " + std::to_string(meshIndex);
+
+                    if (ImGui::CollapsingHeader(header.c_str()))
                     {
-                        auto& mesh = model->getMeshes()[meshIndex];
+                        glm::vec3 color = material->getBaseColor();
 
-                        auto material = mesh.getMaterial();
+                        if (ImGui::ColorEdit3(("Base Color##" + std::to_string(meshIndex)).c_str(), &color.x))
+                            material->setBaseColor(color);
 
-                        if (!material)
-                            continue;
+                        ImGui::SeparatorText("Textures");
 
-                        std::string header = "Mesh " + std::to_string(meshIndex);
+                        using TexType = GLitch::Texture::TextureType;
 
-                        if (ImGui::CollapsingHeader(header.c_str()))
+                        for (auto textureType : {TexType::Diffuse, TexType::Normal, TexType::Metallic, TexType::Roughness, TexType::AO})
                         {
-                            glm::vec3 color = material->getBaseColor();
+                            GLitch::Texture* tex = material->getTexture(textureType);
+                            ImGui::Text("%s: %s", utilities::fromTypeToString(textureType).c_str(), tex ? tex->getName().c_str() : "(none)");
+                        }
 
-                            if (ImGui::ColorEdit3(("Base Color##" + std::to_string(meshIndex)).c_str(), &color.x))
+                        const auto& allMaterials = AssetsManager::instance().getAllMaterials(); // returns vector<Material*>
+                        std::vector<std::string> materialNames;
+                        int currentIndex = -1;
+
+                        for (size_t i = 0; i < allMaterials.size(); ++i)
+                        {
+                            const auto& name = allMaterials[i]->getName();
+                            materialNames.push_back(name);
+
+                            Material* activeMaterial = m_selectedGameObject->overrideMaterials.contains(meshIndex)
+                            ? m_selectedGameObject->overrideMaterials[meshIndex]
+                            : mesh->getMaterial();
+
+                            if (name == activeMaterial->getName())
+                                currentIndex = static_cast<int>(i);
+                        }
+
+                        if (ImGui::BeginCombo(("Material##" + std::to_string(meshIndex)).c_str(),
+                                              currentIndex >= 0 ? materialNames[currentIndex].c_str() : "(none)"))
+                        {
+                            for (size_t i = 0; i < materialNames.size(); ++i)
                             {
-                                material->setBaseColor(color);
-                            }
-
-                            ImGui::SeparatorText("Textures");
-
-                            for (auto textureType : {GLitch::Texture::TextureType::Diffuse, GLitch::Texture::TextureType::Normal,
-                                                     GLitch::Texture::TextureType::Metallic, GLitch::Texture::TextureType::Roughness,
-                                                     GLitch::Texture::TextureType::AO})
-                            {
-                                GLitch::Texture* tex = material->getTexture(textureType);
-
-                                if (tex)
+                                bool isSelected = (currentIndex == static_cast<int>(i));
+                                if (ImGui::Selectable(materialNames[i].c_str(), isSelected))
                                 {
-                                    ImGui::Text("%s: %s", ::fromTypeToString(textureType).c_str(), tex->getName().c_str());
+                                    auto* newMaterial = allMaterials[i];
+                                    m_selectedGameObject->overrideMaterials[meshIndex] = newMaterial;
+                                    // mesh->setMaterial(newMaterial);
                                 }
-                                else
-                                {
-                                    ImGui::Text("%s: (none)", ::fromTypeToString(textureType).c_str());
-                                }
+
+                                if (isSelected)
+                                    ImGui::SetItemDefaultFocus();
                             }
+                            ImGui::EndCombo();
                         }
                     }
                 }
             }
-            else if (auto skeleton = dynamic_cast<Void*>(m_selectedGameObject))
-            {
-                auto model = skeleton->getModel();
-
-
-
-                if (model)
-                {
-                    for (unsigned int meshIndex = 0; meshIndex < model->getMeshes().size(); meshIndex++)
-                    {
-                        auto& mesh = model->getMeshes()[meshIndex];
-
-                        auto material = mesh.getMaterial();
-
-                        if (!material)
-                            continue;
-
-                        std::string header = "Mesh " + std::to_string(meshIndex);
-
-                        if (ImGui::CollapsingHeader(header.c_str()))
-                        {
-                            glm::vec3 color = material->getBaseColor();
-
-                            if (ImGui::ColorEdit3(("Base Color##" + std::to_string(meshIndex)).c_str(), &color.x))
-                            {
-                                material->setBaseColor(color);
-                            }
-
-                            ImGui::SeparatorText("Textures");
-
-                            for (auto textureType : {GLitch::Texture::TextureType::Diffuse, GLitch::Texture::TextureType::Normal,
-                                                     GLitch::Texture::TextureType::Metallic, GLitch::Texture::TextureType::Roughness,
-                                                     GLitch::Texture::TextureType::AO})
-                            {
-                                GLitch::Texture* tex = material->getTexture(textureType);
-
-                                if (tex)
-                                {
-                                    ImGui::Text("%s: %s", ::fromTypeToString(textureType).c_str(), tex->getName().c_str());
-                                }
-                                else
-                                {
-                                    ImGui::Text("%s: (none)", ::fromTypeToString(textureType).c_str());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-
 
             std::vector<std::string> allModelNames;
             std::vector<const char*> convertedModelNames;
@@ -458,18 +414,18 @@ void DebugEditor::showObjectInfo(GameObject* gameObject)
             auto i = std::ranges::find_if(convertedModelNames,
         [&currentModelName](const std::string& modelName){return currentModelName == modelName;});
 
-            static int selectedModel = std::distance(convertedModelNames.begin(), i);
+            m_selectedModelIndex = std::distance(convertedModelNames.begin(), i);
 
-            if (ImGui::Combo("##Model combo", &selectedModel, convertedModelNames.data(), static_cast<int>(convertedModelNames.size())))
+            if (ImGui::Combo("##Model combo", &m_selectedModelIndex, convertedModelNames.data(), static_cast<int>(convertedModelNames.size())))
             {
                 if (auto skeleton = dynamic_cast<Void*>(m_selectedGameObject); skeleton)
                 {
-                    if (auto m = AssetsManager::instance().getSkinnedModelByName(convertedModelNames[selectedModel]); m)
+                    if (auto m = AssetsManager::instance().getSkinnedModelByName(convertedModelNames[m_selectedModelIndex]); m)
                         skeleton->setModel(m);
                 }
                 else if (auto cube = dynamic_cast<geometries::Cube*>(m_selectedGameObject); cube)
                 {
-                    if (auto m = AssetsManager::instance().getStaticModelByName(convertedModelNames[selectedModel]); m)
+                    if (auto m = AssetsManager::instance().getStaticModelByName(convertedModelNames[m_selectedModelIndex]); m)
                         cube->setModel(m);
                 }
             }
@@ -481,14 +437,18 @@ void DebugEditor::showObjectInfo(GameObject* gameObject)
         {
             displayBonesHierarchy(skeleton->getModel() ? &skeleton->getModel()->getSkeleton() : nullptr);
             ImGui::EndTabItem();
+        }
 
-            if (ImGui::BeginTabItem("Animation"))
+        if (auto skeleton = dynamic_cast<Void*>(m_selectedGameObject); skeleton && ImGui::BeginTabItem("Animation"))
+        {
+            for (const auto& anim : skeleton->getModel()->getAnimations())
             {
-                for (const auto& anim : skeleton->getModel()->getAnimations())
-                    ImGui::Text("Animation %s", anim.name.c_str());
-
-                ImGui::EndTabItem();
+                if (ImGui::Button(anim.name.c_str()))
+                    if (auto* animation = skeleton->getModel()->getAnimation(anim.name))
+                        skeleton->playAnimation(animation);
             }
+
+            ImGui::EndTabItem();
         }
 
         ImGui::EndTabBar();
@@ -502,12 +462,12 @@ void DebugEditor::displayBonesHierarchy(Skeleton* skeleton, common::BoneInfo* pa
     if (!skeleton)
         return;
 
-    common::BoneInfo* bone = parent ? parent : skeleton->getParent();
-
-    if (ImGui::TreeNode(bone->name.c_str()))
+    if (const auto bone = parent ? parent : skeleton->getParent(); ImGui::TreeNode(bone->name.c_str()))
     {
-        for (const auto& childBone : bone->children)
+        for (const int& childBone : bone->children)
+        {
             displayBonesHierarchy(skeleton, skeleton->getBone(childBone));
+        }
 
         ImGui::TreePop();
     }

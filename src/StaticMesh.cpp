@@ -4,6 +4,33 @@
 
 StaticMesh::StaticMesh(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices)
 {
+    setVerticesAndIndices(vertices, indices);
+    loadFromRaw();
+}
+
+StaticMesh::StaticMesh() = default;
+
+void StaticMesh::draw()
+{
+    // if (getMaterial())
+    // {
+    //     auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::STATIC);
+    //     getMaterial()->bind(*shader);
+    // }
+
+    glBindVertexArray(m_vao);
+    glDrawElements(GL_TRIANGLES, m_indicesCount, GL_UNSIGNED_INT, nullptr);
+    glBindVertexArray(0);
+}
+
+void StaticMesh::setVerticesAndIndices(const std::vector<common::Vertex> &vertices, const std::vector<unsigned int> &indices)
+{
+    m_vertices = vertices;
+    m_indices = indices;
+}
+
+void StaticMesh::loadFromRaw()
+{
     glGenVertexArrays(1, &m_vao);
     glGenBuffers(1, &m_vbo);
     glGenBuffers(1, &m_ebo);
@@ -11,10 +38,10 @@ StaticMesh::StaticMesh(const std::vector<common::Vertex> &vertices, const std::v
     glBindVertexArray(m_vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(common::Vertex), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(common::Vertex), m_vertices.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(unsigned int), m_indices.data(), GL_STATIC_DRAW);
 
     // Vertex positions
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(common::Vertex), (void*)offsetof(common::Vertex, position));
@@ -34,30 +61,7 @@ StaticMesh::StaticMesh(const std::vector<common::Vertex> &vertices, const std::v
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    m_indicesCount = indices.size();
-}
-
-void StaticMesh::draw()
-{
-    if (m_material)
-    {
-        auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::STATIC);
-        m_material->bind(*shader);
-    }
-
-    glBindVertexArray(m_vao);
-    glDrawElements(GL_TRIANGLES, m_indicesCount, GL_UNSIGNED_INT, nullptr);
-    glBindVertexArray(0);
-}
-
-void StaticMesh::setMaterial(Material *material)
-{
-    m_material = material;
-}
-
-Material* StaticMesh::getMaterial()
-{
-    return m_material;
+    m_indicesCount = m_indices.size();
 }
 
 StaticMesh::~StaticMesh()

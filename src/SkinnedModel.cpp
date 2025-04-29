@@ -1,8 +1,11 @@
 #include "SkinnedModel.hpp"
 
+#include <iostream>
+#include <ostream>
+
 SkinnedModel::SkinnedModel() = default;
 
-SkinnedModel::SkinnedModel(const std::string &name, const std::vector<SkeletalMesh> &meshes) : m_meshes(meshes), m_name(name) {}
+SkinnedModel::SkinnedModel(const std::string &name, const std::vector<SkeletalMesh> &meshes) : Model(name), m_meshes(meshes) {}
 
 void SkinnedModel::setSkeleton(const Skeleton &skeleton)
 {
@@ -19,9 +22,15 @@ std::vector<common::Animation>& SkinnedModel::getAnimations()
     return m_animations;
 }
 
-const std::string &SkinnedModel::getName() const
+common::Animation* SkinnedModel::getAnimation(const std::string &name)
 {
-    return m_name;
+    for (auto& animation : m_animations)
+        if (animation.name == name)
+            return &animation;
+
+    std::cout << "SkinnedModel::getAnimation(): Could not fina " << name << " animation" << std::endl;
+
+    return nullptr;
 }
 
 std::vector<SkeletalMesh>& SkinnedModel::getMeshes()

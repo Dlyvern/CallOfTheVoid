@@ -5,6 +5,7 @@
 
 #include "CameraManager.hpp"
 #include "Filesystem.hpp"
+#include "Renderer.hpp"
 #include "WindowsManager.hpp"
 
 debug::DebugLine::DebugLine()
@@ -19,16 +20,9 @@ debug::DebugLine::DebugLine()
 
 void debug::DebugLine::draw(const glm::vec3 &from, const glm::vec3 &to)
 {
-    // glDisable(GL_DEPTH_TEST);
     glLineWidth(m_lineWidth);
 
-    const auto* window = window::WindowsManager::instance().getCurrentWindow();
-
-    float aspectRatio = static_cast<float>(window->getWidth()) / static_cast<float>(window->getHeight());
-
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
-
-    float vertices[] = {
+    const float vertices[] = {
         from.x, from.y, from.z,
         to.x, to.y, to.z
     };
@@ -41,17 +35,15 @@ void debug::DebugLine::draw(const glm::vec3 &from, const glm::vec3 &to)
 
     m_shader.bind();
 
-    m_shader.setMat4("projection", projection);
-    m_shader.setMat4("view", CameraManager::getInstance().getActiveCamera()->getViewMatrix());
-    m_shader.setVec4("uColor", m_color);
+    const auto& frameData = Renderer::instance().getFrameData();
 
-    // glUniform4fv(glGetUniformLocation(m_shader.getId(), "uColor"), 1, glm::value_ptr(m_color));
+    m_shader.setMat4("projection", frameData.projectionMatrix);
+    m_shader.setMat4("view", frameData.viewMatrix);
+    m_shader.setVec4("uColor", m_color);
 
     glDrawArrays(GL_LINES, 0, 2);
 
     glBindVertexArray(0);
-
-    // glEnable(GL_DEPTH_TEST);
 }
 
 void debug::DebugLine::setLineWidth(float width)

@@ -12,7 +12,7 @@ public:
     explicit Void(const std::string& name);
 
     void update(float deltaTime) override;
-    void playAnimation();
+    void playAnimation(common::Animation* animation = nullptr);
     void calculateShadows(GLitch::Shader& shader) override;
     void destroy() override;
 
@@ -21,7 +21,7 @@ public:
     void setModel(SkinnedModel* model);
     void setRigidBody(physx::PxRigidActor* rigidBody);
 
-    SkinnedModel* getModel() const;
+    SkinnedModel* getModel() const override;
     physx::PxRigidActor* getRigidBody() const;
 
     ~Void() override;

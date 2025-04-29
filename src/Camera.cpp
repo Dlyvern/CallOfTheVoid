@@ -118,6 +118,11 @@ float Camera::getPitch() const
     return m_pitch;
 }
 
+glm::mat4 Camera::getProjectionMatrix(float aspectRatio) const
+{
+    return glm::perspective(glm::radians(60.0f), aspectRatio, 0.1f, 1000.0f);
+}
+
 void Camera::setPosition(const glm::vec3 &position)
 {
     m_position = position;

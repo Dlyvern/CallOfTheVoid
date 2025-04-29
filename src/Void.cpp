@@ -1,4 +1,7 @@
 #include "Void.hpp"
+
+#include <iostream>
+
 #include "LightManager.hpp"
 #include "Renderer.hpp"
 #include "ShaderManager.hpp"
@@ -73,7 +76,23 @@ void Void::update(float deltaTime)
 
     LightManager::instance().sendLightsIntoShader(*shader);
 
-    m_model->draw();
+    // m_model->draw();
+
+    for (int index = 0; index < m_model->getMeshesSize(); index++)
+    {
+        auto& mesh = m_model->getMeshes()[index];
+
+        Material* material;
+
+        if (overrideMaterials.contains(index))
+            material = overrideMaterials[index];
+        else
+            material = mesh.getMaterial();
+
+        material->bind(*shader);
+
+        mesh.draw();
+    }
 }
 
 void Void::setModel(SkinnedModel* model)
@@ -82,8 +101,17 @@ void Void::setModel(SkinnedModel* model)
     physics::PhysicsController::instance().createRagdoll(m_model->getSkeleton());
 }
 
-void Void::playAnimation()
+void Void::playAnimation(common::Animation* animation)
 {
+    if (animation)
+    {
+        m_animator.stopAnimation();
+        m_animation = animation;
+        m_animation->modelBones = &m_model->getSkeleton().getBones();
+        m_animator.playAnimation(m_animation, true);
+        return;
+    }
+
     if (m_model->getAnimations().empty())
         return;
 

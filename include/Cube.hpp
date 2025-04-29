@@ -22,7 +22,10 @@ namespace geometries
         void setScale(const glm::vec3& scale) override;
 
         physx::PxRigidActor* getRigidBody() const;
-        StaticModel* getModel() const;
+        StaticModel* getModel() const override;
+
+
+
     private:
         glm::mat4 computeModelMatrix();
 

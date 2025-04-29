@@ -11,14 +11,19 @@ public:
 
     void draw() override;
 
-    std::string getName() {return m_name;}
-
     ModelType getType() override {return ModelType::STATIC;}
 
     std::vector<StaticMesh>& getMeshes();
+
+    size_t getMeshesSize() override {return m_meshes.size();}
+
+    common::Mesh* getMesh(int index) override
+    {
+        return &m_meshes[index];
+    }
+
 private:
     std::vector<StaticMesh> m_meshes;
-    std::string m_name{"undefined"};
 };
 
 #endif //STATIC_MODEL_HPP

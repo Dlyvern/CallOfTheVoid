@@ -2,7 +2,6 @@
 #define DEBUG_EDITOR_HPP
 #include "GameObject.hpp"
 #include "Skeleton.hpp"
-#include "Void.hpp"
 
 class DebugEditor
 {
@@ -27,6 +26,17 @@ private:
     GameObject* m_selectedGameObject{nullptr};
 
     bool m_isDebugMode{false};
+
+    enum class TransformMode
+    {
+        Translate,
+        Rotate,
+        Scale
+    };
+
+    TransformMode m_transformMode{TransformMode::Translate};
+
+    int m_selectedModelIndex{-1};
 };
 
 #endif //DEBUG_EDITOR_HPP

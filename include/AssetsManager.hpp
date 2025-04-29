@@ -32,6 +32,11 @@ public:
     std::vector<std::string> getAllSkinnedModelsNames() const;
     std::vector<std::string> getAllStaticModelsNames() const;
 
+    std::vector<SkinnedModel*> getAllSkinnedModels();
+    std::vector<StaticModel*> getAllStaticModels();
+
+    std::vector<Material*> getAllMaterials() ;
+
     Material* loadMaterialFromModel(aiMaterial* aiMat);
 
     void preLoadPathsForAllModels();
@@ -68,6 +73,11 @@ private:
 
 inline Material* AssetsManager::getMaterialByName(const std::string& name)
 {
+    if (m_materials.contains(name))
+        return &m_materials[name];
+
+    preLoadMaterials({name});
+
     if (m_materials.contains(name))
         return &m_materials[name];
 

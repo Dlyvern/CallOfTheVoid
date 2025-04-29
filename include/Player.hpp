@@ -4,6 +4,7 @@
 #include "GameObject.hpp"
 #include "Camera.hpp"
 #include "Physics.hpp"
+#include "SkinnedModel.hpp"
 
 class Player final : public GameObject
 {
@@ -18,6 +19,7 @@ public:
 
     void calculateShadows(GLitch::Shader& shader) override{}
 
+    SkinnedModel* getModel() const override {return nullptr;}
 private:
     void move(const glm::vec3& direction, float deltaTime);
     void interact();

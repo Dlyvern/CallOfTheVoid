@@ -21,18 +21,24 @@ public:
 
     std::vector<common::Animation>& getAnimations();
 
-    [[nodiscard]] const std::string& getName() const;
+    common::Animation* getAnimation(const std::string& name);
 
     ModelType getType() override {return ModelType::SKINNED;}
 
     std::vector<SkeletalMesh>& getMeshes();
+
+    size_t getMeshesSize() override {return m_meshes.size();}
+
+    common::Mesh* getMesh(int index) override
+    {
+        return &m_meshes[index];
+    }
 
     Skeleton& getSkeleton();
 
     void draw() override;
 private:
     std::vector<SkeletalMesh> m_meshes;
-    std::string m_name{"undefined"};
     std::vector<common::Animation> m_animations;
     Skeleton m_skeleton;
 };

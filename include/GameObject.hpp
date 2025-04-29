@@ -53,12 +53,16 @@ public:
 
     virtual void destroy() {}
 
-    Material& getMaterial();
+    virtual common::Model* getModel() const = 0;
     
-    void setMaterial(const Material& material);
-    void setMaterial(Material* material);
-
     virtual ~GameObject();
+
+    std::unordered_map<int, Material*> overrideMaterials;
+
+    glm::mat4 getTransformMatrix() const;
+
+
+    void setName(const std::string& name);
 
 protected:
     void updateComponents(float deltaTime)
@@ -67,7 +71,6 @@ protected:
             comp->update(deltaTime);
     }
 private:
-    Material m_material;
     std::unordered_map<std::type_index, std::unique_ptr<Component>> m_components;
     common::LayerMask m_layerMask{common::LayerMask::DEFAULT};
     glm::vec3 m_position{glm::vec3(0.0f, 0.0f, 0.0f)};

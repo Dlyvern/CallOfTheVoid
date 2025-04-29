@@ -50,7 +50,23 @@ void geometries::Cube::update(float deltaTime)
     shader->setMat4("projection", projectionMatrix);
     shader->setVec3("viewPos", cameraPosition);
 
-    m_model->draw();
+    // m_model->draw();
+
+    for (int index = 0; index < m_model->getMeshesSize(); index++)
+    {
+        auto& mesh = m_model->getMeshes()[index];
+
+        Material* material;
+
+        if (overrideMaterials.contains(index))
+            material = overrideMaterials[index];
+        else
+            material = mesh.getMaterial();
+
+        material->bind(*shader);
+
+        mesh.draw();
+    }
 }
 
 void geometries::Cube::destroy()

@@ -7,9 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace physx {
-    class PxD6Joint;
-}
+#include "Material.hpp"
 
 namespace common
 {
@@ -52,6 +50,12 @@ namespace common
     public:
         virtual void draw() = 0;
         virtual ~Mesh() = default;
+
+        void setMaterial(Material* material) { m_material = material; }
+
+        Material* getMaterial() { return m_material; }
+    private:
+        Material* m_material{nullptr};
     };
 
     class Model
@@ -63,11 +67,24 @@ namespace common
             STATIC = 1
         };
 
+        explicit Model(const std::string& name) : m_name(name){}
+
+        Model() = default;
+
         virtual ~Model() = default;
+
+        [[nodiscard]] std::string getName() const { return m_name; }
+
+        virtual Mesh* getMesh(int index) = 0;
+
+        virtual size_t getMeshesSize() = 0;
 
         virtual ModelType getType() = 0;
 
         virtual void draw() = 0;
+
+    private:
+        std::string m_name;
     };
 
     struct BoneDebug {

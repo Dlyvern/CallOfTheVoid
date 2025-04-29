@@ -61,7 +61,7 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${INCLUDE_DIR} ${LIBRARIES_DIR} ${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS}
         ${GLFW_INCLUDE_DIR} ${GLM_INCLUDE_DIR} ${ASSIMP_INCLUDE_DIR}
-        ${FREETYPE_INCLUDE_DIRS} ${PHYSX_ROOT}/include  libraries/imgui)
+        ${FREETYPE_INCLUDE_DIRS} ${PHYSX_ROOT}/include  libraries/imgui libraries/ImGuizmo)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC OpenGL::OpenGL ${GLUT_LIBRARY} ${FREETYPE_LIBRARIES} glfw glm::glm assimp::assimp Threads::Threads
         -Wl,--start-group
@@ -90,4 +90,11 @@ target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES} PRIVATE ${PROJECT_HEAD
         libraries/imgui/imgui_widgets.cpp
         libraries/imgui/imgui_tables.cpp
         libraries/imgui/backends/imgui_impl_glfw.cpp
-        libraries/imgui/backends/imgui_impl_opengl3.cpp)
+        libraries/imgui/backends/imgui_impl_opengl3.cpp
+
+        libraries/ImGuizmo/GraphEditor.cpp
+        libraries/ImGuizmo/ImCurveEdit.cpp
+        libraries/ImGuizmo/ImGradient.cpp
+        libraries/ImGuizmo/ImGuizmo.cpp
+        libraries/ImGuizmo/ImSequencer.cpp
+)

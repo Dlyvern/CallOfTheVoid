@@ -1,6 +1,6 @@
 #include "StaticModel.hpp"
 
-StaticModel::StaticModel(const std::string &name, const std::vector<StaticMesh> &meshes) : m_name(name), m_meshes(meshes)
+StaticModel::StaticModel(const std::string &name, const std::vector<StaticMesh> &meshes) : Model(name), m_meshes(meshes)
 {
 }
 

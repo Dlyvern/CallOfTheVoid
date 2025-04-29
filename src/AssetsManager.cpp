@@ -17,60 +17,6 @@
 
 namespace
 {
-        inline std::string fromTypeToString(const GLitch::Texture::TextureType& type)
-    {
-        switch (type)
-        {
-            case GLitch::Texture::TextureType::Diffuse:
-                return "Diffuse";
-            case GLitch::Texture::TextureType::Specular:
-                return "Specular";
-            case GLitch::Texture::TextureType::Normal:
-                return "Normal";
-            case GLitch::Texture::TextureType::Metallic:
-                return "Metallic";
-            case GLitch::Texture::TextureType::Roughness:
-                return "Roughness";
-            case GLitch::Texture::TextureType::AO:
-                return "AO";
-            case GLitch::Texture::TextureType::Emissive:
-                return "Emissive";
-            case GLitch::Texture::TextureType::Height:
-                return "Height";
-            case GLitch::Texture::TextureType::Glossiness:
-                return "Glossiness";
-            case GLitch::Texture::TextureType::Opacity:
-                return "Opacity";
-            default:
-                return "Undefined";
-        }
-    }
-
-    inline GLitch::Texture::TextureType fromStringToTextureType(const std::string& type)
-    {
-        if (type == "Diffuse")
-            return GLitch::Texture::TextureType::Diffuse;
-        if (type == "Specular")
-            return GLitch::Texture::TextureType::Specular;
-        if (type == "Normal")
-            return GLitch::Texture::TextureType::Normal;
-        if (type == "Metallic")
-            return GLitch::Texture::TextureType::Metallic;
-        if (type == "Roughness")
-            return GLitch::Texture::TextureType::Roughness;
-        if (type == "AO")
-            return GLitch::Texture::TextureType::AO;
-        if (type == "Emissive")
-            return GLitch::Texture::TextureType::Emissive;
-        if (type == "Height")
-            return GLitch::Texture::TextureType::Height;
-        if (type == "Glossiness")
-            return GLitch::Texture::TextureType::Glossiness;
-        if (type == "Opacity")
-            return GLitch::Texture::TextureType::Opacity;
-        return GLitch::Texture::TextureType::Undefined;
-    }
-
     void extractVerticesAndIndices(aiMesh* mesh, std::vector<common::Vertex>& vertices, std::vector<unsigned int>& indices)
     {
         for(unsigned int j = 0; j < mesh->mNumVertices; j++)
@@ -268,6 +214,42 @@ std::vector<std::string> AssetsManager::getAllStaticModelsNames() const
         staticModelNames.push_back(key);
 
     return staticModelNames;
+}
+
+std::vector<SkinnedModel*> AssetsManager::getAllSkinnedModels()
+{
+    std::vector<SkinnedModel*> skinnedModels;
+
+    skinnedModels.reserve(m_skinnedModels.size());
+
+    for (auto& model : m_skinnedModels)
+        skinnedModels.push_back(&model.second);
+
+    return skinnedModels;
+}
+
+std::vector<StaticModel*> AssetsManager::getAllStaticModels()
+{
+    std::vector<StaticModel*> staticModels;
+
+    staticModels.reserve(m_staticModels.size());
+
+    for (auto& model : m_staticModels)
+        staticModels.push_back(&model.second);
+
+    return staticModels;
+}
+
+std::vector<Material*> AssetsManager::getAllMaterials()
+{
+    std::vector<Material*> materials;
+
+    materials.reserve(m_materials.size());
+
+    for (auto& material : m_materials)
+        materials.push_back(&material.second);
+
+    return materials;
 }
 
 Material* AssetsManager::loadMaterialFromModel(aiMaterial *aiMat)
@@ -661,7 +643,7 @@ Material AssetsManager::loadMaterial(const std::string &path)
             if (!value.is_string() || value.get<std::string>().empty())
                 continue;
 
-            if (const auto textureType = ::fromStringToTextureType(key); textureType != GLitch::Texture::TextureType::Undefined)
+            if (const auto textureType = utilities::fromStringToTextureType(key); textureType != GLitch::Texture::TextureType::Undefined)
                 if (auto texture = getTextureByName(value.get<std::string>()))
                     material.addTexture(textureType, texture);
         }
@@ -763,10 +745,13 @@ StaticMesh processStaticMesh(aiMesh* mesh, const aiScene* scene)
     std::vector<unsigned int> indices;
     extractVerticesAndIndices(mesh, vertices, indices);
 
+    StaticMesh staticMesh;
+
+    staticMesh.setVerticesAndIndices(vertices, indices);
+
     unsigned int materialIndex = mesh->mMaterialIndex;
 
     aiMaterial* tmpMaterial = scene->mMaterials[materialIndex];
-    StaticMesh staticMesh{vertices, indices};
 
     if (tmpMaterial)
     {
@@ -794,7 +779,8 @@ SkeletalMesh processSkeletalMesh(aiMesh* mesh, const aiScene* scene, Skeleton& s
     extractVerticesAndIndices(mesh, vertices, indices);
     extractSkeleton(mesh, scene, vertices, skeleton);
 
-    SkeletalMesh skeletalMesh{vertices, indices};
+    SkeletalMesh skeletalMesh;
+    skeletalMesh.setVerticesAndIndices(vertices, indices);
 
     unsigned int materialIndex = mesh->mMaterialIndex;
 
@@ -878,8 +864,6 @@ SkinnedModel AssetsManager::loadSkinnedModel(const std::string &path)
     std::vector<SkeletalMesh> meshes;
     processSkinnedModel(scene->mRootNode, scene, meshes, skeleton);
 
-
-
     const std::string name = std::filesystem::path(path).filename().string();
 
     SkinnedModel model{name, meshes};
@@ -891,12 +875,3 @@ SkinnedModel AssetsManager::loadSkinnedModel(const std::string &path)
 }
 
 AssetsManager::~AssetsManager() = default;
-
-//
-// if (mat->GetTextureCount(type) > 0) {
-//     aiString str;
-//     mat->GetTexture(type, 0, &str);
-//     std::string fullPath = directory + "/" + str.C_Str();
-//     auto texture = std::make_shared<Texture>(fullPath);
-//     material->setTexture(myType, texture);
-// }

@@ -4,9 +4,64 @@
 #include <assimp/matrix4x4.h>
 #include <glm/fwd.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include "Texture.hpp"
 
 namespace utilities
 {
+    inline std::string fromTypeToString(const GLitch::Texture::TextureType& type)
+    {
+        switch (type)
+        {
+            case GLitch::Texture::TextureType::Diffuse:
+                return "Diffuse";
+            case GLitch::Texture::TextureType::Specular:
+                return "Specular";
+            case GLitch::Texture::TextureType::Normal:
+                return "Normal";
+            case GLitch::Texture::TextureType::Metallic:
+                return "Metallic";
+            case GLitch::Texture::TextureType::Roughness:
+                return "Roughness";
+            case GLitch::Texture::TextureType::AO:
+                return "AO";
+            case GLitch::Texture::TextureType::Emissive:
+                return "Emissive";
+            case GLitch::Texture::TextureType::Height:
+                return "Height";
+            case GLitch::Texture::TextureType::Glossiness:
+                return "Glossiness";
+            case GLitch::Texture::TextureType::Opacity:
+                return "Opacity";
+            default:
+                return "Undefined";
+        }
+    }
+
+    inline GLitch::Texture::TextureType fromStringToTextureType(const std::string& type)
+    {
+        if (type == "Diffuse")
+            return GLitch::Texture::TextureType::Diffuse;
+        if (type == "Specular")
+            return GLitch::Texture::TextureType::Specular;
+        if (type == "Normal")
+            return GLitch::Texture::TextureType::Normal;
+        if (type == "Metallic")
+            return GLitch::Texture::TextureType::Metallic;
+        if (type == "Roughness")
+            return GLitch::Texture::TextureType::Roughness;
+        if (type == "AO")
+            return GLitch::Texture::TextureType::AO;
+        if (type == "Emissive")
+            return GLitch::Texture::TextureType::Emissive;
+        if (type == "Height")
+            return GLitch::Texture::TextureType::Height;
+        if (type == "Glossiness")
+            return GLitch::Texture::TextureType::Glossiness;
+        if (type == "Opacity")
+            return GLitch::Texture::TextureType::Opacity;
+        return GLitch::Texture::TextureType::Undefined;
+    }
+
     inline glm::vec3 interpolate(const glm::vec3& start, const glm::vec3& end, float t) {
         return start + t * (end - start);
     }

@@ -23,6 +23,7 @@
 #include "Renderer.hpp"
 #include "SceneManager.hpp"
 #include "ShaderManager.hpp"
+#include "ImGuizmo.h"
 #define IMGUI_ENABLE_DOCKING
 
 Engine &Engine::instance()
@@ -32,7 +33,6 @@ Engine &Engine::instance()
     return engine;
 }
 
-
 void Engine::run()
 {
     init();
@@ -40,9 +40,9 @@ void Engine::run()
     float lastFrame = 0.0f;
     float deltaTime = 0.0f;
 
-    while(m_mainWindow->isWindowOpened())
+    while (m_mainWindow->isWindowOpened())
     {
-        float currentFrame = glfwGetTime();
+        const float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -51,8 +51,8 @@ void Engine::run()
         ImGui::NewFrame();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        if((*m_currentScene)->isOver() && m_currentScene + 1 != m_allScenes.end())
+
+        if ((*m_currentScene)->isOver() && m_currentScene + 1 != m_allScenes.end())
         {
             ++m_currentScene;
             (*m_currentScene)->create();
