@@ -7,29 +7,17 @@
 // namespace gfx = GLitch;
 // #endif
 
-#include <memory>
-#include <vector>
-#include "MainWindow.hpp"
-#include "Scene.hpp"
-
 class Engine
 {
 public:
-    void run();
-
-    static Engine& instance();
+    static bool run();
 
 private:
-    void init();
+    static void init();
 
-    void glCheckError(const char* file, int line);
-
-    std::vector<std::shared_ptr<Scene>>::iterator m_currentScene;
-    std::vector<std::shared_ptr<Scene>> m_allScenes;
-
-    window::MainWindow* m_mainWindow{nullptr};
+    static void glCheckError(const char* file, int line);
+    #define callGLCheckError() glCheckError(__FILE__, __LINE__)
 };
 
-#define callGLCheckError() glCheckError(__FILE__, __LINE__)
 
 #endif //ENGINE_HPP

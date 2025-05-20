@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "Material.hpp"
+class Skeleton;
+class GameObject;
 
 namespace common
 {
@@ -42,7 +44,6 @@ namespace common
         std::vector<int> children;
         std::vector<BoneInfo*> childrenInfo;
         int parentId{-1};
-        physx::PxRigidDynamic* rigidBody = nullptr;
     };
 
     class Mesh
@@ -53,7 +54,7 @@ namespace common
 
         void setMaterial(Material* material) { m_material = material; }
 
-        Material* getMaterial() { return m_material; }
+        Material* getMaterial() const { return m_material; }
     private:
         Material* m_material{nullptr};
     };
@@ -75,37 +76,37 @@ namespace common
 
         [[nodiscard]] std::string getName() const { return m_name; }
 
-        virtual Mesh* getMesh(int index) = 0;
+        Mesh* getMesh(int index) const
+        {
+            return meshes_[index];
+        }
 
-        virtual size_t getMeshesSize() = 0;
-
-        virtual ModelType getType() = 0;
+        size_t getMeshesSize() const
+        {
+            return meshes_.size();
+        }
 
         virtual void draw() = 0;
+
+    protected:
+        std::vector<Mesh*> meshes_;
 
     private:
         std::string m_name;
     };
 
-    struct BoneDebug {
-        glm::vec3 position;
-        std::vector<BoneDebug*> children;
-    };
-
     struct SQT
     {
-        glm::quat rotation = glm::quat(1, 0, 0, 0);
-        glm::vec3 position = glm::vec3(0, 0, 0);
-        glm::vec3 scale = glm::vec3(0, 0, 0);
-        float timeStamp = -1;
-        std::string jointName;
+        glm::quat rotation{1, 0, 0, 0};
+        glm::vec3 position{0, 0, 0};
+        glm::vec3 scale{0, 0, 0};
+        float timeStamp{0.0f};
     };
 
-    struct BoneAnimation
+    struct AnimationTrack
     {
         std::vector<SQT> keyFrames;
-        glm::mat4 transform{1.0f};
-        std::string boneName;
+        std::string objectName;
     };
 
     struct Animation
@@ -113,48 +114,15 @@ namespace common
         std::string name;
         double ticksPerSecond;
         double duration;
-        std::vector<BoneAnimation> boneAnimations;
-        //MAYBE NOT VERY GOOD IDEA
-        std::vector<common::BoneInfo>* modelBones{nullptr};
+        std::vector<AnimationTrack> boneAnimations;
+        Skeleton* skeletonForAnimation{nullptr};
+        GameObject* gameObject{nullptr};
 
-        common::BoneAnimation* getBoneAnimation(const std::string& name)
+        common::AnimationTrack* getAnimationTrack(const std::string& name)
         {
-            for (auto& bone : boneAnimations)
-                if (bone.boneName == name)
-                    return &bone;
-
-            return nullptr;
+            const auto it = std::find_if(boneAnimations.begin(), boneAnimations.end(), [&name](const auto& bone) {return bone.objectName == name;});
+            return it == boneAnimations.end() ? nullptr : &(*it);
         }
-
-        common::BoneInfo* findParent()
-        {
-            for (auto& modelBone : *modelBones)
-                if (modelBone.parentId == -1)
-                    return &modelBone;
-
-            return nullptr;
-        }
-
-        common::BoneInfo* findBone(int index)
-        {
-            return &modelBones->at(index);
-        }
-
-        common::BoneInfo* findBone(const std::string& name) {
-            for (auto& bone : *modelBones)
-            {
-                if (bone.name == name)
-                    return &bone;
-            }
-
-            return nullptr;
-        }
-    };
-
-    struct AABB
-    {
-        glm::vec3 min;
-        glm::vec3 max;
     };
 } //namespace common
 

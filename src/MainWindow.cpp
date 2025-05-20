@@ -1,5 +1,4 @@
 #include "MainWindow.hpp"
-
 #include <stdexcept>
 
 window::MainWindow::MainWindow()
@@ -17,7 +16,7 @@ window::MainWindow::MainWindow()
     glViewport(0, 0, m_currentWindowData.width, m_currentWindowData.height);
 }
 
-bool window::MainWindow::isWindowOpened()
+bool window::MainWindow::isWindowOpened() const
 {
     return !(glfwWindowShouldClose(m_window));
 }

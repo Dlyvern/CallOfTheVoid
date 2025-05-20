@@ -1,5 +1,4 @@
 #include "LightManager.hpp"
-
 #include <iostream>
 
 LightManager& LightManager::instance()
@@ -17,19 +16,22 @@ std::vector<lighting::Light*> LightManager::getLights()
 {
     return m_lights;
 }
+
+lighting::Light* LightManager::getDirectionalLight() const
+{
+    for (const auto& light : m_lights)
+        if (light->type == lighting::LightType::DIRECTIONAL)
+            return light;
+
+    return nullptr;
+}
+
 void LightManager::sendLightsIntoShader(GLitch::Shader &shader)
 {
-    auto light = m_lights.front();
-    shader.setVec3("light.position", light->position);
-    shader.setVec3("light.color", light->color);
-    shader.setFloat("light.strength", light->strength);
-    shader.setFloat("light.radius", light->radius);
-    shader.setVec3("light.direction", light->direction);
-
     for (size_t i = 0; i < m_lights.size(); ++i)
     {
         const lighting::Light* light = m_lights[i];
-
+        shader.setInt("lights[" + std::to_string(i) + "].type", static_cast<int>(light->type));
         shader.setVec3("lights[" + std::to_string(i) + "].position", light->position);
         shader.setVec3("lights[" + std::to_string(i) + "].color", light->color);
         shader.setFloat("lights[" + std::to_string(i) + "].strength", light->strength);

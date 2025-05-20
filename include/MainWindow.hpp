@@ -28,7 +28,7 @@ namespace window
     public:
         MainWindow();
 
-        bool isWindowOpened();
+        bool isWindowOpened() const;
 
         [[nodiscard]] int getHeight() const;
         [[nodiscard]] int getWidth() const;
@@ -40,7 +40,7 @@ namespace window
     private:
         GLFWwindow* m_window{nullptr};
         WindowData m_currentWindowData{window::FULLSCREEN_WINDOW_DATA};
-        bool m_hasFocus;
+        bool m_hasFocus{false};
         
         const std::string m_windowName{"CallOfTheVoid"};
     };

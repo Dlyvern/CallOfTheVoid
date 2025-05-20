@@ -4,6 +4,11 @@ Scene::Scene() = default;
 
 Scene::~Scene() = default;
 
+void Scene::setOnSceneEndCallback(const std::function<void(Scene* scene)> &callback)
+{
+    onEndSceneCallback_ = callback;
+}
+
 void Scene::addGameObject(std::shared_ptr<GameObject> gameObject)
 {
     m_objects.push_back(gameObject);

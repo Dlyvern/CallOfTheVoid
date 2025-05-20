@@ -11,6 +11,8 @@ public:
 
     Scene* getCurrentScene();
 
+    void addScene(Scene* scene);
+
     void updateCurrentScene(float deltaTime);
 
     static void saveObjectsIntoFile(const std::vector<std::shared_ptr<GameObject>>& objects, const std::string& filePath);
@@ -19,6 +21,9 @@ public:
     ~SceneManager() = default;
 private:
     Scene* m_currentScene{nullptr};
+    std::vector<Scene*> m_scenes;
+
+    void onSceneIsOver(Scene* scene);
 
     SceneManager() = default;
     SceneManager(const SceneManager&) = delete;

@@ -1,8 +1,6 @@
 #ifndef KEYBOARD_HPP
 #define KEYBOARD_HPP
 
-#pragma once
-
 #include <unordered_map>
 #include <GLFW/glfw3.h>
 
@@ -20,6 +18,12 @@ enum class KeyCode : int
     O = GLFW_KEY_O,
     DELETE = GLFW_KEY_DELETE,
     R = GLFW_KEY_R,
+    C = GLFW_KEY_C,
+    LeftCtrl = GLFW_KEY_LEFT_CONTROL,
+    RightCtrl = GLFW_KEY_RIGHT_CONTROL,
+    Z = GLFW_KEY_Z,
+    V = GLFW_KEY_V,
+    Y = GLFW_KEY_Y,
 };
 
 class KeysManager

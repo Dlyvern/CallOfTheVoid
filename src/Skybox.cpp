@@ -13,6 +13,7 @@
 #include "Renderer.hpp"
 #include "WindowsManager.hpp"
 
+
 Skybox::Skybox() = default;
 
 Skybox::Skybox(const std::vector<std::string> &faces)

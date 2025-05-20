@@ -8,10 +8,11 @@ class Component
 public:
     virtual void update(float deltaTime) = 0;
 
-    void setOwner(GameObject* owner) { m_owner = owner; }
-    GameObject* getOwner() const { return m_owner; }
-    virtual ~Component() = default;
+    virtual void setOwner(GameObject* owner) { m_owner = owner; }
+    [[nodiscard]] GameObject* getOwner() const { return m_owner; }
 
+    virtual void destroy() {}
+    virtual ~Component() = default;
 private:
     GameObject* m_owner{nullptr};
 };

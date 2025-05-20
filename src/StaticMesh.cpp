@@ -12,12 +12,6 @@ StaticMesh::StaticMesh() = default;
 
 void StaticMesh::draw()
 {
-    // if (getMaterial())
-    // {
-    //     auto shader = ShaderManager::instance().getShader(ShaderManager::ShaderType::STATIC);
-    //     getMaterial()->bind(*shader);
-    // }
-
     glBindVertexArray(m_vao);
     glDrawElements(GL_TRIANGLES, m_indicesCount, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
@@ -34,6 +28,7 @@ void StaticMesh::loadFromRaw()
     glGenVertexArrays(1, &m_vao);
     glGenBuffers(1, &m_vbo);
     glGenBuffers(1, &m_ebo);
+
 
     glBindVertexArray(m_vao);
 

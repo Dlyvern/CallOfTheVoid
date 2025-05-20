@@ -2,9 +2,5 @@
 
 int main()
 {
-    Engine::instance().run();
-    
-    glfwTerminate();
-    
-    return 0;
+    return Engine::run();
 }

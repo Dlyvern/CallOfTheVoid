@@ -48,6 +48,13 @@ find_package(glm REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(Threads REQUIRED)
 
+#find_library(NVML_LIBRARY nvidia-ml PATHS /usr/lib /usr/lib64 /usr/lib/x86_64-linux-gnu)
+#if (NVML_LIBRARY)
+#    message(STATUS "Found NVML: ${NVML_LIBRARY}")
+#    target_link_libraries(your_target PRIVATE ${NVML_LIBRARY})
+#else()
+#    message(FATAL_ERROR "NVML library not found!")
+#endif()
 add_executable(${PROJECT_NAME})
 
 if(!USE_VULKAN)

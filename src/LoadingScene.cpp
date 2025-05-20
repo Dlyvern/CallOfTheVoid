@@ -1,6 +1,7 @@
 #include "LoadingScene.hpp"
 #include "Filesystem.hpp"
 #include "AssetsManager.hpp"
+#include "DebugTextHolder.hpp"
 
 LoadingScene::LoadingScene() = default;
 
@@ -16,7 +17,7 @@ void LoadingScene::create()
 void LoadingScene::loadAllAssets()
 {
     const std::vector<std::string> modelsPaths{
-    "VendingMachine.fbx",  "cube.obj", "mannequin.fbx", "jail_door.fbx", "void.fbx"
+    "VendingMachine.fbx",  "cube.obj", "mannequin.fbx", "jail_door.fbx", "void.fbx", "ak47-animated.fbx"
     };
 
     const std::vector<std::string> texturesPaths{
@@ -29,12 +30,43 @@ void LoadingScene::loadAllAssets()
 
     const std::vector<std::string> materialsPaths
     {
-        "default_material.mat", "floor_material.mat", "parking_wall_material.mat", "concrete.mat"
+        "default_material.mat", "floor_material.mat", "parking_wall_material.mat", "concrete.mat", "Material.mat",
     };
 
-    AssetsManager::instance().preLoadModels(modelsPaths);
-    AssetsManager::instance().preLoadTextures(texturesPaths);
-    AssetsManager::instance().preLoadMaterials(materialsPaths);
+    auto startingTime = std::chrono::high_resolution_clock::now();
+
+    {
+        auto startTime = std::chrono::high_resolution_clock::now();
+        AssetsManager::instance().preLoadModels(modelsPaths);
+        auto endTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsedTime = endTime - startTime;
+        std::cout << "Loading models time: " + std::to_string(elapsedTime.count()) << std::endl;
+        // debug::DebugTextHolder::instance().addText("Loading models time: " + std::to_string(elapsedTime.count()));
+    }
+
+    {
+        auto startTime = std::chrono::high_resolution_clock::now();
+        AssetsManager::instance().preLoadTextures(texturesPaths);
+        auto endTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsedTime = endTime - startTime;
+        std::cout << "Loading textures time: " + std::to_string(elapsedTime.count()) << std::endl;
+        // debug::DebugTextHolder::instance().addText("Loading textures time: " + std::to_string(elapsedTime.count()));
+    }
+
+    {
+        auto startTime = std::chrono::high_resolution_clock::now();
+        AssetsManager::instance().preLoadMaterials(materialsPaths);
+        auto endTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsedTime = endTime - startTime;
+        std::cout << "Loading materials time: " + std::to_string(elapsedTime.count()) << std::endl;
+        // debug::DebugTextHolder::instance().addText("Loading materials time: " + std::to_string(elapsedTime.count()));
+    }
+
+    auto endingTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsedTime = endingTime - startingTime;
+
+    std::cout << "Loading time: " + std::to_string(elapsedTime.count()) << std::endl;
+    // debug::DebugTextHolder::instance().addText("Loading time: " + std::to_string(elapsedTime.count()));
 }
 
 void LoadingScene::update(float deltaTime)
@@ -52,9 +84,7 @@ void LoadingScene::update(float deltaTime)
                 const auto& mesh = model->getMesh(index);
 
                 if (auto staticMesh = dynamic_cast<StaticMesh*>(mesh))
-                {
                     staticMesh->loadFromRaw();
-                }
             }
         }
 
@@ -73,6 +103,9 @@ void LoadingScene::update(float deltaTime)
 
 
         m_endScene = true;
+
+        if (onEndSceneCallback_)
+            onEndSceneCallback_(this);
     }
 }
 

@@ -46,6 +46,11 @@ namespace filesystem
         return {getResourcesFolderPath().string() + "/materials"};
     }
 
+    inline std::filesystem::path getAnimationsFolderPath()
+    {
+        return {getResourcesFolderPath().string() + "/animations"};
+    }
+
     inline std::filesystem::path getTexturesFolderPath()
     {
         return {getResourcesFolderPath().string() + "/textures"};

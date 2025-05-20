@@ -2,14 +2,14 @@
     "walls": [
         {
             "materials": {
-                "0": "default_material.mat"
+                "0": "concrete.mat"
             },
             "model": "cube.obj",
             "name": "plane",
             "position": [
-                0.0,
+                7.5,
                 -0.5,
-                0.0
+                -7.5
             ],
             "rotation": [
                 0.0,
@@ -17,25 +17,25 @@
                 0.0
             ],
             "scale": [
-                20.0,
+                5.0,
                 0.10000000149011612,
-                20.0
+                5.0
             ]
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_1",
             "position": [
                 8.5,
                 1.0,
-                -9.949999809265137
+                -10.055000305175781
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
@@ -46,7 +46,7 @@
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_2",
@@ -68,7 +68,7 @@
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_3",
@@ -79,7 +79,7 @@
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
@@ -90,18 +90,18 @@
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_4",
             "position": [
                 2.5,
-                1.0,
+                0.9961303472518921,
                 9.949999809265137
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
@@ -112,7 +112,7 @@
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_5",
@@ -134,7 +134,7 @@
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_6",
@@ -156,7 +156,7 @@
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_7",
@@ -178,7 +178,7 @@
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_8",
@@ -200,18 +200,18 @@
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_9",
             "position": [
                 5.5,
-                1.0,
-                -9.949999809265137
+                0.9998682737350464,
+                -10.055000305175781
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
@@ -222,18 +222,18 @@
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_10",
             "position": [
                 2.5,
-                1.0,
-                -9.949999809265137
+                0.9999999403953552,
+                -10.055000305175781
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
@@ -244,18 +244,18 @@
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_11",
             "position": [
                 -0.5,
                 1.0,
-                -9.949999809265137
+                -10.055000305175781
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
@@ -266,14 +266,14 @@
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_12",
             "position": [
-                -3.5,
+                -3.498948812484741,
                 1.0,
-                -10.008306503295898
+                -10.054939270019531
             ],
             "rotation": [
                 0.0,
@@ -283,19 +283,19 @@
             "scale": [
                 3.0,
                 3.0,
-                0.0010000000474974513
+                0.10000000149011612
             ]
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "concrete.mat"
             },
             "model": "cube.obj",
             "name": "wall_13",
             "position": [
                 -6.4995551109313965,
-                0.9996277689933777,
-                -10.005000114440918
+                1.0,
+                -10.055000305175781
             ],
             "rotation": [
                 0.0,
@@ -305,19 +305,19 @@
             "scale": [
                 3.0,
                 3.0,
-                0.0010000000474974513
+                0.10000000149011612
             ]
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "concrete.mat"
             },
             "model": "cube.obj",
             "name": "wall_14",
             "position": [
                 -9.5,
-                1.0,
-                -10.005000114440918
+                0.9981068968772888,
+                -10.178000450134277
             ],
             "rotation": [
                 0.0,
@@ -327,39 +327,39 @@
             "scale": [
                 3.0,
                 3.0,
-                0.0010000000474974513
+                0.10000000149011612
             ]
         },
         {
             "materials": {
-                "0": "DefaultMaterial.mat"
+                "0": "concrete.mat"
             },
             "model": "cube.obj",
             "name": "plane_2",
             "position": [
-                -20.0,
+                7.5,
                 -0.5,
-                0.0
+                -2.5
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
-                20.0,
+                5.0,
                 0.10000000149011612,
-                20.0
+                5.0
             ]
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_15",
             "position": [
-                11.5,
+                10.050000190734863,
                 1.0,
                 8.5
             ],
@@ -369,19 +369,19 @@
                 0.0
             ],
             "scale": [
-                3.0,
+                0.10000000149011612,
                 3.0,
                 3.0
             ]
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_16",
             "position": [
-                11.5,
+                10.050000190734863,
                 1.0,
                 5.5
             ],
@@ -391,41 +391,41 @@
                 0.0
             ],
             "scale": [
-                3.0,
+                0.10000000149011612,
                 3.0,
                 3.0
             ]
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_17",
             "position": [
-                11.5,
+                10.050000190734863,
                 1.0,
                 2.5
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
-                3.0,
-                3.0,
+                0.10000000149011612,
+                3.000000476837158,
                 3.0
             ]
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_18",
             "position": [
-                11.5,
+                10.050000190734863,
                 1.0,
                 -0.5
             ],
@@ -435,19 +435,19 @@
                 0.0
             ],
             "scale": [
-                3.0,
+                0.10000000149011612,
                 3.0,
                 3.0
             ]
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_19",
             "position": [
-                11.5,
+                10.050000190734863,
                 1.0,
                 -3.5
             ],
@@ -457,119 +457,554 @@
                 0.0
             ],
             "scale": [
-                3.0,
+                0.10000000149011612,
                 3.0,
                 3.0
             ]
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_20",
             "position": [
-                11.5,
+                10.050000190734863,
                 1.0,
                 -6.5
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
-                3.0,
+                0.10000000149011612,
                 3.0,
                 3.0
             ]
         },
         {
             "materials": {
-                "0": "parking_wall_material.mat"
+                "0": "default_material.mat"
             },
             "model": "cube.obj",
             "name": "wall_21",
             "position": [
-                11.5,
+                10.050000190734863,
                 1.0,
-                -9.5
+                -9.039999961853027
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
+                0.10000000149011612,
                 3.0,
-                3.0,
-                3.0
+                2.095545530319214
             ]
         },
         {
+            "components": [
+                {
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "direction": [
+                        -0.0,
+                        -0.5963311195373535,
+                        -0.8027386665344238
+                    ],
+                    "lightType": 0,
+                    "position": [
+                        0.0,
+                        4.0181169509887695,
+                        2.001646041870117
+                    ],
+                    "radius": 2.0,
+                    "strength": 2.0,
+                    "type": "LightComponent"
+                }
+            ],
             "materials": {
-                "0": "DefaultMaterial.mat"
+                "0": "JailDoor_MTL.mat"
             },
             "model": "cube.obj",
-            "name": "light",
+            "name": "directionalLight",
             "position": [
                 0.0,
-                4.0,
-                2.0
+                4.0181169509887695,
+                2.001646041870117
             ],
             "rotation": [
-                0.0,
-                0.0,
+                -36.60757827758789,
+                -0.0,
                 0.0
             ],
             "scale": [
                 0.5,
-                0.5,
-                0.5
+                0.4999988377094269,
+                0.4999988377094269
+            ]
+        },
+        {
+            "components": [
+                {
+                    "type": "AnimatorComponent"
+                },
+                {
+                    "scripts": [
+                        {
+                            "script": "DoorScript"
+                        },
+                        {
+                            "script": "TestScript"
+                        }
+                    ],
+                    "type": "ScriptComponent"
+                }
+            ],
+            "materials": {
+                "0": "JailDoor_MTL.mat"
+            },
+            "model": "jail_door.fbx",
+            "name": "Door",
+            "position": [
+                0.0,
+                0.0,
+                -5.0
+            ],
+            "rotation": [
+                -90.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                0.9999993443489075,
+                1.0,
+                1.0
             ]
         },
         {
             "materials": {
-                "0": "DefaultMaterial.mat"
+                "0": "concrete.mat"
             },
             "model": "cube.obj",
-            "name": "light",
+            "name": "plane_3",
             "position": [
-                0.0,
-                4.0,
-                2.0
+                2.5,
+                -0.5,
+                -2.5
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
-                0.5,
-                0.5,
-                0.5
+                5.0,
+                0.10000000149011612,
+                5.0
             ]
         },
         {
             "materials": {
-                "0": "DefaultMaterial.mat"
+                "0": "concrete.mat"
             },
             "model": "cube.obj",
-            "name": "light",
+            "name": "plane_4",
             "position": [
-                0.0,
-                4.0,
-                2.0
+                -2.5,
+                -0.5,
+                -2.5
             ],
             "rotation": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "scale": [
-                0.5,
-                0.5,
-                0.5
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_5",
+            "position": [
+                -7.5,
+                -0.5,
+                -2.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "floor_material.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_6",
+            "position": [
+                -7.5,
+                -0.5,
+                -7.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_7",
+            "position": [
+                -2.5,
+                -0.5,
+                -7.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_8",
+            "position": [
+                2.5,
+                -0.5,
+                -7.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_9",
+            "position": [
+                2.5,
+                -0.5,
+                2.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_10",
+            "position": [
+                7.5,
+                -0.5,
+                2.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_11",
+            "position": [
+                7.5,
+                -0.5,
+                7.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_17",
+            "position": [
+                2.5,
+                -0.5,
+                7.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_12",
+            "position": [
+                -2.5,
+                -0.5,
+                7.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_13",
+            "position": [
+                -2.5,
+                -0.5,
+                2.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_20",
+            "position": [
+                -7.5,
+                -0.5,
+                2.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_15",
+            "position": [
+                -7.5,
+                -0.5,
+                7.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_16",
+            "position": [
+                7.5,
+                -0.5,
+                7.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_19",
+            "position": [
+                -12.5,
+                -0.5,
+                2.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_20",
+            "position": [
+                -12.5,
+                -0.5,
+                7.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "concrete.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_21",
+            "position": [
+                -12.5,
+                -0.5,
+                -2.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
+            ]
+        },
+        {
+            "materials": {
+                "0": "floor_material.mat"
+            },
+            "model": "cube.obj",
+            "name": "plane_22",
+            "position": [
+                -12.5,
+                -0.5,
+                -7.5
+            ],
+            "rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "scale": [
+                5.0,
+                0.10000000149011612,
+                5.0
             ]
         }
     ]

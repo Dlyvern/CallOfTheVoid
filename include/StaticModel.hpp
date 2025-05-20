@@ -11,17 +11,7 @@ public:
 
     void draw() override;
 
-    ModelType getType() override {return ModelType::STATIC;}
-
-    std::vector<StaticMesh>& getMeshes();
-
-    size_t getMeshesSize() override {return m_meshes.size();}
-
-    common::Mesh* getMesh(int index) override
-    {
-        return &m_meshes[index];
-    }
-
+    void drawWithMaterials(std::unordered_map<int, Material*>& materials);
 private:
     std::vector<StaticMesh> m_meshes;
 };

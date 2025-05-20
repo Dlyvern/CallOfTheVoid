@@ -13,6 +13,7 @@ public:
         STATIC = 1,
         STATIC_SHADOW = 2,
         SKELETON_SHADOW = 3,
+        POST_PROCESSING = 4
     };
 
     static ShaderManager& instance();

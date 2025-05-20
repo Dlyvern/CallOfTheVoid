@@ -19,7 +19,9 @@ namespace physics
         static PhysicsController& instance();
         void simulate(float deltaTime);
         physx::PxRigidDynamic* addDynamicActor(std::shared_ptr<GameObject> actor);
-        physx::PxRigidStatic* addStaticActor(std::shared_ptr<GameObject> actor, bool fixSize = false);
+        physx::PxRigidStatic* addStaticActor(std::shared_ptr<GameObject> actor);
+
+        void resizeCollider(const glm::vec3& newSize, std::shared_ptr<GameObject> collider);
 
         void release();
 
@@ -28,8 +30,6 @@ namespace physics
         physx::PxMaterial* getDefaultMaterial();
 
         physx::PxScene* getScene();
-
-        void createRagdoll(Skeleton& skeleton);
     private:
         physx::PxPhysics* m_physics{nullptr};
         physx::PxScene* m_scene{nullptr};

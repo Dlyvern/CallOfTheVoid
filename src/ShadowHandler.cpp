@@ -4,6 +4,7 @@
 
 void ShadowHandler::initShadows()
 {
+    // GL_LINEAR
     glGenFramebuffers(1, &depthMapFBO);
     glGenTextures(1, &depthMap);
     glBindTexture(GL_TEXTURE_2D, depthMap);
@@ -12,7 +13,7 @@ void ShadowHandler::initShadows()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+    constexpr float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
@@ -21,7 +22,7 @@ void ShadowHandler::initShadows()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void ShadowHandler::bindShadows()
+void ShadowHandler::bindShadows() const
 {
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
@@ -39,13 +40,13 @@ void ShadowHandler::unbindShadows()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void ShadowHandler::activateTexture()
+void ShadowHandler::activateTexture() const
 {
     glActiveTexture(GL_TEXTURE0 + 8);
     glBindTexture(GL_TEXTURE_2D, depthMap);
 }
 
-void ShadowHandler::deactivateTexture()
+void ShadowHandler::deactivateTexture() const
 {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depthMap);

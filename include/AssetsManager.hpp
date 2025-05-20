@@ -26,18 +26,15 @@ public:
     inline SkinnedModel* getSkinnedModelByName(const std::string& name);
     inline StaticModel* getStaticModelByName(const std::string& name);
     inline common::Model* getModelByName(const std::string& name);
-    std::vector<common::Model*> getAllLoadedModels() const;
     inline Material* getMaterialByName(const std::string& name);
+
+    std::vector<common::Model*> getAllLoadedModels() const;
+    std::vector<SkinnedModel*> getAllSkinnedModels();
+    std::vector<StaticModel*> getAllStaticModels();
+    std::vector<Material*> getAllMaterials();
 
     std::vector<std::string> getAllSkinnedModelsNames() const;
     std::vector<std::string> getAllStaticModelsNames() const;
-
-    std::vector<SkinnedModel*> getAllSkinnedModels();
-    std::vector<StaticModel*> getAllStaticModels();
-
-    std::vector<Material*> getAllMaterials() ;
-
-    Material* loadMaterialFromModel(aiMaterial* aiMat);
 
     void preLoadPathsForAllModels();
     void preLoadPathsForAllTextures();
@@ -47,19 +44,23 @@ public:
     void preLoadTextures(const std::vector<std::string>& paths);
     void preLoadMaterials(const std::vector<std::string>& paths);
 
-    //TODO Make private
-    Material loadMaterial(const std::string& path);
-    GLitch::Texture loadTexture(const std::string& path);
-    SkinnedModel loadSkinnedModel(const std::string& path);
-    StaticModel loadStaticModel(const std::string &path);
-
     std::vector<std::string> getAllLoadedModelsNames() const;
     std::vector<std::string> getAllLoadedMaterialsNames() const;
 
     std::vector<common::Animation> extractAnimationsFromModel(const std::string& pathToModel);
+    Material* loadMaterialFromModel(aiMaterial* aiMat);
+
+    void saveAnimationToJson(const common::Animation& animation);
+
+    common::Animation loadAnimationFromJson(const std::string& path);
+    GLitch::Texture loadTexture(const std::string& path);
 
     ~AssetsManager();
 private:
+    Material loadMaterial(const std::string& path);
+    SkinnedModel loadSkinnedModel(const std::string& path);
+    StaticModel loadStaticModel(const std::string &path);
+
     std::unordered_map<std::string, GLitch::Texture> m_textures;
     std::unordered_map<std::string, SkinnedModel> m_skinnedModels;
     std::unordered_map<std::string, StaticModel> m_staticModels;
@@ -76,10 +77,15 @@ inline Material* AssetsManager::getMaterialByName(const std::string& name)
     if (m_materials.contains(name))
         return &m_materials[name];
 
-    preLoadMaterials({name});
+    const std::string folderPath = filesystem::getMaterialsFolderPath().string() + "/" + name;
 
-    if (m_materials.contains(name))
-        return &m_materials[name];
+    if (std::filesystem::exists(folderPath))
+    {
+        preLoadMaterials({name});
+
+        if (m_materials.contains(name))
+            return &m_materials[name];
+    }
 
     std::cout << "AssetsManager::getMaterialByName(): material '" << name << "' doesn't exist" << std::endl;
 
@@ -123,7 +129,7 @@ inline GLitch::Texture* AssetsManager::getTextureByName(const std::string& name)
     if(auto it = m_textures.find(name); it != m_textures.cend())
         return &it->second;
 
-    auto folderPath = filesystem::getTexturesFolderPath().string() + "/" + name;
+    const std::string folderPath = filesystem::getTexturesFolderPath().string() + "/" + name;
 
     if (std::filesystem::exists(folderPath))
     {
@@ -133,11 +139,9 @@ inline GLitch::Texture* AssetsManager::getTextureByName(const std::string& name)
             return &it->second;
     }
 
-
     std::cout << "AssetsManager::getTextureByName(): '" << name << "' does not exist" << std::endl;
     
     return nullptr;
 }
-
 
 #endif //ASSETS_MANAGER_HPP

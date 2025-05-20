@@ -5,10 +5,19 @@
 #include <assimp/postprocess.h>
 #include <json/json.hpp>
 
+#include "AnimatorComponent.hpp"
 #include "AssetsManager.hpp"
-#include "Cube.hpp"
+#include "DoorScript.hpp"
 #include "Filesystem.hpp"
-#include "Void.hpp"
+#include "Light.hpp"
+#include "LightComponent.hpp"
+#include "LightManager.hpp"
+#include "RigidbodyComponent.hpp"
+#include "ScriptsRegister.hpp"
+#include "SkeletalMeshComponent.hpp"
+#include "StaticMeshComponent.hpp"
+
+class LightComponent;
 
 SceneManager& SceneManager::instance()
 {
@@ -26,6 +35,26 @@ Scene* SceneManager::getCurrentScene()
     return m_currentScene;
 }
 
+void SceneManager::addScene(Scene *scene)
+{
+    scene->setOnSceneEndCallback(std::bind(&SceneManager::onSceneIsOver, this, std::placeholders::_1));
+    m_scenes.push_back(scene);
+}
+
+void SceneManager::onSceneIsOver(Scene* scene)
+{
+    m_scenes.erase(std::find(m_scenes.begin(), m_scenes.end(), scene));
+    delete scene;
+
+    if (!m_scenes.empty())
+    {
+        Scene* newScene = m_scenes.back();
+        newScene->create();
+
+        setCurrentScene(newScene);
+    }
+}
+
 void SceneManager::updateCurrentScene(float deltaTime)
 {
     if (m_currentScene)
@@ -38,9 +67,6 @@ void SceneManager::saveObjectsIntoFile(const std::vector<std::shared_ptr<GameObj
 
     for (const auto& object : objects)
     {
-        // if (auto voidObject = dynamic_cast<Void*>(object.get()))
-        //     continue;
-
         if (object->getName() == "player")
             continue;
 
@@ -48,9 +74,49 @@ void SceneManager::saveObjectsIntoFile(const std::vector<std::shared_ptr<GameObj
 
         objectJson["name"] = object->getName();
 
-        if (auto cube = dynamic_cast<geometries::Cube*>(object.get()))
+        if (object->hasComponent<LightComponent>())
         {
-            auto model = cube->getModel();
+            nlohmann::json lightJson;
+
+            auto* light = object->getComponent<LightComponent>()->getLight();
+
+            lightJson["type"] = "LightComponent";
+            lightJson["lightType"] = static_cast<int>(light->type);
+            lightJson["direction"] = {light->direction.x, light->direction.y, light->direction.z};
+            lightJson["color"] = {light->color.r, light->color.g, light->color.b};
+            lightJson["strength"] = light->strength;
+            lightJson["position"] = {light->position.x, light->position.y, light->position.z};
+            lightJson["radius"] = light->radius;
+
+            objectJson["components"].push_back(lightJson);
+        }
+        if (object->hasComponent<AnimatorComponent>())
+        {
+            nlohmann::json animatorJson;
+
+            animatorJson["type"] = "AnimatorComponent";
+
+            objectJson["components"].push_back(animatorJson);
+        }
+        if (object->hasComponent<ScriptComponent>())
+        {
+            nlohmann::json scriptJson;
+
+            scriptJson["type"] = "ScriptComponent";
+
+            for (const auto& script : object->getComponent<ScriptComponent>()->getScripts())
+            {
+                scriptJson["scripts"].push_back({
+                    {"script", script->getScriptName()}
+                });
+            }
+
+            objectJson["components"].push_back(scriptJson);
+        }
+
+        if (object->hasComponent<StaticMeshComponent>())
+        {
+            auto model = object->getComponent<StaticMeshComponent>()->getModel();
             objectJson["model"] = model ? model->getName() : "";
 
             nlohmann::json materialJson;
@@ -61,8 +127,8 @@ void SceneManager::saveObjectsIntoFile(const std::vector<std::shared_ptr<GameObj
 
                 Material* material;
 
-                if (cube->overrideMaterials.contains(index))
-                    material = cube->overrideMaterials[index];
+                if (object->overrideMaterials.contains(index))
+                    material = object->overrideMaterials[index];
                 else
                     material = mesh->getMaterial();
 
@@ -74,9 +140,9 @@ void SceneManager::saveObjectsIntoFile(const std::vector<std::shared_ptr<GameObj
 
             objectJson["materials"] = materialJson;
         }
-        else if (auto voidObject = dynamic_cast<Void*>(object.get()))
+        else if (object->hasComponent<SkeletalMeshComponent>())
         {
-            auto model = voidObject->getModel();
+            auto model = object->getComponent<SkeletalMeshComponent>()->getModel();
             objectJson["skinnedModel"] = model ? model->getName() : "";
 
             nlohmann::json materialJson;
@@ -87,11 +153,10 @@ void SceneManager::saveObjectsIntoFile(const std::vector<std::shared_ptr<GameObj
 
                 Material* material;
 
-                if (voidObject->overrideMaterials.contains(index))
-                    material = voidObject->overrideMaterials[index];
+                if (object->overrideMaterials.contains(index))
+                    material = object->overrideMaterials[index];
                 else
                     material = mesh->getMaterial();
-
 
                 if (material)
                 {
@@ -138,26 +203,26 @@ std::vector<std::shared_ptr<GameObject>> SceneManager::loadObjectsFromFile(const
         const std::string modelName = objectJson[isSkinned ? "skinnedModel" : "model"];
         const std::string modelPath = filesystem::getModelsFolderPath().string() + '/' + modelName;
 
-        auto* model = isSkinned ?
-            static_cast<common::Model*>(AssetsManager::instance().getSkinnedModelByName(modelName)) :
-            static_cast<common::Model*>(AssetsManager::instance().getStaticModelByName(modelName));
+        common::Model* model{nullptr};
 
         if (isSkinned)
         {
-            auto voidObject = std::make_shared<Void>(name);
-            voidObject->setModel(dynamic_cast<SkinnedModel*>(model));
+            auto voidObject = std::make_shared<GameObject>(name);
+            auto m = AssetsManager::instance().getSkinnedModelByName(modelName);
+            voidObject->addComponent<SkeletalMeshComponent>(m);
+            model = m;
             gameObject = voidObject;
         }
         else
         {
-            auto cube = std::make_shared<geometries::Cube>(name);
-            cube->setModel(dynamic_cast<StaticModel*>(model));
+            auto cube = std::make_shared<GameObject>(name);
+            auto m = AssetsManager::instance().getStaticModelByName(modelName);
+            cube->addComponent<StaticMeshComponent>(m);
+            model = m;
             gameObject = cube;
         }
 
-        auto& overrideMaterials = isSkinned ?
-            dynamic_cast<Void*>(gameObject.get())->overrideMaterials :
-            dynamic_cast<geometries::Cube*>(gameObject.get())->overrideMaterials;
+        auto& overrideMaterials = gameObject->overrideMaterials;
 
         if (objectJson.contains("materials"))
         {
@@ -229,13 +294,54 @@ std::vector<std::shared_ptr<GameObject>> SceneManager::loadObjectsFromFile(const
         if (objectJson.contains("rotation"))
         {
             const auto& rot = objectJson["rotation"];
-            gameObject->setRotation(0, { rot[0], rot[1], rot[2] });
+            gameObject->setRotation({ rot[0], rot[1], rot[2] });
         }
 
+        gameObject->addComponent<RigidbodyComponent>(gameObject);
+
         if (isSkinned)
-            dynamic_cast<Void*>(gameObject.get())->setRigidBody(physics::PhysicsController::instance().addStaticActor(gameObject, true));
-        else
-            dynamic_cast<geometries::Cube*>(gameObject.get())->setRigidBody(physics::PhysicsController::instance().addStaticActor(gameObject));
+            physics::PhysicsController::instance().resizeCollider({1.0f, 2.0f, 1.0f}, gameObject);
+
+        if (objectJson.contains("components"))
+        {
+            for (const auto& componentJson : objectJson["components"])
+            {
+                if (componentJson["type"] == "LightComponent")
+                {
+                    lighting::Light light;
+                    light.type = static_cast<lighting::LightType>(componentJson["lightType"]);
+                    const auto& direction = componentJson["direction"];
+                    light.direction = glm::vec3(direction[0], direction[1], direction[2]);
+                    const auto& position = componentJson["position"];
+                    light.position = glm::vec3(position[0], position[1], position[2]);
+                    const auto& color = componentJson["color"];
+                    light.color = glm::vec3(color[0], color[1], color[2]);
+                    light.strength = componentJson["strength"];
+                    light.radius = componentJson["radius"];
+                    gameObject->addComponent<LightComponent>(light);
+
+                    LightManager::instance().addLight(gameObject->getComponent<LightComponent>()->getLight());
+                }
+                else if (componentJson["type"] == "AnimatorComponent")
+                {
+                    gameObject->addComponent<AnimatorComponent>();
+                }
+                else if (componentJson["type"] == "ScriptComponent")
+                {
+                    auto* scriptComponent = gameObject->addComponent<ScriptComponent>();
+
+                    if (componentJson.contains("scripts")) {
+                        for (auto& scriptEntry : componentJson["scripts"]) {
+                            const std::string scriptName = scriptEntry["script"];
+                            auto script = ScriptsRegister::instance().createScript(scriptName);
+                            scriptComponent->addScript(std::move(script));
+                        }
+                    }
+
+                    // gameObject->getComponent<ScriptComponent>()->addScript(ScriptsRegister::instance().createScript(componentJson["script"]));
+                }
+            }
+        }
 
         objects.push_back(gameObject);
     }

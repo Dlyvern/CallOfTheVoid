@@ -1,5 +1,7 @@
 #include "Mouse.hpp"
 #include <iostream>
+#include <backends/imgui_impl_glfw.h>
+
 #include "DebugTextHolder.hpp"
 
 // unsigned int t;
@@ -25,6 +27,7 @@ void input::MouseManager::mouseCallback(GLFWwindow *window, double x, double y)
 {
     // input::Mouse.m_x = x;
     // input::Mouse.m_y = y;
+
     Mouse.window = window;
     glfwGetCursorPos(window, &input::Mouse.m_x, &input::Mouse.m_y);
 }

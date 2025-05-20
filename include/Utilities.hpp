@@ -5,9 +5,65 @@
 #include <glm/fwd.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "Texture.hpp"
+#include <fstream>
+#include <string>
+#include <unordered_set>
+#include <iostream>
 
 namespace utilities
 {
+    inline std::string generateUniqueName(const std::string& baseName, const std::unordered_set<std::string>& existingNames)
+    {
+        std::string candidate = baseName;
+        int counter = 1;
+
+        while (existingNames.contains(candidate))
+            candidate = baseName + "_" + std::to_string(counter++);
+
+        return candidate;
+    }
+
+    inline size_t getRamUsage()
+    {
+        std::ifstream status_file("/proc/self/status");
+        std::string line;
+
+        while (std::getline(status_file, line))
+        {
+            // std::cout << line << std::endl;
+
+            if (line.starts_with("VmRSS"))
+            {
+                line = line.substr(line.find("VmRSS") + 9);
+
+                // std::cout << line << std::endl;
+
+                line = line.substr(0, line.find("kB") - 1);
+
+                size_t ramUsage = std::stoi(line);
+
+                // std::cout << ramUsage;
+
+                return ramUsage / 1024;
+            }
+
+            // if (line.rfind("VmRSS:", 0) == 0)
+            // {
+            //
+            // }
+
+            // if (line.rfind("VmRSS:", 0) == 0)
+            // {
+            //     std::istringstream iss(line);
+            //     std::string key, value, unit;
+            //     iss >> key >> value >> unit;
+            //     return std::stoul(value) / 1024;
+            // }
+        }
+
+        return 0;
+    }
+
     inline std::string fromTypeToString(const GLitch::Texture::TextureType& type)
     {
         switch (type)
@@ -103,7 +159,8 @@ namespace utilities
         return to;
     }
 
-    inline physx::PxTransform glmMat4ToPxTransform(const glm::mat4& mat) {
+    inline physx::PxTransform glmMat4ToPxTransform(const glm::mat4& mat)
+    {
         glm::vec3 pos = glm::vec3(mat[3]);
         glm::quat rot = glm::quat_cast(mat);
         return physx::PxTransform(physx::PxVec3(pos.x, pos.y, pos.z),

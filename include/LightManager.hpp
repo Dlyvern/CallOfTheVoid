@@ -1,10 +1,9 @@
 #ifndef LIGHT_MANAGER_HPP
 #define LIGHT_MANAGER_HPP
 
-#include <vector>
-
 #include "Light.hpp"
 #include "Shader.hpp"
+#include <vector>
 
 class LightManager
 {
@@ -15,7 +14,7 @@ public:
 
     void sendLightsIntoShader(GLitch::Shader& shader);
 
-    glm::mat4 getLightSpaceMatrix() const;
+    [[nodiscard]] glm::mat4 getLightSpaceMatrix() const;
 
     void setLightSpaceMatrix(const glm::mat4& matrix);
 
@@ -23,6 +22,7 @@ public:
 
     std::vector<lighting::Light*> getLights();
 
+    [[nodiscard]] lighting::Light* getDirectionalLight() const;
 private:
     std::vector<lighting::Light*> m_lights;
 

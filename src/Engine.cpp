@@ -1,8 +1,5 @@
-#include "glad.h"
-
 #include "Engine.hpp"
-
-#include <iostream>
+#include "glad.h"
 
 #include "DefaultScene.hpp"
 #include "LoadingScene.hpp"
@@ -23,62 +20,47 @@
 #include "Renderer.hpp"
 #include "SceneManager.hpp"
 #include "ShaderManager.hpp"
-#include "ImGuizmo.h"
 #define IMGUI_ENABLE_DOCKING
 
-Engine &Engine::instance()
+bool Engine::run()
 {
-    static Engine engine{};
-
-    return engine;
-}
-
-void Engine::run()
-{
-    init();
+    try
+    {
+        init();
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "ENGINE_RUN_ERROR: COULD NOT INITIALIZE ENGINE: " << e.what() << std::endl;
+        return false;
+    }
 
     float lastFrame = 0.0f;
     float deltaTime = 0.0f;
 
-    while (m_mainWindow->isWindowOpened())
+    while (window::WindowsManager::instance().getCurrentWindow()->isWindowOpened())
     {
         const float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        glfwPollEvents();
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        if ((*m_currentScene)->isOver() && m_currentScene + 1 != m_allScenes.end())
-        {
-            ++m_currentScene;
-            (*m_currentScene)->create();
-            SceneManager::instance().setCurrentScene(m_currentScene->get());
-        }
-
+        Renderer::instance().beginFrame();
         CameraManager::getInstance().getActiveCamera()->update(deltaTime);
         physics::PhysicsController::instance().simulate(deltaTime);
-        DebugEditor::instance().update();
-        Renderer::instance().beginFrame();
         SceneManager::instance().updateCurrentScene(deltaTime);
+        DebugEditor::instance().update();
+        Renderer::instance().endFrame();
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        if (const ImGuiIO& io = ImGui::GetIO(); io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            GLFWwindow* backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
-        }
-
-        glfwSwapBuffers(m_mainWindow->getOpenGLWindow());
-        glfwPollEvents();
+        glfwSwapBuffers(window::WindowsManager::instance().getCurrentWindow()->getOpenGLWindow());
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    glfwTerminate();
+
+    return true;
 }
 
 void Engine::init()
@@ -89,7 +71,7 @@ void Engine::init()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
     window::WindowsManager::instance().setCurrentWindow(window::WindowsManager::instance().createWindow());
 
@@ -99,54 +81,94 @@ void Engine::init()
     CameraManager::getInstance().setActiveCamera(CameraManager::getInstance().createCamera());
     physics::PhysicsController::instance().init();
 
-    m_mainWindow = window::WindowsManager::instance().getCurrentWindow();
-    glfwSetKeyCallback(m_mainWindow->getOpenGLWindow(), input::KeysManager::keyCallback);
-    glfwSetMouseButtonCallback(m_mainWindow->getOpenGLWindow(), input::MouseManager::mouseButtonCallback);
-    glfwSetCursorPosCallback(m_mainWindow->getOpenGLWindow(), input::MouseManager::mouseCallback);
-    glfwSetInputMode(m_mainWindow->getOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
+    auto mainWindow = window::WindowsManager::instance().getCurrentWindow();
+    glfwSetKeyCallback(mainWindow->getOpenGLWindow(), input::KeysManager::keyCallback);
+    glfwSetMouseButtonCallback(mainWindow->getOpenGLWindow(), input::MouseManager::mouseButtonCallback);
+    glfwSetCursorPosCallback(mainWindow->getOpenGLWindow(), input::MouseManager::mouseCallback);
+    glfwSetInputMode(mainWindow->getOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
     // #define GLFW_CURSOR_NORMAL          0x00034001
     // #define GLFW_CURSOR_HIDDEN          0x00034002
     // #define GLFW_CURSOR_DISABLED        0x00034003
     // #define GLFW_CURSOR_CAPTURED        0x00034004
 
+	int bufferWidth, bufferHeight;
+	glfwGetFramebufferSize(mainWindow->getOpenGLWindow(), &bufferWidth, &bufferHeight);
+	Renderer::instance().initFrameBuffer(mainWindow->getWidth(), mainWindow->getHeight());
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-
+    ImGui_ImplGlfw_InitForOpenGL(mainWindow->getOpenGLWindow(), true);
+    ImGui_ImplOpenGL3_Init("#version 330");
     ImGui::StyleColorsDark();
-    const char* glsl_version = "#version 330";
-    ImGui_ImplGlfw_InitForOpenGL(m_mainWindow->getOpenGLWindow(), true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.Alpha = 1.0;
+    style.WindowRounding = 3;
+    style.GrabRounding = 1;
+    style.GrabMinSize = 20;
+    style.FrameRounding = 3;
+
+
+    style.Colors[ImGuiCol_Text] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.00f, 0.40f, 0.41f, 1.00f);
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_Border] = ImVec4(0.00f, 1.00f, 1.00f, 0.65f);
+    style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.44f, 0.80f, 0.80f, 0.18f);
+    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.44f, 0.80f, 0.80f, 0.27f);
+    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.44f, 0.81f, 0.86f, 0.66f);
+    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.14f, 0.18f, 0.21f, 0.73f);
+    style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.54f);
+    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.27f);
+    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.20f);
+    style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.22f, 0.29f, 0.30f, 0.71f);
+    style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.00f, 1.00f, 1.00f, 0.44f);
+    style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.00f, 1.00f, 1.00f, 0.74f);
+    style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+    style.Colors[ImGuiCol_CheckMark] = ImVec4(0.00f, 1.00f, 1.00f, 0.68f);
+    style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.00f, 1.00f, 1.00f, 0.36f);
+    style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.76f);
+    style.Colors[ImGuiCol_Button] = ImVec4(0.00f, 0.65f, 0.65f, 0.46f);
+    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.01f, 1.00f, 1.00f, 0.43f);
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.62f);
+    style.Colors[ImGuiCol_Header] = ImVec4(0.00f, 1.00f, 1.00f, 0.33f);
+    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.00f, 1.00f, 1.00f, 0.42f);
+    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.54f);
+    style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 1.00f, 1.00f, 0.54f);
+    style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.00f, 1.00f, 1.00f, 0.74f);
+    style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+    style.Colors[ImGuiCol_PlotLines] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+    style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+    style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 1.00f, 1.00f, 0.22f);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // input::MouseManager::instance().init();
+	// glViewport(0, 0, bufferWidth, bufferHeight);
 
     AssetsManager::instance().preLoadPathsForAllModels();
     AssetsManager::instance().preLoadPathsForAllTextures();
     AssetsManager::instance().preLoadPathsForAllMaterials();
     ShaderManager::instance().preLoadShaders();
 
-    m_allScenes.emplace_back(std::make_shared<LoadingScene>());
-    m_allScenes.emplace_back(std::make_shared<DefaultScene>());
-
-    m_currentScene = m_allScenes.begin();
-    (*m_currentScene)->create();
-    SceneManager::instance().setCurrentScene(m_currentScene->get());
+    auto loadingScene = new LoadingScene();
+    loadingScene->create();
+    SceneManager::instance().addScene(loadingScene);
+    SceneManager::instance().addScene(new DefaultScene());
+    SceneManager::instance().setCurrentScene(loadingScene);
 }
 
 void Engine::glCheckError(const char *file, const int line)
 {
     GLenum errorCode;
-    
+
     while ((errorCode = glGetError()) != GL_NO_ERROR)
     {
         std::string error;

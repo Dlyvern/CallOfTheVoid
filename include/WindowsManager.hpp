@@ -12,7 +12,7 @@ namespace window
 
         void setCurrentWindow(window::MainWindow* window);
 
-        window::MainWindow* getCurrentWindow();
+        window::MainWindow* getCurrentWindow() const;
 
         window::MainWindow* createWindow();
 

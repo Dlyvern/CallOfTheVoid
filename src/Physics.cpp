@@ -1,5 +1,6 @@
 #include "Physics.hpp"
 #include <iostream>
+#include "RigidbodyComponent.hpp"
 
 struct UserErrorCallback final : physx::PxErrorCallback
 {
@@ -62,51 +63,6 @@ physx::PxScene* physics::PhysicsController::getScene()
     return m_scene;
 }
 
-void physics::PhysicsController::createRagdoll(Skeleton &skeleton)
-{
-    auto &bones = skeleton.getBones();
-
-    for (auto& bone : bones)
-    {
-        auto pos = glm::vec3(bone.globalBindTransform[3]);
-
-        physx::PxTransform transform(physx::PxVec3(pos.x, pos.y, pos.z));
-
-        physx::PxRigidDynamic* body = m_physics->createRigidDynamic(transform);
-        physx::PxCapsuleGeometry capsule(0.05f, 0.15f);
-        physx::PxShape* shape = m_physics->createShape(capsule, *m_defaultMaterial);
-        body->attachShape(*shape);
-        m_scene->addActor(*body);
-
-        bone.rigidBody = body;
-    }
-
-    for (auto& child : bones)
-    {
-        if (child.parentId == -1)
-            continue;
-
-        auto& parent = bones[child.parentId];
-
-        glm::vec3 p0 = glm::vec3(parent.globalBindTransform[3]);
-        glm::vec3 p1 = glm::vec3(child.globalBindTransform[3]);
-        glm::vec3 center = (p0 + p1) * 0.5f;
-
-        glm::vec3 localA = p0 - center;
-        glm::vec3 localB = p1 - center;
-
-        physx::PxTransform frameA(physx::PxVec3(localA.x, localA.y, localA.z));
-        physx::PxTransform frameB(physx::PxVec3(localB.x, localB.y, localB.z));
-
-        auto joint = PxD6JointCreate(*m_physics,
-            parent.rigidBody, frameA,
-            child.rigidBody, frameB);
-
-        joint->setMotion(physx::PxD6Axis::eSWING1, physx::PxD6Motion::eLIMITED);
-        joint->setSwingLimit(physx::PxJointLimitCone(physx::PxPi / 6, physx::PxPi / 6));
-    }
-}
-
 physx::PxRigidDynamic* physics::PhysicsController::addDynamicActor(std::shared_ptr<GameObject> actor)
 {
    physx:: PxMaterial* material = getDefaultMaterial();
@@ -132,18 +88,14 @@ physx::PxRigidDynamic* physics::PhysicsController::addDynamicActor(std::shared_p
     return box;
 }
 
-physx::PxRigidStatic * physics::PhysicsController::addStaticActor(std::shared_ptr<GameObject> actor, bool fixSize)
+physx::PxRigidStatic * physics::PhysicsController::addStaticActor(std::shared_ptr<GameObject> actor)
 {
     physx::PxMaterial* material = getDefaultMaterial();
     physx::PxTransform transform(physx::PxVec3(actor->getPosition().x, actor->getPosition().y, actor->getPosition().z));
     physx::PxRigidStatic* staticBody = m_physics->createRigidStatic(transform);
 
     physx::PxShape* shape;
-    if (!fixSize)
-        shape = m_physics->createShape(physx::PxBoxGeometry(actor->getScale().x * 0.5f, actor->getScale().y * 0.5f, actor->getScale().z * 0.5f),  *material);
-    else
-        shape = m_physics->createShape(physx::PxBoxGeometry(1.0f, 2.0f, 1.0f),  *material);
-
+    shape = m_physics->createShape(physx::PxBoxGeometry(actor->getScale().x * 0.5f, actor->getScale().y * 0.5f, actor->getScale().z * 0.5f),  *material);
 
     shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, true); // Enable raycasting
     shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);   // Optional if you want physics
@@ -158,6 +110,40 @@ physx::PxRigidStatic * physics::PhysicsController::addStaticActor(std::shared_pt
     m_scene->addActor(*staticBody);
 
     return staticBody;
+}
+
+void physics::PhysicsController::resizeCollider(const glm::vec3 &newSize, std::shared_ptr<GameObject> collider)
+{
+    auto rigidBody = collider->getComponent<RigidbodyComponent>();
+
+    if (!rigidBody)
+        return;
+
+    auto actor = rigidBody->getRigidActor();
+
+    if (!actor)
+        return;
+
+    physx::PxShape* shapes[8];
+    uint32_t shapeCount = actor->getNbShapes();
+    actor->getShapes(shapes, shapeCount);
+
+    for (uint32_t i = 0; i < shapeCount; ++i)
+    {
+        actor->detachShape(*shapes[i]);
+        shapes[i]->release();
+    }
+
+    physx::PxBoxGeometry newBox(physx::PxVec3(newSize.x, newSize.y, newSize.z));
+    physx::PxMaterial* material = getDefaultMaterial();
+    physx::PxShape* newShape = physx::PxRigidActorExt::createExclusiveShape(*actor, newBox, *material);
+
+    newShape->setLocalPose(physx::PxTransform(physx::PxVec3(0, 0, 0)));
+
+    physx::PxFilterData filterData;
+    filterData.word0 = collider->getLayerMask();
+    newShape->setSimulationFilterData(filterData);
+    newShape->setQueryFilterData(filterData);
 }
 
 // physx::PxFilterData filterData;

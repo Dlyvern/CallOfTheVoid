@@ -9,6 +9,11 @@ in VS_OUT {
     vec4 FragPosLightSpace;
 } fs_in;
 
+
+const int LIGHT_TYPE_DIRECTIONAL = 0;
+const int LIGHT_TYPE_POINT       = 1;
+const int LIGHT_TYPE_SPOT        = 2;
+
 struct Light
 {
     vec3 position;
@@ -19,6 +24,8 @@ struct Light
     vec3 direction;
     float cutoff;
     float outerCutoff;
+
+    int type;
 };
 
 uniform sampler2D u_Diffuse;
@@ -79,14 +86,12 @@ void main()
     vec3 normal = normalize(fs_in.Normal);
     vec3 result = vec3(0.0);
 
-    vec3 shadowLightDir = normalize(lights[0].position - fs_in.FragPos);
-    float shadow = ShadowCalculation(fs_in.FragPosLightSpace, shadowLightDir);
-
     for (int i = 0; i < MAX_LIGHTS; ++i)
     {
         Light lightV = lights[i];
 
-        vec3 lightDir = normalize(lightV.position - fs_in.FragPos);
+        vec3 lightDir = lightV.type == LIGHT_TYPE_DIRECTIONAL ? normalize(-lightV.direction) : normalize(lightV.position - fs_in.FragPos);
+
         float diff = max(dot(normal, lightDir), 0.0);
         vec3 viewDir = normalize(viewPos - fs_in.FragPos);
         vec3 halfwayDir = normalize(lightDir + viewDir);
@@ -99,8 +104,11 @@ void main()
 
         vec3 lightResult = ambient + diffuse + specular;
 
-        if (i == 0)
+        if(lightV.type == LIGHT_TYPE_DIRECTIONAL)
+        {
+            float shadow = ShadowCalculation(fs_in.FragPosLightSpace, lightDir);
             lightResult *= (1.0 - shadow);
+        }
 
         result += lightResult;
     }

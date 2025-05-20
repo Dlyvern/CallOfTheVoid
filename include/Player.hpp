@@ -16,10 +16,6 @@ public:
     void update(float deltaTime) override;
 
     void setPosition(const glm::vec3& position) override;
-
-    void calculateShadows(GLitch::Shader& shader) override{}
-
-    SkinnedModel* getModel() const override {return nullptr;}
 private:
     void move(const glm::vec3& direction, float deltaTime);
     void interact();

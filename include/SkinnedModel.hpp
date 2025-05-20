@@ -19,20 +19,11 @@ public:
 
     void setAnimations(const std::vector<common::Animation>& animations);
 
+    void drawWithMaterials(std::unordered_map<int, Material*>& materials);
+
     std::vector<common::Animation>& getAnimations();
 
     common::Animation* getAnimation(const std::string& name);
-
-    ModelType getType() override {return ModelType::SKINNED;}
-
-    std::vector<SkeletalMesh>& getMeshes();
-
-    size_t getMeshesSize() override {return m_meshes.size();}
-
-    common::Mesh* getMesh(int index) override
-    {
-        return &m_meshes[index];
-    }
 
     Skeleton& getSkeleton();
 

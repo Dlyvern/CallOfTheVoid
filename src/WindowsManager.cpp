@@ -14,7 +14,7 @@ void window::WindowsManager::setCurrentWindow(window::MainWindow* window)
     glfwSetWindowFocusCallback(m_currentWindow->getOpenGLWindow(), windowFocusCallback);
 }
 
-window::MainWindow* window::WindowsManager::getCurrentWindow()
+window::MainWindow* window::WindowsManager::getCurrentWindow() const
 {
     return m_currentWindow;
 }

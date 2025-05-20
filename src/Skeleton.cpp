@@ -1,11 +1,18 @@
 #include "Skeleton.hpp"
-
 #include "Utilities.hpp"
 #include <iostream>
 
+Skeleton::Skeleton()
+{
+    m_finalBoneMatrices.reserve(100);
+
+    for (int i = 0; i < 100; i++)
+        m_finalBoneMatrices.emplace_back(1.0f);
+}
+
 void Skeleton::addBone(aiBone *bone)
 {
-    std::string boneName = bone->mName.C_Str();
+    const std::string boneName = bone->mName.C_Str();
 
     if(!m_boneMap.contains(boneName))
     {
@@ -55,14 +62,19 @@ void Skeleton::printBonesHierarchy()
     }
 }
 
-std::vector<common::BoneInfo> & Skeleton::getBones()
+size_t Skeleton::getBonesCount() const
 {
-    return m_bonesInfo;
+    return m_bonesInfo.size();
+}
+
+bool Skeleton::hasBone(const std::string &boneName) const
+{
+    return m_boneMap.contains(boneName);
 }
 
 common::BoneInfo* Skeleton::getBone(const std::string &boneName)
 {
-    int id = getBoneId(boneName);
+    const int id = getBoneId(boneName);
 
     if (id == -1)
         return  nullptr;
@@ -87,49 +99,39 @@ common::BoneInfo* Skeleton::getParent()
     return nullptr;
 }
 
-void Skeleton::calculateRagdollBoneMatrices(std::vector<glm::mat4> &outMatrices) const
+void Skeleton::calculateBindPoseTransforms()
 {
-    outMatrices.resize(m_bonesInfo.size(), glm::mat4(1.0f));
-
-    for (int i = 0; i < m_bonesInfo.size(); ++i)
-    {
-        const auto& bone = m_bonesInfo[i];
-
-        if (bone.rigidBody)
-        {
-            physx::PxTransform t = bone.rigidBody->getGlobalPose();
-            glm::quat rotQuat(t.q.w, t.q.x, t.q.y, t.q.z);
-            glm::mat4 rot = glm::toMat4(rotQuat);
-            glm::mat4 trans = glm::translate(glm::mat4(1.0f), glm::vec3(t.p.x, t.p.y, t.p.z));
-            glm::mat4 physTransform = trans * rot;
-            glm::mat4 finalTransform = globalInverseTransform * physTransform * bone.offsetMatrix;
-
-            outMatrices[i] = finalTransform;
-        }
-        else
-            outMatrices[i] = glm::mat4(1.0f);
-    }
-}
-
-void Skeleton::calculateBindPoseTransforms(std::vector<glm::mat4> &outMatrices)
-{
-    outMatrices.resize(m_bonesInfo.size(), glm::mat4(1.0f));
+    m_bindPoseTransform.resize(m_bonesInfo.size(), glm::mat4(1.0f));
 
     glm::mat4 identity(1.0f);
 
-    std::function<void(int, glm::mat4)> processBone;
-    processBone = [&](int boneID, glm::mat4 parentTransform)
+    auto processBone = [this](int boneID, const glm::mat4 &parentTransform, auto&& self)->void
     {
         common::BoneInfo& bone = m_bonesInfo[boneID];
         glm::mat4 globalTransform = parentTransform * bone.localBindTransform;
 
-        outMatrices[boneID] = globalTransform * bone.offsetMatrix;
+        m_bindPoseTransform[boneID] = globalTransform * bone.offsetMatrix;
+
+        bone.finalTransformation = globalTransform * bone.offsetMatrix;
 
         for (int childID : bone.children)
-            processBone(childID, globalTransform);
+            self(childID, globalTransform, self);
     };
 
     for (const auto& bone : m_bonesInfo)
         if (bone.parentId == -1)
-            processBone(bone.id, identity);
+            processBone(bone.id, identity, processBone);
+}
+
+const std::vector<glm::mat4>& Skeleton::getBindPoses() const
+{
+    return m_bindPoseTransform;
+}
+
+const std::vector<glm::mat4>& Skeleton::getFinalMatrices()
+{
+    for (const auto& bone : m_bonesInfo)
+        m_finalBoneMatrices[bone.id] = bone.finalTransformation;
+
+    return m_finalBoneMatrices;
 }

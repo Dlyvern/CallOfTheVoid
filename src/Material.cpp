@@ -1,7 +1,6 @@
 #include "Material.hpp"
 
-#include <glad.h>
-#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
 Material::Material() = default;
 
@@ -33,6 +32,11 @@ void Material::addTexture(const GLitch::Texture::TextureType &type, GLitch::Text
 GLitch::Texture* Material::getTexture(const GLitch::Texture::TextureType &type)
 {
     return m_textures[type];
+}
+
+const std::unordered_map<GLitch::Texture::TextureType, GLitch::Texture *>& Material::getTextures() const
+{
+    return m_textures;
 }
 
 const glm::vec3& Material::getBaseColor() const

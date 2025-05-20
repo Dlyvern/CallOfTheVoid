@@ -4,9 +4,9 @@
 
 #include "Keyboard.hpp"
 #include "CameraManager.hpp"
-#include "Cube.hpp"
 #include "DebugEditor.hpp"
 #include "DebugTextHolder.hpp"
+#include "Interactable.hpp"
 #include "Raycasting.hpp"
 
 unsigned int raycastTextIndex{0};
@@ -28,7 +28,7 @@ Player::Player(const std::string &name) : GameObject(name)
 {
     m_camera = CameraManager::getInstance().getActiveCamera();
 
-    setLayerMask(common::LayerMask::PLAYER);
+    GameObject::setLayerMask(common::LayerMask::PLAYER);
 }
 
 void Player::init(const glm::vec3 &position)
@@ -75,6 +75,15 @@ void Player::interact()
         const auto* actor = result.hit.block.actor;
 
         auto* gameObject = static_cast<GameObject*>(actor->userData);
+
+        if (gameObject && gameObject->hasComponent<ScriptComponent>())
+        {
+            const auto& scripts = gameObject->getComponent<ScriptComponent>()->getScripts();
+
+            for (const auto& script : scripts)
+                if (auto interactable = dynamic_cast<Interactable*>(script.get()))
+                    interactable->interact();
+        }
 
         std::string actorName = gameObject ? gameObject->getName() : "Unnamed";
 

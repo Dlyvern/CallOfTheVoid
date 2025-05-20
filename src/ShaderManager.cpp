@@ -28,10 +28,5 @@ void ShaderManager::preLoadShaders()
     m_shaders[STATIC] = createShader(shadersPath + "/cube.vert", shadersPath + "/cube.frag");
     m_shaders[STATIC_SHADOW] = createShader(shadersPath + "/shadow_map.vert", shadersPath + "/shadow_map.frag");
     m_shaders[SKELETON_SHADOW] = createShader(shadersPath + "/shadow.vert", shadersPath + "/shadow.frag");
-
-    // m_shader.load(shadersPath + "/cube.vert", shadersPath + "/cube.frag");
-    // m_shadowShader.load(shadersPath + "/shadow_map.vert", shadersPath + "/shadow_map.frag");
-    // m_skinnedShadowShader.load(shadersPath + "/shadow.vert", shadersPath + "/shadow.frag");
-    // m_shader.load(shadersPath + "/skeleton.vert", shadersPath + "/skeleton.frag");
-
+    m_shaders[POST_PROCESSING] = createShader(shadersPath + "/post_processing.vert", shadersPath + "/post_processing.frag");
 }

@@ -5,11 +5,11 @@ class ShadowHandler
 {
 public:
     void initShadows();
-    void bindShadows();
+    void bindShadows() const;
     void unbindShadows();
 
-    void activateTexture();
-    void deactivateTexture();
+    void activateTexture() const;
+    void deactivateTexture() const;
 
     unsigned int depthMapFBO;
     unsigned int depthMap;

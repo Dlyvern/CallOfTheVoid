@@ -2,10 +2,8 @@
 #define MATERIAL_HPP
 
 #include <Texture.hpp>
-
-#include "Texture.hpp"
-#include <unordered_map>
 #include "Shader.hpp"
+#include <unordered_map>
 
 class Material
 {
@@ -23,6 +21,7 @@ public:
     void addTexture(const GLitch::Texture::TextureType& type, GLitch::Texture* texture);
 
     GLitch::Texture* getTexture(const GLitch::Texture::TextureType& type);
+    const std::unordered_map<GLitch::Texture::TextureType, GLitch::Texture*>& getTextures() const;
 
     const glm::vec3& getBaseColor() const;
 

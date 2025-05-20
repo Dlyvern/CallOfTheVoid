@@ -8,10 +8,21 @@ in VS_OUT {
     vec4 FragPosLightSpace;
 } fs_in;
 
+const int LIGHT_TYPE_DIRECTIONAL = 0;
+const int LIGHT_TYPE_POINT       = 1;
+const int LIGHT_TYPE_SPOT        = 2;
+
 struct Light {
     vec3 position;
     vec3 color;
     float strength;
+    float radius;
+
+    vec3 direction;
+    float cutoff;
+    float outerCutoff;
+
+    int type;
 };
 
 uniform vec3 viewPos;
@@ -32,23 +43,16 @@ uniform bool use_AO;
 
 uniform vec3 baseColor;
 
+#define MAX_LIGHTS 2
+uniform Light lights[MAX_LIGHTS];
 
 float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 {
-    // Perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
-
-    // Read closest depth from shadow map
     float closestDepth = texture(shadowMap, projCoords.xy).r;
-
-    // Current depth from light's POV
     float currentDepth = projCoords.z;
-
-    // Bias to prevent shadow acne
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-
-    // Percentage-closer filtering (optional, soft shadows)
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
     for(int x = -1; x <= 1; ++x)
@@ -59,11 +63,11 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
             shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
         }
     }
+
     shadow /= 9.0;
 
-    // Outside light frustum? = no shadow
     if(projCoords.z > 1.0)
-    shadow = 0.0;
+        shadow = 0.0;
 
     return shadow;
 }
@@ -76,24 +80,33 @@ void main()
     float ao        = use_AO        ? texture(u_AO, fs_in.TexCoords).r          : 1.0;
 
     vec3 normal = normalize(fs_in.Normal);
+    vec3 result = vec3(0.0);
 
-    vec3 lightDir = normalize(light.position - fs_in.FragPos);
-    vec3 viewDir = normalize(viewPos - fs_in.FragPos);
-    vec3 halfwayDir = normalize(lightDir + viewDir);
+    for(int i = 0; i < MAX_LIGHTS; i++)
+    {
+        Light lightV = lights[i];
 
-    float diff = max(dot(normal, lightDir), 0.0);
-    float shininess = mix(8.0, 128.0, 1.0 - roughness);
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+        vec3 lightDir = lightV.type == LIGHT_TYPE_DIRECTIONAL ? normalize(-lightV.direction) : normalize(lightV.position - fs_in.FragPos);
+        float diff = max(dot(normal, lightDir), 0.0);
+        vec3 viewDir = normalize(viewPos - fs_in.FragPos);
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        float shininess = mix(8.0, 128.0, 1.0 - roughness);
+        float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
 
-    vec3 ambient  = 0.03 * albedo * ao;
-    vec3 diffuse  = diff * albedo * light.color * light.strength;
-    vec3 specular = spec * mix(vec3(0.04), albedo, metallic) * light.strength;
+        vec3 ambient  = 0.03 * albedo * ao;
+        vec3 diffuse  = diff * albedo * lightV.color * lightV.strength;
+        vec3 specular = spec * mix(vec3(0.04), albedo, metallic) * lightV.strength;
 
-    float shadow = ShadowCalculation(fs_in.FragPosLightSpace, normal, lightDir);
-    vec3 lighting = ambient + (1.0 - shadow) * (diffuse + specular);
+        vec3 lightResult = ambient + diffuse + specular;
 
-    FragColor = vec4(lighting, 1.0);
+        if(lightV.type == LIGHT_TYPE_DIRECTIONAL)
+        {
+            float shadow = ShadowCalculation(fs_in.FragPosLightSpace, normal, lightDir);
+            lightResult *= (1.0 - shadow);
+        }
 
-//    vec3 result = ambient + diffuse + specular;
-//    FragColor = vec4(result, 1.0);
+        result += lightResult;
+    }
+
+    FragColor = vec4(result, 1.0);
 }

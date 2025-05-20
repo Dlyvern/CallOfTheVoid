@@ -14,7 +14,7 @@
 
 #include "Skeleton.hpp"
 #include "Utilities.hpp"
-
+#include <glm/gtx/euler_angles.hpp>
 namespace
 {
     void extractVerticesAndIndices(aiMesh* mesh, std::vector<common::Vertex>& vertices, std::vector<unsigned int>& indices)
@@ -28,16 +28,6 @@ namespace
                 vertex.boneID[i] = -1;
                 vertex.weight[i] = 0.0f;
             }
-
-            common::AABB boundingBox{};
-
-            boundingBox.min.x = std::min(boundingBox.min.x, mesh->mVertices[j].x);
-            boundingBox.min.y = std::min(boundingBox.min.y, mesh->mVertices[j].y);
-            boundingBox.min.z = std::min(boundingBox.min.z, mesh->mVertices[j].z);
-
-            boundingBox.max.x = std::max(boundingBox.max.x, mesh->mVertices[j].x);
-            boundingBox.max.y = std::max(boundingBox.max.y, mesh->mVertices[j].y);
-            boundingBox.max.z = std::max(boundingBox.max.z, mesh->mVertices[j].z);
 
             vertex.position = {mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z};
             vertex.normal = {mesh->mNormals[j].x, mesh->mNormals[j].y, mesh->mNormals[j].z};
@@ -70,13 +60,7 @@ namespace
         }
     }
 
-    enum class ModelType : uint8_t
-    {
-        SKINNED = 0,
-        STATIC = 1
-    };
-
-    ModelType detectModelType(aiNode* node, const aiScene* scene, bool& foundSkinned)
+    common::Model::ModelType detectModelType(aiNode* node, const aiScene* scene, bool& foundSkinned)
     {
         for (unsigned int i = 0; i < node->mNumMeshes; ++i)
             if (scene->mMeshes[node->mMeshes[i]]->mNumBones > 0)
@@ -85,7 +69,7 @@ namespace
         for (unsigned int i = 0; i < node->mNumChildren; ++i)
             detectModelType(node->mChildren[i], scene, foundSkinned);
 
-        return foundSkinned ? ModelType::SKINNED : ModelType::STATIC;
+        return foundSkinned ? common::Model::ModelType::SKINNED : common::Model::ModelType::STATIC;
     };
 } //namespace
 
@@ -269,19 +253,8 @@ Material* AssetsManager::loadMaterialFromModel(aiMaterial *aiMat)
     {
         preLoadMaterials({material.getName() + ".mat"});
 
-        std::cout << "Preloading material" << std::endl;
-
-        auto m = getMaterialByName(material.getName() + ".mat");
-
-        if (!m)
-            std::cout << "Material " << material.getName() << " not found" << std::endl;
-        else
-            std::cout << "Material " << material.getName() << " loaded" << std::endl;
-
-        return m;
+        return getMaterialByName(material.getName() + ".mat");
     }
-
-    std::cout << "Material name: " << material.getName() << std::endl;
 
     if (aiMat->GetTextureCount(aiTextureType_DIFFUSE) > 0)
     {
@@ -306,8 +279,6 @@ Material* AssetsManager::loadMaterialFromModel(aiMaterial *aiMat)
                     textureName += ".png";
                 }
             }
-
-            std::cout << textureName << std::endl;
 
             auto* texture = getTextureByName(textureName);
 
@@ -348,6 +319,7 @@ Material* AssetsManager::loadMaterialFromModel(aiMaterial *aiMat)
     }
 
     aiColor3D color(0.f, 0.f, 0.f);
+
     if (aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS)
     {
         material.setBaseColor(glm::vec3(color.r, color.g, color.b));
@@ -385,6 +357,101 @@ Material* AssetsManager::loadMaterialFromModel(aiMaterial *aiMat)
     return &m_materials[material.getName()];
 }
 
+void AssetsManager::saveAnimationToJson(const common::Animation &animation)
+{
+    nlohmann::json animationJson;
+
+    animationJson["name"] = animation.name;
+    animationJson["duration"] = animation.duration;
+    animationJson["ticksPerSecond"] = animation.ticksPerSecond;
+
+    for (const auto& boneAnimation : animation.boneAnimations)
+    {
+        nlohmann::json boneAnimationJson;
+
+        boneAnimationJson["targetName"] = boneAnimation.objectName;
+
+        for (const auto& sqt : boneAnimation.keyFrames)
+        {
+            nlohmann::json keyFramesJson;
+
+            keyFramesJson["timeStamp"] = sqt.timeStamp;
+            keyFramesJson["position"] = {sqt.position.x, sqt.position.y, sqt.position.z};
+            keyFramesJson["rotation"] = {sqt.rotation.w, sqt.rotation.x, sqt.rotation.y, sqt.rotation.z};
+            keyFramesJson["scale"] = {sqt.scale.x, sqt.scale.y, sqt.scale.z};
+
+            boneAnimationJson["keyFrames"].push_back(keyFramesJson);
+        }
+
+        animationJson["tracks"].push_back(boneAnimationJson);
+    }
+
+    const std::string filePath = filesystem::getAnimationsFolderPath().string() + "/" + animation.name + ".anim";
+
+    std::ofstream file(filePath);
+
+    if (file.is_open())
+    {
+        file << std::setw(4) << animationJson << std::endl;
+        file.close();
+    }
+    else
+        std::cout << "Could not open file to save animation: " << filePath << std::endl;
+}
+
+common::Animation AssetsManager::loadAnimationFromJson(const std::string &path)
+{
+    std::ifstream file(path);
+    nlohmann::json json;
+    file >> json;
+
+    common::Animation animation;
+
+    animation.name = json["name"];
+    animation.duration = json["duration"];
+    animation.ticksPerSecond = json["ticksPerSecond"];
+
+    for (const auto& boneAnimationJson : json["tracks"])
+    {
+        std::map<float, common::SQT> tempKeyFrames;
+
+        common::AnimationTrack boneAnimation;
+        boneAnimation.objectName = boneAnimationJson["targetName"];
+
+        for (const auto& sqtJson : boneAnimationJson["keyFrames"])
+        {
+            common::SQT sqt;
+
+            sqt.timeStamp = sqtJson["timeStamp"];
+            const auto& position = sqtJson["position"];
+            sqt.position = {position[0], position[1], position[2]};
+            const auto& rotation = sqtJson["rotation"];
+
+            glm::vec3 eulerDegrees = glm::vec3(rotation[0], rotation[1], rotation[2]);
+            glm::vec3 eulerRadians = glm::radians(eulerDegrees);
+
+            sqt.rotation = glm::quat_cast(glm::eulerAngleXYZ(eulerRadians.x, eulerRadians.y, eulerRadians.z));
+            const auto& scale = sqtJson["scale"];
+            sqt.scale = {scale[0], scale[1], scale[2]};
+
+            tempKeyFrames[sqt.timeStamp] = sqt;
+
+            boneAnimation.keyFrames.push_back(sqt);
+        }
+
+        // boneAnimation.keyFrames.push_back(sqt);
+
+        // boneAnimation.keyFrames.reserve(tempKeyFrames.size());
+        //
+        // for (auto& [time, sqt] : tempKeyFrames)
+        //     boneAnimation.keyFrames.push_back(sqt);
+
+        animation.boneAnimations.push_back(boneAnimation);
+    }
+
+    return animation;
+}
+
 void AssetsManager::preLoadPathsForAllModels()
 {
     auto modelsFolderPath = filesystem::getModelsFolderPath();
@@ -414,7 +481,7 @@ void AssetsManager::preLoadPathsForAllModels()
             bool foundSkinned = false;
             auto modelType = detectModelType(scene->mRootNode, scene, foundSkinned);
 
-            modelType == ModelType::STATIC ? m_staticModelsPaths.insert(entry.path().string()) : m_skinnedModelsPaths.insert(entry.path().string());
+            modelType == common::Model::ModelType::STATIC ? m_staticModelsPaths.insert(entry.path().string()) : m_skinnedModelsPaths.insert(entry.path().string());
         }
     }
 }
@@ -429,7 +496,9 @@ void AssetsManager::preLoadMaterials(const std::vector<std::string> &paths)
         const auto materialsFolderPath = filesystem::getMaterialsFolderPath().string() + "/" + path;
 
         if (auto it = m_materialsPaths.find(path); it != m_materialsPaths.end())
+        {
             m_materials[path] = loadMaterial(materialsFolderPath);
+        }
         else
         {
             if (std::filesystem::exists(materialsFolderPath))
@@ -477,12 +546,12 @@ void AssetsManager::preLoadModels(const std::vector<std::string> &paths)
                 bool foundSkinned = false;
                 const auto modelType = detectModelType(scene->mRootNode, scene, foundSkinned);
 
-                if (modelType == ModelType::STATIC)
+                if (modelType == common::Model::ModelType::STATIC)
                 {
                     m_staticModelsPaths.insert(modelsFolderPath);
                     m_staticModels[name] = loadStaticModel(modelsFolderPath);
                 }
-                else if(modelType == ModelType::SKINNED)
+                else if(modelType == common::Model::ModelType::SKINNED)
                 {
                     m_skinnedModelsPaths.insert(modelsFolderPath);
                     m_skinnedModels[name] = loadSkinnedModel(modelsFolderPath);
@@ -528,7 +597,7 @@ void generateBoneHierarchy(const int parentId, const aiNode* src, Skeleton& skel
     if (boneID == -1)
     {
         // If the bone isn't in the skeleton, create a new one to preserve hierarchy
-        boneID = skeleton.getBones().size();
+        boneID = skeleton.getBonesCount();
 
         common::BoneInfo newBone(nodeName, boneID, utilities::convertMatrixToGLMFormat(src->mTransformation), glm::mat4(1.0f));
 
@@ -562,14 +631,14 @@ std::vector<common::Animation> extractAnimations(const aiScene* scene)
         animation.name = anim->mName.C_Str();
         animation.duration = anim->mDuration;
         animation.ticksPerSecond = anim->mTicksPerSecond;
-        std::vector<common::BoneAnimation> boneAnimations;
+        std::vector<common::AnimationTrack> boneAnimations;
 
         for(unsigned int animChannelIndex = 0; animChannelIndex < anim->mNumChannels; ++animChannelIndex)
         {
             aiNodeAnim* channel = anim->mChannels[animChannelIndex];
-            common::BoneAnimation boneAnimation;
+            common::AnimationTrack boneAnimation;
 
-            boneAnimation.boneName = channel->mNodeName.C_Str();
+            boneAnimation.objectName = channel->mNodeName.C_Str();
 
             std::map<float, common::SQT> tempKeyFrames;
 
@@ -580,7 +649,6 @@ std::vector<common::Animation> extractAnimations(const aiScene* scene)
                                                          channel->mPositionKeys[j].mValue.y,
                                                          channel->mPositionKeys[j].mValue.z);
                 tempKeyFrames[time].timeStamp = time;
-                tempKeyFrames[time].jointName = channel->mNodeName.C_Str();
             }
 
             for (unsigned int j = 0; j < channel->mNumRotationKeys; j++)
@@ -591,7 +659,6 @@ std::vector<common::Animation> extractAnimations(const aiScene* scene)
                                                          channel->mRotationKeys[j].mValue.y,
                                                          channel->mRotationKeys[j].mValue.z);
                 tempKeyFrames[time].timeStamp = time;
-                tempKeyFrames[time].jointName = channel->mNodeName.C_Str();
             }
 
             for (unsigned int j = 0; j < channel->mNumScalingKeys; j++)
@@ -601,7 +668,6 @@ std::vector<common::Animation> extractAnimations(const aiScene* scene)
                                                       channel->mScalingKeys[j].mValue.y,
                                                       channel->mScalingKeys[j].mValue.z);
                 tempKeyFrames[time].timeStamp = time;
-                tempKeyFrames[time].jointName = channel->mNodeName.C_Str();
             }
 
             boneAnimation.keyFrames.reserve(tempKeyFrames.size());
@@ -615,6 +681,9 @@ std::vector<common::Animation> extractAnimations(const aiScene* scene)
         animation.boneAnimations = (boneAnimations);
         animations.push_back(animation);
     }
+
+    for (const auto& animation : animations)
+        AssetsManager::instance().saveAnimationToJson(animation);
 
     return animations;
 }
@@ -708,35 +777,6 @@ void extractSkeleton(const aiMesh* mesh, const aiScene* scene, std::vector<commo
     skeleton.globalInverseTransform = glm::inverse(utilities::convertMatrixToGLMFormat(scene->mRootNode->mTransformation));
     generateBoneHierarchy(-1, scene->mRootNode, skeleton, glm::mat4(1.0f));
     assignLocalBindTransforms(scene->mRootNode, skeleton);
-
-    for (auto& boneData : skeleton.getBones())
-    {
-        if (aiNode* boneNode = scene->mRootNode->FindNode(boneData.name.c_str()))
-        {
-            for (unsigned int childIndex = 0; childIndex < boneNode->mNumChildren; childIndex++)
-            {
-                std::string childName = boneNode->mChildren[childIndex]->mName.C_Str();
-
-                //TODO: REALLY FUCKING WEIRD SHIT I HATE IT PLEASE KILL ME
-                size_t shit = childName.find_first_of('_');
-
-                if (shit != std::string::npos)
-                    childName = childName.substr(0, shit);
-
-                if (skeleton.getBoneMap().contains(childName) && childName != boneNode->mName.C_Str())
-                {
-                    int childID = skeleton.getBoneMap()[childName];
-
-                    if (std::ranges::find_if(skeleton.getBones()[boneData.id].children, [&childID](int child) {  return child == childID; }) == skeleton.getBones()[boneData.id].children.end())
-                    {
-                        skeleton.getBones()[boneData.id].children.push_back(childID);
-                        skeleton.getBones()[boneData.id].childrenInfo.push_back(&skeleton.getBones()[childID]);
-                    }
-
-                }
-            }
-        }
-    }
 }
 
 StaticMesh processStaticMesh(aiMesh* mesh, const aiScene* scene)
@@ -868,7 +908,14 @@ SkinnedModel AssetsManager::loadSkinnedModel(const std::string &path)
 
     SkinnedModel model{name, meshes};
 
-    model.setAnimations(extractAnimations(scene));
+    if (model.getName() == "mannequin.fbx")
+    {
+        auto animation = loadAnimationFromJson("/home/dlyvern/Projects/CallOfTheVoid/resources/animations/mixamo.com.anim");
+        model.setAnimations({animation});
+    }
+    else
+        model.setAnimations(extractAnimations(scene));
+
     model.setSkeleton(skeleton);
 
     return model;
